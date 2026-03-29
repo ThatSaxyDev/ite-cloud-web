@@ -35,25 +35,30 @@ export function DevicePage() {
   }
 
   return (
-    <main className="shell stack">
-      <section className="panel stack">
-        <span className="eyebrow">Device verification</span>
-        <h1>Enter your code</h1>
-        <p className="muted">
-          Manual code entry is retained only for recovery. The standard iTE flow should open the browser directly and continue without this page.
-        </p>
-        <form className="stack" onSubmit={handleSubmit}>
-          <input
-            maxLength={16}
-            value={userCode}
-            onChange={(event) => setUserCode(event.target.value.toUpperCase())}
-            placeholder="ITECLOUD"
-          />
-          {error ? <p className="error">{error}</p> : null}
-          <button className="button" disabled={pending} type="submit">
-            {pending ? "Checking..." : "Continue"}
-          </button>
-        </form>
+    <main className="center-shell">
+      <section className="center-stage">
+        <div className="page-block">
+          <span className="eyebrow">Fallback</span>
+          <h1>Enter your code</h1>
+          <p className="muted">Use this only if iTE did not open the browser for you.</p>
+          <form className="form-surface" onSubmit={handleSubmit}>
+            <label className="stack">
+              <span>Code</span>
+              <input
+                maxLength={16}
+                value={userCode}
+                onChange={(event) => setUserCode(event.target.value.toUpperCase())}
+                placeholder="ITE-XXXX"
+              />
+            </label>
+            {error ? <p className="error">{error}</p> : null}
+            <div className="auth-actions">
+              <button className="button" disabled={pending} type="submit">
+                {pending ? "Checking..." : "Continue"}
+              </button>
+            </div>
+          </form>
+        </div>
       </section>
     </main>
   );

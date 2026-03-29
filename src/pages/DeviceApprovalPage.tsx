@@ -27,7 +27,7 @@ export function DeviceApprovalPage() {
         const request = (await api.inspectDevice(userCode)) as {
           clientId: string;
         };
-        setStatus(`Authorize ${request.clientId} to access your iTE account?`);
+        setStatus(`Allow ${request.clientId}?`);
         setReady(true);
       } catch (caught) {
         setError(
@@ -45,10 +45,10 @@ export function DeviceApprovalPage() {
     try {
       if (action === "approve") {
         await api.approveDevice(userCode);
-        setStatus("Device approved. You can return to the terminal.");
+        setStatus("Approved. Return to iTE.");
       } else {
         await api.denyDevice(userCode);
-        setStatus("Device denied.");
+        setStatus("Request denied.");
       }
       setReady(false);
     } catch (caught) {
@@ -61,26 +61,30 @@ export function DeviceApprovalPage() {
   }
 
   return (
-    <main className="shell stack">
-      <section className="panel stack">
-        <span className="eyebrow">Device approval</span>
-        <h1>{status}</h1>
-        <p className="muted">Code: {userCode || "missing"}</p>
-        {error ? <p className="error">{error}</p> : null}
-        {ready ? (
-          <div className="row">
-            <button className="button" onClick={() => void handleAction("approve")} type="button">
-              Approve
-            </button>
-            <button className="button secondary" onClick={() => void handleAction("deny")} type="button">
-              Deny
-            </button>
-          </div>
-        ) : (
-          <Link className="button secondary" to="/">
-            Back home
-          </Link>
-        )}
+    <main className="center-shell">
+      <section className="center-stage">
+        <div className="page-block">
+          <span className="eyebrow">Approval</span>
+          <h1>{status}</h1>
+          <p className="muted">{userCode ? `Code ${userCode}` : "Missing code."}</p>
+          {error ? <p className="error">{error}</p> : null}
+          {ready ? (
+            <div className="center-actions">
+              <button className="button" onClick={() => void handleAction("approve")} type="button">
+                Approve
+              </button>
+              <button className="button secondary" onClick={() => void handleAction("deny")} type="button">
+                Deny
+              </button>
+            </div>
+          ) : (
+            <div className="center-actions">
+              <Link className="button secondary" to="/">
+                Back
+              </Link>
+            </div>
+          )}
+        </div>
       </section>
     </main>
   );

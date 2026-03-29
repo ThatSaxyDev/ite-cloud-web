@@ -52,57 +52,55 @@ export function LoginPage() {
   }
 
   return (
-    <main className="shell stack">
-      <section className="panel stack">
-        <span className="eyebrow">{isCliRedirect ? "Continue to iTE" : "Browser auth"}</span>
-        <h1>
-          {isCliRedirect
-            ? mode === "sign-in"
-              ? "Sign in to continue in the terminal"
-              : "Create your iTE account"
-            : mode === "sign-in"
-              ? "Sign in"
-              : "Create account"}
-        </h1>
-        <p className="muted">
-          {isCliRedirect
-            ? "After this step, your terminal session will complete automatically."
-            : "Use this browser session to manage iTE Cloud access."}
-        </p>
-        <div className="meta-chip-row">
-          <span className="meta-chip">Browser session</span>
-          <span className="meta-chip">Better Auth</span>
-        </div>
-        <form className="stack" onSubmit={handleSubmit}>
-          {mode === "sign-up" ? (
+    <main className="center-shell">
+      <section className="center-stage">
+        <div className="page-block">
+          <span className="eyebrow">{isCliRedirect ? "Continue" : "Account"}</span>
+          <h1>
+            {isCliRedirect
+              ? mode === "sign-in"
+                ? "Sign in to continue"
+                : "Create your account"
+              : mode === "sign-in"
+                ? "Sign in"
+                : "Create your account"}
+          </h1>
+          <p className="muted">
+            {isCliRedirect
+              ? "Complete sign-in here. Your terminal will resume automatically."
+              : "Sign in to continue."}
+          </p>
+          <form className="form-surface" onSubmit={handleSubmit}>
+            {mode === "sign-up" ? (
+              <label className="stack">
+                <span>Name</span>
+                <input value={name} onChange={(event) => setName(event.target.value)} />
+              </label>
+            ) : null}
             <label className="stack">
-              <span>Name</span>
-              <input value={name} onChange={(event) => setName(event.target.value)} />
+              <span>Email</span>
+              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
             </label>
-          ) : null}
-          <label className="stack">
-            <span>Email</span>
-            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-          </label>
-          <label className="stack">
-            <span>Password</span>
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
-          </label>
-          {error ? <p className="error">{error}</p> : null}
-          <div className="row">
-            <button className="button" disabled={pending} type="submit">
-              {pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
-            </button>
-            <button
-              className="button secondary"
-              disabled={pending}
-              onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
-              type="button"
-            >
-              {mode === "sign-in" ? "Need an account?" : "Have an account?"}
-            </button>
-          </div>
-        </form>
+            <label className="stack">
+              <span>Password</span>
+              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+            </label>
+            {error ? <p className="error">{error}</p> : null}
+            <div className="row">
+              <button className="button" disabled={pending} type="submit">
+                {pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+              </button>
+              <button
+                className="button secondary"
+                disabled={pending}
+                onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
+                type="button"
+              >
+                {mode === "sign-in" ? "Create account" : "Back to sign in"}
+              </button>
+            </div>
+          </form>
+        </div>
       </section>
     </main>
   );

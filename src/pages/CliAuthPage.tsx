@@ -20,7 +20,7 @@ export function CliAuthPage() {
   useEffect(() => {
     async function load() {
       if (!token) {
-        setStatus("Open this page from the iTE terminal login flow.");
+        setStatus("Start this flow from iTE.");
         return;
       }
 
@@ -34,12 +34,12 @@ export function CliAuthPage() {
         const response = (await api.inspectCliRequest(token)) as CliRequest;
         setRequest(response);
         await api.completeCli(token);
-        setStatus("You are signed in. Return to the iTE terminal to continue.");
+        setStatus("Signed in. Return to iTE.");
       } catch (caught) {
         setError(
           typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not complete terminal login.")
-            : "Could not complete terminal login."
+            ? String((caught as { error?: { message?: string } }).error?.message || "Could not complete sign-in.")
+            : "Could not complete sign-in."
         );
       }
     }
@@ -48,26 +48,20 @@ export function CliAuthPage() {
   }, [navigate, token]);
 
   return (
-    <main className="shell stack">
-      <section className="panel stack">
-        <span className="eyebrow">Continue to iTE</span>
-        <h1>{status}</h1>
-        <p className="muted">
-          This page completes the browser step for your terminal login. When the flow succeeds,
-          the terminal should detect it automatically and continue.
-        </p>
-        {request ? (
-          <div className="stack">
-            <span className="muted">Client: {request.clientId}</span>
-            <span className="muted">Linked login token is active until browser approval completes.</span>
+    <main className="center-shell">
+      <section className="center-stage wide">
+        <div className="page-block">
+          <span className="eyebrow">Continue</span>
+          <h1>{status}</h1>
+          <p className="muted">You can return to your terminal now.</p>
+          {error ? <p className="error">{error}</p> : null}
+          <div className="center-actions">
+            <Link className="button secondary" to="/account/sessions">
+              Manage devices
+            </Link>
           </div>
-        ) : null}
-        {error ? <p className="error">{error}</p> : null}
-        <div className="row">
-          <Link className="button secondary" to="/account/sessions">
-            View sessions
-          </Link>
         </div>
+        {request ? <p className="muted">Request: {request.clientId}</p> : null}
       </section>
     </main>
   );

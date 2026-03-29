@@ -51,45 +51,45 @@ export function AccountSessionsPage() {
   }
 
   return (
-    <main className="shell stack">
-      <section className="panel stack">
-        <span className="eyebrow">Terminal sessions</span>
-        <h1>Manage device access</h1>
-        <p className="muted">These are terminal sessions issued by the API to the iTE runtime.</p>
-        <div className="meta-chip-row">
-          <span className="meta-chip">Terminal runtime</span>
-          <span className="meta-chip">API-owned sessions</span>
+    <main className="shell">
+      <section className="devices-shell">
+        <div className="page-block">
+          <span className="eyebrow">Devices</span>
+          <h1>Manage access</h1>
+          <p className="muted">Review and revoke terminal access.</p>
+          <div className="row">
+            <button className="button secondary" onClick={() => void handleBrowserLogout()} type="button">
+              Sign out
+            </button>
+          </div>
+          {error ? <p className="error">{error}</p> : null}
         </div>
-        <div className="row">
-          <button className="button secondary" onClick={() => void handleBrowserLogout()} type="button">
-            Sign out browser session
-          </button>
-        </div>
-        {error ? <p className="error">{error}</p> : null}
-        <div className="stack">
+        <div className="session-list">
           {sessions.length < 1 ? (
-            <p className="muted">No terminal sessions yet.</p>
+            <p className="muted">No devices yet.</p>
           ) : (
             sessions.map((session) => (
-              <article className="panel inner" key={session.id}>
-                <div className="stack">
+              <article className="panel inner session-card" key={session.id}>
+                <div className="session-meta">
                   <strong>{session.label}</strong>
-                  <span className="muted">Created: {new Date(session.createdAt).toLocaleString()}</span>
-                  <span className="muted">Last seen: {new Date(session.lastSeenAt).toLocaleString()}</span>
-                  <span className="muted">Revoked: {session.revokedAt ? "yes" : "no"}</span>
-                  {!session.revokedAt ? (
-                    <button className="button secondary" onClick={() => void handleRevoke(session.id)} type="button">
-                      Revoke
-                    </button>
-                  ) : null}
+                  <span className="muted">Created {new Date(session.createdAt).toLocaleString()}</span>
+                  <span className="muted">Last seen {new Date(session.lastSeenAt).toLocaleString()}</span>
+                  <span className="muted session-state">{session.revokedAt ? "Revoked" : "Active"}</span>
                 </div>
+                {!session.revokedAt ? (
+                  <button className="button secondary" onClick={() => void handleRevoke(session.id)} type="button">
+                    Revoke
+                  </button>
+                ) : null}
               </article>
             ))
           )}
         </div>
-        <Link className="button secondary" to="/">
-          Back home
-        </Link>
+        <div className="row">
+          <Link className="button secondary section-back" to="/">
+            Back
+          </Link>
+        </div>
       </section>
     </main>
   );
