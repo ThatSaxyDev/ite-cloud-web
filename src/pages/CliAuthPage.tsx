@@ -14,13 +14,13 @@ export function CliAuthPage() {
   const navigate = useNavigate();
   const token = params.get("token") || "";
   const [request, setRequest] = useState<CliRequest | null>(null);
-  const [status, setStatus] = useState("Preparing your iTE login...");
+  const [status, setStatus] = useState("Preparing sign-in");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       if (!token) {
-        setStatus("Start this flow from iTE.");
+        setStatus("Continue from iTE");
         return;
       }
 
@@ -34,12 +34,12 @@ export function CliAuthPage() {
         const response = (await api.inspectCliRequest(token)) as CliRequest;
         setRequest(response);
         await api.completeCli(token);
-        setStatus("Signed in. Return to iTE.");
+        setStatus("Signed in");
       } catch (caught) {
         setError(
           typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not complete sign-in.")
-            : "Could not complete sign-in."
+            ? String((caught as { error?: { message?: string } }).error?.message || "Could not sign you in.")
+            : "Could not sign you in."
         );
       }
     }
@@ -48,20 +48,32 @@ export function CliAuthPage() {
   }, [navigate, token]);
 
   return (
-    <main className="center-shell">
-      <section className="center-stage wide">
-        <div className="page-block">
-          <span className="eyebrow">Continue</span>
-          <h1>{status}</h1>
-          <p className="muted">You can return to your terminal now.</p>
-          {error ? <p className="error">{error}</p> : null}
-          <div className="center-actions">
-            <Link className="button secondary" to="/account/sessions">
-              Manage devices
-            </Link>
+    <main className="auth-page">
+      <section className="auth-stage">
+        <div className="auth-heading">
+          <Link className="auth-brand" to="/">
+            iTE
+          </Link>
+          <div className="auth-copy">
+            <p>Continue</p>
+            <h1>{status}</h1>
           </div>
         </div>
-        {request ? <p className="muted">Request: {request.clientId}</p> : null}
+
+        <section className="auth-surface">
+          {request ? (
+            <div className="approval-meta">
+              <span>Account</span>
+              <code>{request.clientId}</code>
+            </div>
+          ) : null}
+          {error ? <p className="error">{error}</p> : null}
+          <div className="auth-actions">
+            <Link className="button secondary" to="/account/sessions">
+              Account
+            </Link>
+          </div>
+        </section>
       </section>
     </main>
   );

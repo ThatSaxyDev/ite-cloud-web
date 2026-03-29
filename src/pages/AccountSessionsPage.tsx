@@ -12,6 +12,13 @@ type SessionItem = {
   revokedAt: string | null;
 };
 
+function formatTimestamp(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}
+
 export function AccountSessionsPage() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<SessionItem[]>([]);
@@ -30,8 +37,8 @@ export function AccountSessionsPage() {
       } catch (caught) {
         setError(
           typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not load sessions.")
-            : "Could not load sessions."
+            ? String((caught as { error?: { message?: string } }).error?.message || "Could not load activity.")
+            : "Could not load activity."
         );
       }
     }
@@ -51,45 +58,51 @@ export function AccountSessionsPage() {
   }
 
   return (
-    <main className="shell">
-      <section className="devices-shell">
-        <div className="page-block">
-          <span className="eyebrow">Devices</span>
-          <h1>Manage access</h1>
-          <p className="muted">Review and revoke terminal access.</p>
+    <main className="sessions-page">
+      <section className="sessions-stage">
+        <header className="sessions-header">
+          <div>
+            <Link className="auth-brand" to="/">
+              iTE
+            </Link>
+            <p className="sessions-kicker">Account</p>
+          </div>
           <div className="row">
             <button className="button secondary" onClick={() => void handleBrowserLogout()} type="button">
               Sign out
             </button>
           </div>
-          {error ? <p className="error">{error}</p> : null}
-        </div>
-        <div className="session-list">
+        </header>
+
+        {error ? <p className="error">{error}</p> : null}
+
+        <section className="session-table" aria-label="Recent activity">
           {sessions.length < 1 ? (
-            <p className="muted">No devices yet.</p>
+            <p className="muted">No activity yet.</p>
           ) : (
             sessions.map((session) => (
-              <article className="panel inner session-card" key={session.id}>
-                <div className="session-meta">
+              <article className="session-row" key={session.id}>
+                <div className="session-main">
                   <strong>{session.label}</strong>
-                  <span className="muted">Created {new Date(session.createdAt).toLocaleString()}</span>
-                  <span className="muted">Last seen {new Date(session.lastSeenAt).toLocaleString()}</span>
-                  <span className="muted session-state">{session.revokedAt ? "Revoked" : "Active"}</span>
+                  <div className="session-meta">
+                    <span>{formatTimestamp(session.createdAt)}</span>
+                    <span>{formatTimestamp(session.lastSeenAt)}</span>
+                  </div>
                 </div>
-                {!session.revokedAt ? (
-                  <button className="button secondary" onClick={() => void handleRevoke(session.id)} type="button">
-                    Revoke
-                  </button>
-                ) : null}
+                <div className="session-side">
+                  <span className={`session-state ${session.revokedAt ? "is-revoked" : ""}`}>
+                    {session.revokedAt ? "Ended" : "Active"}
+                  </span>
+                  {!session.revokedAt ? (
+                    <button className="button secondary" onClick={() => void handleRevoke(session.id)} type="button">
+                      End access
+                    </button>
+                  ) : null}
+                </div>
               </article>
             ))
           )}
-        </div>
-        <div className="row">
-          <Link className="button secondary section-back" to="/">
-            Back
-          </Link>
-        </div>
+        </section>
       </section>
     </main>
   );

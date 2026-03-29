@@ -1,13 +1,12 @@
 # iTE Cloud Web
 
-`ite-cloud-web` is the standalone user-facing frontend for iTE Cloud.
+`ite-cloud-web` is the standalone user-facing frontend for iTE.
 
 It talks to `ite-cloud-api` as an external service.
 
 ## Responsibilities
 
 - login and sign-up UI
-- device approval UI
 - session management UI
 - later billing and usage pages
 
@@ -16,7 +15,5 @@ It talks to `ite-cloud-api` as an external service.
 Milestone 1 only covers:
 
 - `/login`
-- `/device`
-- `/device/approve`
+- `/auth/cli`
 - `/account/sessions`
-

@@ -35,22 +35,6 @@ export const api = {
       body: JSON.stringify({ token })
     });
   },
-  inspectDevice(userCode: string) {
-    const query = new URLSearchParams({ userCode });
-    return apiRequest(`/auth/device/request?${query.toString()}`);
-  },
-  approveDevice(userCode: string) {
-    return apiRequest("/auth/device/approve", {
-      method: "POST",
-      body: JSON.stringify({ userCode })
-    });
-  },
-  denyDevice(userCode: string) {
-    return apiRequest("/auth/device/deny", {
-      method: "POST",
-      body: JSON.stringify({ userCode })
-    });
-  },
   listSessions() {
     return apiRequest<{ ok: true; sessions: Array<{ id: string; label: string; createdAt: string; lastSeenAt: string; revokedAt: string | null }> }>("/sessions");
   },

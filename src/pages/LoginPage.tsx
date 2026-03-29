@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -52,24 +52,19 @@ export function LoginPage() {
   }
 
   return (
-    <main className="center-shell">
-      <section className="center-stage">
-        <div className="page-block">
-          <span className="eyebrow">{isCliRedirect ? "Continue" : "Account"}</span>
-          <h1>
-            {isCliRedirect
-              ? mode === "sign-in"
-                ? "Sign in to continue"
-                : "Create your account"
-              : mode === "sign-in"
-                ? "Sign in"
-                : "Create your account"}
-          </h1>
-          <p className="muted">
-            {isCliRedirect
-              ? "Complete sign-in here. Your terminal will resume automatically."
-              : "Sign in to continue."}
-          </p>
+    <main className="auth-page">
+      <section className="auth-stage">
+        <div className="auth-heading">
+          <Link className="auth-brand" to="/">
+            iTE
+          </Link>
+          <div className="auth-copy">
+            {isCliRedirect ? <p>Continue</p> : null}
+            <h1>{mode === "sign-in" ? "Sign in" : "Create account"}</h1>
+          </div>
+        </div>
+
+        <section className="auth-surface">
           <form className="form-surface" onSubmit={handleSubmit}>
             {mode === "sign-up" ? (
               <label className="stack">
@@ -79,14 +74,25 @@ export function LoginPage() {
             ) : null}
             <label className="stack">
               <span>Email</span>
-              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+              <input
+                autoComplete="email"
+                placeholder="you@example.com"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
             </label>
             <label className="stack">
               <span>Password</span>
-              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+              <input
+                autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
             </label>
             {error ? <p className="error">{error}</p> : null}
-            <div className="row">
+            <div className="auth-actions">
               <button className="button" disabled={pending} type="submit">
                 {pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
               </button>
@@ -96,11 +102,11 @@ export function LoginPage() {
                 onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
                 type="button"
               >
-                {mode === "sign-in" ? "Create account" : "Back to sign in"}
+                {mode === "sign-in" ? "Create account" : "Back"}
               </button>
             </div>
           </form>
-        </div>
+        </section>
       </section>
     </main>
   );
