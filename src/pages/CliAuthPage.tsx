@@ -91,7 +91,6 @@ export function CliAuthPage() {
       <section className="auth-stage">
         <div className="auth-heading">
           <div className="auth-copy">
-            {isComplete ? null : <p>Sign in</p>}
             <h1>{status}</h1>
           </div>
         </div>

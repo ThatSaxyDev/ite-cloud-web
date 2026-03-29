@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import iteImage from "@/assets/ite-image.png";
 import { authClient } from "@/lib/auth-client";
 
 export function LoginPage() {
@@ -53,13 +54,25 @@ export function LoginPage() {
 
   return (
     <main className="auth-page">
+      <header className="overlay-header">
+        <Link className="overlay-header-brand" to="/">
+          <img alt="iTE" className="overlay-header-brand-image" src={iteImage} />
+        </Link>
+      </header>
+
+      <div className="auth-ambient" aria-hidden="true">
+        <div className="light-field light-field-fixed">
+          <span className="light-plane light-plane-back" />
+          <span className="light-plane light-plane-front" />
+          <span className="light-glow" />
+          <span className="light-trace light-trace-top" />
+          <span className="light-trace light-trace-bottom" />
+        </div>
+      </div>
+
       <section className="auth-stage">
         <div className="auth-heading">
-          <Link className="auth-brand" to="/">
-            iTE
-          </Link>
           <div className="auth-copy">
-            {isCliRedirect ? <p>Continue</p> : null}
             <h1>{mode === "sign-in" ? "Sign in" : "Create account"}</h1>
           </div>
         </div>
