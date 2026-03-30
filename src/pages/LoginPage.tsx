@@ -16,6 +16,21 @@ export function LoginPage() {
   const [pending, setPending] = useState(false);
   const isCliRedirect = redirectTo.startsWith("/auth/cli");
 
+  function switchMode(nextMode: "sign-in" | "sign-up") {
+    if (nextMode === mode) {
+      return;
+    }
+
+    setError(null);
+    setPassword("");
+
+    if (nextMode === "sign-in") {
+      setName("");
+    }
+
+    setMode(nextMode);
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setPending(true);
@@ -96,22 +111,32 @@ export function LoginPage() {
             {error ? <p className="error">{error}</p> : null}
             <div className="auth-actions">
               <button className="button" data-magnetic data-ripple disabled={pending} type="submit">
-                <span className="button-text" data-scramble>
+                <span
+                  className="button-text"
+                  data-scramble
+                  data-scramble-value={pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+                >
                   {pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
                 </span>
                 <span className="button-shine" />
               </button>
+            </div>
+            <div className="auth-mode-switch">
+              <span>{mode === "sign-in" ? "New to iTE?" : "Already have an account?"}</span>
               <button
-                className="button secondary"
+                className="auth-mode-link"
                 data-magnetic
                 disabled={pending}
-                onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
+                onClick={() => switchMode(mode === "sign-in" ? "sign-up" : "sign-in")}
                 type="button"
               >
-                <span className="button-text" data-scramble>
-                  {mode === "sign-in" ? "Create account" : "Back"}
+                <span
+                  className="auth-mode-link-text"
+                  data-scramble
+                  data-scramble-value={mode === "sign-in" ? "Create account" : "Sign in"}
+                >
+                  {mode === "sign-in" ? "Create account" : "Sign in"}
                 </span>
-                <span className="button-border" />
               </button>
             </div>
           </form>

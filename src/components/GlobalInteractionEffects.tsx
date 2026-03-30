@@ -9,8 +9,7 @@ function scrambleText(element: HTMLElement, duration = 400) {
     return;
   }
 
-  const original = element.dataset.scrambleOriginal || element.textContent || "";
-  element.dataset.scrambleOriginal = original;
+  const original = element.dataset.scrambleValue || element.textContent || "";
   element.dataset.scrambling = "true";
 
   const chars = "!<>-_\\/[]{}=+*^?#________";
@@ -19,13 +18,14 @@ function scrambleText(element: HTMLElement, duration = 400) {
   let frame = 0;
 
   const interval = window.setInterval(() => {
+    const targetText = element.dataset.scrambleValue || original;
     let output = "";
     const progress = frame / totalFrames;
 
-    for (let i = 0; i < original.length; i += 1) {
-      if (i < progress * original.length) {
-        output += original[i];
-      } else if (original[i] === " ") {
+    for (let i = 0; i < targetText.length; i += 1) {
+      if (i < progress * targetText.length) {
+        output += targetText[i];
+      } else if (targetText[i] === " ") {
         output += " ";
       } else {
         output += chars[Math.floor(Math.random() * chars.length)];
@@ -37,7 +37,7 @@ function scrambleText(element: HTMLElement, duration = 400) {
 
     if (frame > totalFrames) {
       window.clearInterval(interval);
-      element.textContent = original;
+      element.textContent = element.dataset.scrambleValue || targetText;
       element.dataset.scrambling = "false";
     }
   }, 1000 / frameRate);
