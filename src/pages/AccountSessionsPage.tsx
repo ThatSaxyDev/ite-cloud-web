@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
+import { markKnownUser } from "@/lib/browser-state";
 
 type SessionItem = {
   id: string;
@@ -32,6 +33,7 @@ export function AccountSessionsPage() {
         navigate("/login?redirect=/account/sessions");
         return;
       }
+      markKnownUser();
       try {
         const payload = await api.listSessions();
         setSessions(payload.sessions);

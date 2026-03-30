@@ -1,15 +1,55 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 
 import { AmbientTriangles } from "@/components/AmbientTriangles";
 import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { StartupPreloader } from "@/components/StartupPreloader";
+import { authClient } from "@/lib/auth-client";
+import { hasKnownUser, markBrowserSeen, markKnownUser } from "@/lib/browser-state";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
 import { LoginPage } from "@/pages/LoginPage";
 
 function HomePage() {
+  const [ctaLabel, setCtaLabel] = useState("Get started");
+  const [ctaHref, setCtaHref] = useState("/login?mode=sign-up");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    markBrowserSeen();
+
+    async function resolveCta() {
+      const session = await authClient.getSession();
+      if (cancelled) {
+        return;
+      }
+
+      if (session.data?.session) {
+        markKnownUser();
+        setCtaLabel("Continue");
+        setCtaHref("/account/sessions");
+        return;
+      }
+
+      if (hasKnownUser()) {
+        setCtaLabel("Sign in");
+        setCtaHref("/login?mode=sign-in");
+        return;
+      }
+
+      setCtaLabel("Get started");
+      setCtaHref("/login?mode=sign-up");
+    }
+
+    void resolveCta();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <main className="hero-shell">
       <section className="hero-stage">
@@ -40,9 +80,9 @@ function HomePage() {
                 Plan, execute, and stay in control.
               </p>
               <div className="hero-actions">
-                <Link className="button" data-magnetic data-ripple to="/login">
+                <Link className="button" data-magnetic data-ripple to={ctaHref}>
                   <span className="button-text" data-scramble>
-                    Get started
+                    {ctaLabel}
                   </span>
                   <span className="button-shine" />
                 </Link>

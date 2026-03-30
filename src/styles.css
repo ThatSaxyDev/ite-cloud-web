@@ -852,6 +852,27 @@ button {
     gap: 18px;
 }
 
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.auth-divider span {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+}
+
+.auth-divider em {
+    font-style: normal;
+}
+
 .stack > span,
 .approval-meta span {
     color: var(--text-dim);

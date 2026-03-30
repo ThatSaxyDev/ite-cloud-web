@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
 import { api } from "@/lib/api";
+import { markKnownUser } from "@/lib/browser-state";
 
 type CliRequest = {
   clientId: string;
@@ -41,6 +42,7 @@ export function CliAuthPage() {
         email: session.data.user?.email,
         name: session.data.user?.name
       });
+      markKnownUser();
 
       try {
         const response = (await api.inspectCliRequest(token)) as CliRequest;

@@ -3,12 +3,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
+import { markKnownUser } from "@/lib/browser-state";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectTo = new URLSearchParams(location.search).get("redirect") || "/account/sessions";
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const params = new URLSearchParams(location.search);
+  const redirectTo = params.get("redirect") || "/account/sessions";
+  const [mode, setMode] = useState<"sign-in" | "sign-up">(params.get("mode") === "sign-up" ? "sign-up" : "sign-in");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +31,29 @@ export function LoginPage() {
     }
 
     setMode(nextMode);
+  }
+
+  async function handleGithubSignIn() {
+    setPending(true);
+    setError(null);
+
+    try {
+      const result = await authClient.signIn.social({
+        provider: "github",
+        callbackURL: `${window.location.origin}${redirectTo}`
+      });
+
+      if (result.error) {
+        throw result.error;
+      }
+    } catch (caught) {
+      setError(
+        typeof caught === "object" && caught && "message" in caught
+          ? String((caught as { message?: string }).message)
+          : "GitHub sign-in failed."
+      );
+      setPending(false);
+    }
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -55,6 +80,7 @@ export function LoginPage() {
           throw result.error;
         }
       }
+      markKnownUser();
       navigate(redirectTo);
     } catch (caught) {
       setError(
@@ -83,6 +109,16 @@ export function LoginPage() {
 
         <section className="auth-surface">
           <form className="form-surface" onSubmit={handleSubmit}>
+            <>
+              <button className="button secondary" data-magnetic disabled={pending} onClick={() => void handleGithubSignIn()} type="button">
+                Continue with GitHub
+              </button>
+              <div className="auth-divider" aria-hidden="true">
+                <span />
+                <em>or</em>
+                <span />
+              </div>
+            </>
             {mode === "sign-up" ? (
               <label className="stack">
                 <span>Name</span>

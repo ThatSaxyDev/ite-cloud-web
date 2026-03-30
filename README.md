@@ -17,3 +17,9 @@ Milestone 1 only covers:
 - `/login`
 - `/auth/cli`
 - `/account/sessions`
+
+## GitHub OAuth
+
+The login screen always shows `Continue with GitHub` during development.
+
+To make it work, configure GitHub OAuth in `ite-cloud-api`.
