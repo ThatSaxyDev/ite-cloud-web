@@ -69,17 +69,27 @@ export function GlobalInteractionEffects() {
     let posRing = { ...pos };
     let posTrail = { ...pos };
     let activeMagnetic: HTMLElement | null = null;
+    let magneticCurrent = { x: 0, y: 0 };
+    let magneticTarget = { x: 0, y: 0 };
+    let magneticEase = 0.16;
+    let magneticEngagement = 0;
+    let magneticEngagementTarget = 0;
     let frame = 0;
 
-    function resetMagnetic(element: HTMLElement | null) {
+    function clearMagnetic(element: HTMLElement | null) {
       if (!element) {
         return;
       }
-      element.style.transition = "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
+      magneticCurrent = { x: 0, y: 0 };
+      magneticTarget = { x: 0, y: 0 };
+      magneticEngagement = 0;
+      magneticEngagementTarget = 0;
       element.style.transform = "translate(0, 0)";
-      window.setTimeout(() => {
-        element.style.transition = "";
-      }, 400);
+    }
+
+    function releaseMagnetic() {
+      magneticTarget = { x: 0, y: 0 };
+      magneticEngagementTarget = 0;
     }
 
     function animate() {
@@ -99,6 +109,26 @@ export function GlobalInteractionEffects() {
       cursorIllumination.style.left = `${posRing.x}px`;
       cursorIllumination.style.top = `${posRing.y}px`;
 
+      if (activeMagnetic) {
+        magneticEngagement = lerp(magneticEngagement, magneticEngagementTarget, 0.09);
+        magneticCurrent.x = lerp(magneticCurrent.x, magneticTarget.x, magneticEase);
+        magneticCurrent.y = lerp(magneticCurrent.y, magneticTarget.y, magneticEase);
+        activeMagnetic.style.transform = `translate(${magneticCurrent.x * magneticEngagement}px, ${magneticCurrent.y * magneticEngagement}px)`;
+
+        if (
+          magneticEngagementTarget === 0 &&
+          Math.abs(magneticEngagement) < 0.02 &&
+          Math.abs(magneticCurrent.x) < 0.1 &&
+          Math.abs(magneticCurrent.y) < 0.1
+        ) {
+          activeMagnetic.style.transform = "translate(0, 0)";
+          activeMagnetic = null;
+          magneticCurrent = { x: 0, y: 0 };
+          magneticTarget = { x: 0, y: 0 };
+          magneticEngagement = 0;
+        }
+      }
+
       frame = window.requestAnimationFrame(animate);
     }
 
@@ -109,15 +139,26 @@ export function GlobalInteractionEffects() {
       const magnetic = target?.closest<HTMLElement>("[data-magnetic]") || null;
 
       if (activeMagnetic && activeMagnetic !== magnetic) {
-        resetMagnetic(activeMagnetic);
+        clearMagnetic(activeMagnetic);
       }
       activeMagnetic = magnetic;
 
       if (magnetic) {
+        const strength = Number(magnetic.dataset.magneticStrength || "0.3");
+        const ease = Number(magnetic.dataset.magneticEase || "0.16");
         const rect = magnetic.getBoundingClientRect();
         const x = event.clientX - rect.left - rect.width / 2;
         const y = event.clientY - rect.top - rect.height / 2;
-        magnetic.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+        magneticEase = Number.isFinite(ease) ? ease : 0.16;
+        magneticEngagementTarget = 1;
+        magneticTarget = {
+          x: x * (Number.isFinite(strength) ? strength : 0.3),
+          y: y * (Number.isFinite(strength) ? strength : 0.3)
+        };
+      } else {
+        magneticEase = 0.16;
+        magneticEngagementTarget = 0;
+        magneticTarget = { x: 0, y: 0 };
       }
     }
 
@@ -147,8 +188,7 @@ export function GlobalInteractionEffects() {
       }
 
       if (currentMagnetic && currentMagnetic !== nextMagnetic) {
-        resetMagnetic(activeMagnetic);
-        activeMagnetic = null;
+        releaseMagnetic();
       }
     }
 
@@ -193,7 +233,7 @@ export function GlobalInteractionEffects() {
       document.removeEventListener("click", handleClick);
       document.removeEventListener("mouseleave", handleLeaveDocument);
       window.cancelAnimationFrame(frame);
-      resetMagnetic(activeMagnetic);
+      clearMagnetic(activeMagnetic);
     };
   }, []);
 

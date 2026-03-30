@@ -26,7 +26,12 @@ function HomePage() {
 
         <div className="hero-layout">
           <div className="hero-copy">
-            <div className="hero-brand-block" data-magnetic>
+            <div
+              className="hero-brand-block"
+              data-magnetic
+              data-magnetic-strength="0.14"
+              data-magnetic-ease="0.1"
+            >
               <GlitchImageLogo className="hero-brand-image" />
             </div>
             <div className="hero-body">
