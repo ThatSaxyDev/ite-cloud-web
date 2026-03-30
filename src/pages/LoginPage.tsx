@@ -9,7 +9,7 @@ export function LoginPage() {
   const location = useLocation();
   const redirectTo = new URLSearchParams(location.search).get("redirect") || "/account/sessions";
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
-  const [name, setName] = useState("iTE User");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -59,17 +59,6 @@ export function LoginPage() {
           <img alt="iTE" className="overlay-header-brand-image" src={iteImage} />
         </Link>
       </header>
-
-      <div className="auth-ambient" aria-hidden="true">
-        <div className="light-field light-field-fixed">
-          <span className="light-plane light-plane-back" />
-          <span className="light-plane light-plane-front" />
-          <span className="light-glow" />
-          <span className="light-trace light-trace-top" />
-          <span className="light-trace light-trace-bottom" />
-        </div>
-      </div>
-
       <section className="auth-stage">
         <div className="auth-heading">
           <div className="auth-copy">

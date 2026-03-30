@@ -1,6 +1,7 @@
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 
 import iteImage from "@/assets/ite-image.png";
+import { AmbientTriangles } from "@/components/AmbientTriangles";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -33,18 +34,6 @@ function HomePage() {
               </div>
             </div>
           </div>
-
-          <div className="hero-product" aria-hidden="true">
-            <div className="abstract-stage">
-              <div className="light-field">
-                <span className="light-plane light-plane-back" />
-                <span className="light-plane light-plane-front" />
-                <span className="light-glow" />
-                <span className="light-trace light-trace-top" />
-                <span className="light-trace light-trace-bottom" />
-              </div>
-            </div>
-          </div>
         </div>
       </section>
     </main>
@@ -53,12 +42,17 @@ function HomePage() {
 
 export function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/auth/cli" element={<CliAuthPage />} />
-      <Route path="/account/sessions" element={<AccountSessionsPage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <div className="app-ambient" aria-hidden="true">
+        <AmbientTriangles className="triangle-field-global" />
+      </div>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/cli" element={<CliAuthPage />} />
+        <Route path="/account/sessions" element={<AccountSessionsPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
