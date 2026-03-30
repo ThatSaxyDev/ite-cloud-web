@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 
-import iteImage from "@/assets/ite-image.png";
 import { AmbientTriangles } from "@/components/AmbientTriangles";
+import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects";
+import { GlitchImageLogo } from "@/components/GlitchImageLogo";
+import { StartupPreloader } from "@/components/StartupPreloader";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -12,15 +15,19 @@ function HomePage() {
       <section className="hero-stage">
         <header className="hero-topbar">
           <nav className="hero-nav">
-            <Link to="/login">Sign in</Link>
-            <Link to="/account/sessions">Account</Link>
+            <Link className="interactive-link" data-magnetic data-scramble to="/login">
+              Sign in
+            </Link>
+            <Link className="interactive-link" data-magnetic data-scramble to="/account/sessions">
+              Account
+            </Link>
           </nav>
         </header>
 
         <div className="hero-layout">
           <div className="hero-copy">
-            <div className="hero-brand-block">
-              <img alt="iTE" className="hero-brand-image" src={iteImage} />
+            <div className="hero-brand-block" data-magnetic>
+              <GlitchImageLogo className="hero-brand-image" />
             </div>
             <div className="hero-body">
               <h1>The AI agent for real work.</h1>
@@ -28,8 +35,11 @@ function HomePage() {
                 Plan, execute, and stay in control.
               </p>
               <div className="hero-actions">
-                <Link className="button" to="/login">
-                  Get started
+                <Link className="button" data-magnetic data-ripple to="/login">
+                  <span className="button-text" data-scramble>
+                    Get started
+                  </span>
+                  <span className="button-shine" />
                 </Link>
               </div>
             </div>
@@ -41,8 +51,12 @@ function HomePage() {
 }
 
 export function App() {
+  const [showPreloader, setShowPreloader] = useState(true);
+
   return (
     <>
+      {showPreloader ? <StartupPreloader onComplete={() => setShowPreloader(false)} /> : null}
+      <GlobalInteractionEffects />
       <div className="app-ambient" aria-hidden="true">
         <AmbientTriangles className="triangle-field-global" />
       </div>

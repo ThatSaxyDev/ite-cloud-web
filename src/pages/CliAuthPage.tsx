@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import iteImage from "@/assets/ite-image.png";
+import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
 import { api } from "@/lib/api";
 
@@ -68,8 +68,8 @@ export function CliAuthPage() {
     <main className="auth-page auth-page-wide">
       {isComplete && user ? (
         <header className="overlay-header">
-          <Link className="overlay-header-brand" to="/">
-            <img alt="iTE" className="overlay-header-brand-image" src={iteImage} />
+          <Link className="overlay-header-brand" data-magnetic to="/">
+            <GlitchImageLogo className="overlay-header-brand-image" />
           </Link>
           <details className="account-dropdown">
             <summary className="account-dropdown-trigger">
@@ -80,8 +80,10 @@ export function CliAuthPage() {
                 <strong>{user.name || "iTE User"}</strong>
                 <span>{user.email || "Signed in"}</span>
               </div>
-              <button className="account-dropdown-action" onClick={() => void handleSignOut()} type="button">
-                Sign out
+              <button className="account-dropdown-action" data-magnetic data-ripple onClick={() => void handleSignOut()} type="button">
+                <span className="button-text" data-scramble>
+                  Sign out
+                </span>
               </button>
             </div>
           </details>
@@ -107,8 +109,11 @@ export function CliAuthPage() {
             ) : null}
             {error ? <p className="error">{error}</p> : null}
             <div className="auth-actions">
-              <Link className="button secondary" to="/account/sessions">
-                Account
+              <Link className="button secondary" data-magnetic to="/account/sessions">
+                <span className="button-text" data-scramble>
+                  Account
+                </span>
+                <span className="button-border" />
               </Link>
             </div>
           </section>

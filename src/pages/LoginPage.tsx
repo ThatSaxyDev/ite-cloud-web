@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import iteImage from "@/assets/ite-image.png";
+import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
 
 export function LoginPage() {
@@ -55,8 +55,8 @@ export function LoginPage() {
   return (
     <main className="auth-page">
       <header className="overlay-header">
-        <Link className="overlay-header-brand" to="/">
-          <img alt="iTE" className="overlay-header-brand-image" src={iteImage} />
+        <Link className="overlay-header-brand" data-magnetic to="/">
+          <GlitchImageLogo className="overlay-header-brand-image" />
         </Link>
       </header>
       <section className="auth-stage">
@@ -95,16 +95,23 @@ export function LoginPage() {
             </label>
             {error ? <p className="error">{error}</p> : null}
             <div className="auth-actions">
-              <button className="button" disabled={pending} type="submit">
-                {pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+              <button className="button" data-magnetic data-ripple disabled={pending} type="submit">
+                <span className="button-text" data-scramble>
+                  {pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+                </span>
+                <span className="button-shine" />
               </button>
               <button
                 className="button secondary"
+                data-magnetic
                 disabled={pending}
                 onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
                 type="button"
               >
-                {mode === "sign-in" ? "Create account" : "Back"}
+                <span className="button-text" data-scramble>
+                  {mode === "sign-in" ? "Create account" : "Back"}
+                </span>
+                <span className="button-border" />
               </button>
             </div>
           </form>

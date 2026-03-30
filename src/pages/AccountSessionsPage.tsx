@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 
@@ -62,14 +63,17 @@ export function AccountSessionsPage() {
       <section className="sessions-stage">
         <header className="sessions-header">
           <div>
-            <Link className="auth-brand" to="/">
-              iTE
+            <Link className="auth-brand" data-magnetic to="/">
+              <GlitchImageLogo className="overlay-header-brand-image" />
             </Link>
             <p className="sessions-kicker">Account</p>
           </div>
           <div className="row">
-            <button className="button secondary" onClick={() => void handleBrowserLogout()} type="button">
-              Sign out
+            <button className="button secondary" data-magnetic onClick={() => void handleBrowserLogout()} type="button">
+              <span className="button-text" data-scramble>
+                Sign out
+              </span>
+              <span className="button-border" />
             </button>
           </div>
         </header>
@@ -94,8 +98,11 @@ export function AccountSessionsPage() {
                     {session.revokedAt ? "Ended" : "Active"}
                   </span>
                   {!session.revokedAt ? (
-                    <button className="button secondary" onClick={() => void handleRevoke(session.id)} type="button">
-                      End access
+                    <button className="button secondary" data-magnetic onClick={() => void handleRevoke(session.id)} type="button">
+                      <span className="button-text" data-scramble>
+                        End access
+                      </span>
+                      <span className="button-border" />
                     </button>
                   ) : null}
                 </div>
