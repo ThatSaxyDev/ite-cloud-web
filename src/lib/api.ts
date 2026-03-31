@@ -67,7 +67,6 @@ export const api = {
         planKey: string;
         bundledInference: boolean;
         proAccess: boolean;
-        includedCreditsMonthly: number;
         updatedAt: string | null;
       };
     }>("/billing/me");
@@ -89,7 +88,6 @@ export const api = {
         planKey: string;
         bundledInference: boolean;
         proAccess: boolean;
-        includedCreditsMonthly: number;
         updatedAt: string | null;
       };
     }>("/billing/sync", {
@@ -104,17 +102,15 @@ export const api = {
         planKey: string;
         bundledInference: boolean;
         proAccess: boolean;
-        includedCreditsMonthly: number;
         updatedAt: string | null;
       };
       usage: {
-        fiveHour: { usedCredits: number; eventCount: number };
-        sevenDay: { usedCredits: number; eventCount: number };
-        monthly: { usedCredits: number; eventCount: number };
+        fiveHour: { usedUsdCents: number; eventCount: number };
+        sevenDay: { usedUsdCents: number; eventCount: number };
       };
       quotas: {
-        fiveHour: { usedCredits: number; capCredits: number; remainingCredits: number; nextResetAt: string | null };
-        sevenDay: { usedCredits: number; capCredits: number; remainingCredits: number; nextResetAt: string | null };
+        fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+        sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
       };
     }>("/usage/summary");
   },
@@ -133,7 +129,6 @@ export const api = {
         planKey: string;
         bundledInference: boolean;
         proAccess: boolean;
-        includedCreditsMonthly: number;
         updatedAt: string | null;
       };
     }>("/auth/me");

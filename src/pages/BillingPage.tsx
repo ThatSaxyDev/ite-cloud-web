@@ -23,13 +23,12 @@ type BillingState = {
 
 type UsageState = {
   usage: {
-    fiveHour: { usedCredits: number; eventCount: number };
-    sevenDay: { usedCredits: number; eventCount: number };
-    monthly: { usedCredits: number; eventCount: number };
+    fiveHour: { usedUsdCents: number; eventCount: number };
+    sevenDay: { usedUsdCents: number; eventCount: number };
   };
   quotas: {
-    fiveHour: { usedCredits: number; capCredits: number; remainingCredits: number; nextResetAt: string | null };
-    sevenDay: { usedCredits: number; capCredits: number; remainingCredits: number; nextResetAt: string | null };
+    fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+    sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
   };
 };
 
@@ -64,6 +63,10 @@ function formatPercentRemaining(used: number, cap: number) {
     return "0% remaining";
   }
   return `${Math.max(0, Math.round(((cap - used) / cap) * 100))}% remaining`;
+}
+
+function formatUsdBudget(capUsdCents: number) {
+  return `$${(capUsdCents / 100).toFixed(2)} limit`;
 }
 
 function progressWidth(used: number, cap: number) {
@@ -211,7 +214,7 @@ export function BillingPage() {
             <strong>{paid ? "Pro is active" : "Upgrade when you are ready"}</strong>
             <p className="muted">
               {paid
-                ? "Bundled models are available in iTE. Usage resets continuously across the 5-hour and 7-day windows."
+                ? "Bundled models are available in iTE. Usage is measured by bundled model cost within rolling usage windows."
                 : "Free includes local models and your own keys. Pro unlocks bundled access and higher limits."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
@@ -246,6 +249,7 @@ export function BillingPage() {
 
         <article className="detail-card">
           <strong>Usage</strong>
+          <p className="muted">Heavier models use more of your limit. Limits are based on bundled usage value, not request count.</p>
           <div className="usage-limit-list">
             <div className="usage-limit-row">
               <div className="usage-limit-copy">
@@ -255,12 +259,13 @@ export function BillingPage() {
                 </span>
               </div>
               <div className="usage-limit-stats">
-                <strong>{formatPercentRemaining(usage?.quotas.fiveHour.usedCredits ?? 0, usage?.quotas.fiveHour.capCredits ?? 0)}</strong>
+                <strong>{formatPercentRemaining(usage?.quotas.fiveHour.usedUsdCents ?? 0, usage?.quotas.fiveHour.capUsdCents ?? 0)}</strong>
+                <span>{formatUsdBudget(usage?.quotas.fiveHour.capUsdCents ?? 0)}</span>
               </div>
               <div className="usage-progress" aria-hidden="true">
                 <span
                   className="usage-progress-fill"
-                  style={{ width: `${progressWidth(usage?.quotas.fiveHour.usedCredits ?? 0, usage?.quotas.fiveHour.capCredits ?? 0)}%` }}
+                  style={{ width: `${progressWidth(usage?.quotas.fiveHour.usedUsdCents ?? 0, usage?.quotas.fiveHour.capUsdCents ?? 0)}%` }}
                 />
               </div>
             </div>
@@ -273,12 +278,13 @@ export function BillingPage() {
                 </span>
               </div>
               <div className="usage-limit-stats">
-                <strong>{formatPercentRemaining(usage?.quotas.sevenDay.usedCredits ?? 0, usage?.quotas.sevenDay.capCredits ?? 0)}</strong>
+                <strong>{formatPercentRemaining(usage?.quotas.sevenDay.usedUsdCents ?? 0, usage?.quotas.sevenDay.capUsdCents ?? 0)}</strong>
+                <span>{formatUsdBudget(usage?.quotas.sevenDay.capUsdCents ?? 0)}</span>
               </div>
               <div className="usage-progress" aria-hidden="true">
                 <span
                   className="usage-progress-fill"
-                  style={{ width: `${progressWidth(usage?.quotas.sevenDay.usedCredits ?? 0, usage?.quotas.sevenDay.capCredits ?? 0)}%` }}
+                  style={{ width: `${progressWidth(usage?.quotas.sevenDay.usedUsdCents ?? 0, usage?.quotas.sevenDay.capUsdCents ?? 0)}%` }}
                 />
               </div>
             </div>
