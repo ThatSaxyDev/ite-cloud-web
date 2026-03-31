@@ -65,10 +65,6 @@ function formatPercentRemaining(used: number, cap: number) {
   return `${Math.max(0, Math.round(((cap - used) / cap) * 100))}% remaining`;
 }
 
-function formatUsdBudget(capUsdCents: number) {
-  return `$${(capUsdCents / 100).toFixed(2)} limit`;
-}
-
 function progressWidth(used: number, cap: number) {
   if (cap <= 0) {
     return 0;
@@ -100,9 +96,14 @@ export function BillingPage() {
   const [usage, setUsage] = useState<UsageState | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
       try {
         const [billingPayload, usagePayload] = await Promise.all([api.billingMe(), api.billingUsage()]);
+        if (cancelled) {
+          return;
+        }
         setBilling({
           subscription: billingPayload.subscription,
           entitlements: billingPayload.entitlements
@@ -111,7 +112,11 @@ export function BillingPage() {
           usage: usagePayload.usage,
           quotas: usagePayload.quotas
         });
+        setError(null);
       } catch (caught) {
+        if (cancelled) {
+          return;
+        }
         setError(
           typeof caught === "object" && caught && "error" in caught
             ? String((caught as { error?: { message?: string } }).error?.message || "Could not load billing.")
@@ -120,7 +125,26 @@ export function BillingPage() {
       }
     }
 
+    function handleWindowFocus() {
+      void load();
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void load();
+      }
+    }
+
     void load();
+
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   async function handleUpgrade() {
@@ -249,7 +273,6 @@ export function BillingPage() {
 
         <article className="detail-card">
           <strong>Usage</strong>
-          <p className="muted">Heavier models use more of your limit. Limits are based on bundled usage value, not request count.</p>
           <div className="usage-limit-list">
             <div className="usage-limit-row">
               <div className="usage-limit-copy">
@@ -260,7 +283,6 @@ export function BillingPage() {
               </div>
               <div className="usage-limit-stats">
                 <strong>{formatPercentRemaining(usage?.quotas.fiveHour.usedUsdCents ?? 0, usage?.quotas.fiveHour.capUsdCents ?? 0)}</strong>
-                <span>{formatUsdBudget(usage?.quotas.fiveHour.capUsdCents ?? 0)}</span>
               </div>
               <div className="usage-progress" aria-hidden="true">
                 <span
@@ -279,7 +301,6 @@ export function BillingPage() {
               </div>
               <div className="usage-limit-stats">
                 <strong>{formatPercentRemaining(usage?.quotas.sevenDay.usedUsdCents ?? 0, usage?.quotas.sevenDay.capUsdCents ?? 0)}</strong>
-                <span>{formatUsdBudget(usage?.quotas.sevenDay.capUsdCents ?? 0)}</span>
               </div>
               <div className="usage-progress" aria-hidden="true">
                 <span
