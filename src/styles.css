@@ -1081,13 +1081,18 @@ code {
 }
 
 .account-sidebar {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
+    display: flex;
+    flex-direction: column;
     width: 232px;
     gap: 18px;
     padding: 18px 14px 16px;
     border-right: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.012);
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    min-height: 100vh;
     transition:
         width 220ms ease,
         padding 220ms ease,
@@ -1108,7 +1113,6 @@ code {
 }
 
 .account-sidebar-bottom {
-    align-self: end;
     margin-top: auto;
 }
 
@@ -1187,6 +1191,7 @@ code {
     gap: 6px;
     align-content: start;
     min-width: 0;
+    flex: 0 0 auto;
 }
 
 .account-nav-link {
@@ -1261,8 +1266,7 @@ code {
 }
 
 .account-sidebar.is-collapsed .account-sidebar-bottom {
-    display: grid;
-    justify-items: center;
+    display: none;
 }
 
 .account-sidebar.is-collapsed .account-user-block {
@@ -1891,6 +1895,11 @@ code {
         width: 100%;
         border-right: 0;
         border-bottom: 1px solid var(--line);
+        position: relative;
+        top: auto;
+        align-self: stretch;
+        height: auto;
+        min-height: auto;
     }
 
     .account-sidebar.is-collapsed {
