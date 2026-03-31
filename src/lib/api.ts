@@ -97,6 +97,34 @@ export const api = {
       body: JSON.stringify({})
     });
   },
+  billingUsage() {
+    return apiRequest<{
+      ok: true;
+      entitlements: {
+        planKey: string;
+        bundledInference: boolean;
+        proAccess: boolean;
+        includedCreditsMonthly: number;
+        updatedAt: string | null;
+      };
+      usage: {
+        fiveHour: { usedCredits: number; eventCount: number };
+        sevenDay: { usedCredits: number; eventCount: number };
+        monthly: { usedCredits: number; eventCount: number };
+      };
+      quotas: {
+        fiveHour: { usedCredits: number; capCredits: number; remainingCredits: number };
+        sevenDay: { usedCredits: number; capCredits: number; remainingCredits: number };
+        monthly: { usedCredits: number; capCredits: number; remainingCredits: number };
+      };
+    }>("/usage/summary");
+  },
+  createBillingPortal() {
+    return apiRequest<{ ok: true; customerPortalUrl: string }>("/billing/portal", {
+      method: "POST",
+      body: JSON.stringify({})
+    });
+  },
   me() {
     return apiRequest<{
       ok: true;
