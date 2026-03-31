@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 
 import { AmbientTriangles } from "@/components/AmbientTriangles";
+import { AccountLayout } from "@/components/AccountLayout";
 import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { StartupPreloader } from "@/components/StartupPreloader";
 import { authClient } from "@/lib/auth-client";
 import { hasKnownUser, markBrowserSeen, markKnownUser } from "@/lib/browser-state";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
+import { BillingPage } from "@/pages/BillingPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { SettingsPage } from "@/pages/SettingsPage";
 
 function HomePage() {
   const [ctaLabel, setCtaLabel] = useState("Get started");
@@ -29,7 +32,7 @@ function HomePage() {
       if (session.data?.session) {
         markKnownUser();
         setCtaLabel("Continue");
-        setCtaHref("/account/sessions");
+        setCtaHref("/account/billing");
         return;
       }
 
@@ -58,7 +61,7 @@ function HomePage() {
             <Link className="interactive-link" data-magnetic data-scramble to="/login">
               Sign in
             </Link>
-            <Link className="interactive-link" data-magnetic data-scramble to="/account/sessions">
+            <Link className="interactive-link" data-magnetic data-scramble to="/account/billing">
               Account
             </Link>
           </nav>
@@ -109,7 +112,12 @@ export function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/cli" element={<CliAuthPage />} />
-        <Route path="/account/sessions" element={<AccountSessionsPage />} />
+        <Route path="/account" element={<AccountLayout />}>
+          <Route index element={<Navigate to="/account/billing" replace />} />
+          <Route path="billing" element={<BillingPage />} />
+          <Route path="sessions" element={<AccountSessionsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

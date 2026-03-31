@@ -44,7 +44,71 @@ export const api = {
       body: JSON.stringify({ sessionId })
     });
   },
+  createCheckout(planKey: "ite_pro_monthly" = "ite_pro_monthly") {
+    return apiRequest<{ ok: true; checkoutId: string; checkoutUrl: string }>("/billing/checkout", {
+      method: "POST",
+      body: JSON.stringify({ planKey })
+    });
+  },
+  billingMe() {
+    return apiRequest<{
+      ok: true;
+      subscription: {
+        id: string;
+        planKey: string;
+        status: string;
+        currentPeriodStart: string | null;
+        currentPeriodEnd: string | null;
+        cancelAtPeriodEnd: boolean;
+        canceledAt: string | null;
+        endedAt: string | null;
+      } | null;
+      entitlements: {
+        planKey: string;
+        bundledInference: boolean;
+        proAccess: boolean;
+        includedCreditsMonthly: number;
+        updatedAt: string | null;
+      };
+    }>("/billing/me");
+  },
+  syncBilling() {
+    return apiRequest<{
+      ok: true;
+      subscription: {
+        id: string;
+        planKey: string;
+        status: string;
+        currentPeriodStart: string | null;
+        currentPeriodEnd: string | null;
+        cancelAtPeriodEnd: boolean;
+        canceledAt: string | null;
+        endedAt: string | null;
+      } | null;
+      entitlements: {
+        planKey: string;
+        bundledInference: boolean;
+        proAccess: boolean;
+        includedCreditsMonthly: number;
+        updatedAt: string | null;
+      };
+    }>("/billing/sync", {
+      method: "POST",
+      body: JSON.stringify({})
+    });
+  },
   me() {
-    return apiRequest<{ ok: true; actor: string; user: { id: string; email?: string; name?: string } }>("/auth/me");
+    return apiRequest<{
+      ok: true;
+      actor: string;
+      user: { id: string; email?: string; name?: string };
+      entitlements?: {
+        planKey: string;
+        bundledInference: boolean;
+        proAccess: boolean;
+        includedCreditsMonthly: number;
+        updatedAt: string | null;
+      };
+    }>("/auth/me");
   }
 };

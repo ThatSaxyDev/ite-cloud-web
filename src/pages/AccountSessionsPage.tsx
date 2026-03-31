@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-
-import { GlitchImageLogo } from "@/components/GlitchImageLogo";
+import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { markKnownUser } from "@/lib/browser-state";
@@ -35,8 +33,8 @@ export function AccountSessionsPage() {
       }
       markKnownUser();
       try {
-        const payload = await api.listSessions();
-        setSessions(payload.sessions);
+        const sessionPayload = await api.listSessions();
+        setSessions(sessionPayload.sessions);
       } catch (caught) {
         setError(
           typeof caught === "object" && caught && "error" in caught
@@ -61,58 +59,52 @@ export function AccountSessionsPage() {
   }
 
   return (
-    <main className="sessions-page">
-      <section className="sessions-stage">
-        <header className="sessions-header">
-          <div>
-            <Link className="auth-brand" data-magnetic to="/">
-              <GlitchImageLogo className="overlay-header-brand-image" />
-            </Link>
-            <p className="sessions-kicker">Account</p>
-          </div>
-          <div className="row">
-            <button className="button secondary" data-magnetic onClick={() => void handleBrowserLogout()} type="button">
-              <span className="button-text" data-scramble>
-                Sign out
-              </span>
-              <span className="button-border" />
-            </button>
-          </div>
-        </header>
+    <section className="account-panel">
+      <header className="account-panel-header">
+        <div>
+          <p className="sessions-kicker">Sessions</p>
+          <h2>Device access</h2>
+        </div>
+        <button className="button secondary" data-magnetic onClick={() => void handleBrowserLogout()} type="button">
+          <span className="button-text" data-scramble>
+            Sign out
+          </span>
+          <span className="button-border" />
+        </button>
+      </header>
 
-        {error ? <p className="error">{error}</p> : null}
+      {error ? <p className="error">{error}</p> : null}
 
-        <section className="session-table" aria-label="Recent activity">
-          {sessions.length < 1 ? (
-            <p className="muted">No activity yet.</p>
-          ) : (
-            sessions.map((session) => (
-              <article className="session-row" key={session.id}>
-                <div className="session-main">
-                  <strong>{session.label}</strong>
-                  <div className="session-meta">
-                    <span>{formatTimestamp(session.createdAt)}</span>
-                    <span>{formatTimestamp(session.lastSeenAt)}</span>
-                  </div>
+      <section className="session-table" aria-label="Recent activity">
+        {sessions.length < 1 ? (
+          <p className="muted">No activity yet.</p>
+        ) : (
+          sessions.map((session) => (
+            <article className="session-row" key={session.id}>
+              <div className="session-main">
+                <strong>{session.label}</strong>
+                <div className="session-meta">
+                  <span>{formatTimestamp(session.createdAt)}</span>
+                  <span>{formatTimestamp(session.lastSeenAt)}</span>
                 </div>
-                <div className="session-side">
-                  <span className={`session-state ${session.revokedAt ? "is-revoked" : ""}`}>
-                    {session.revokedAt ? "Ended" : "Active"}
-                  </span>
-                  {!session.revokedAt ? (
-                    <button className="button secondary" data-magnetic onClick={() => void handleRevoke(session.id)} type="button">
-                      <span className="button-text" data-scramble>
-                        End access
-                      </span>
-                      <span className="button-border" />
-                    </button>
-                  ) : null}
-                </div>
-              </article>
-            ))
-          )}
-        </section>
+              </div>
+              <div className="session-side">
+                <span className={`session-state ${session.revokedAt ? "is-revoked" : ""}`}>
+                  {session.revokedAt ? "Ended" : "Active"}
+                </span>
+                {!session.revokedAt ? (
+                  <button className="button secondary" data-magnetic onClick={() => void handleRevoke(session.id)} type="button">
+                    <span className="button-text" data-scramble>
+                      End access
+                    </span>
+                    <span className="button-border" />
+                  </button>
+                ) : null}
+              </div>
+            </article>
+          ))
+        )}
       </section>
-    </main>
+    </section>
   );
 }
