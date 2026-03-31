@@ -1390,6 +1390,37 @@ code {
     letter-spacing: -0.02em;
 }
 
+.activity-list {
+    display: grid;
+    gap: 0;
+}
+
+.activity-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: start;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+}
+
+.activity-row:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.activity-copy {
+    display: grid;
+    gap: 6px;
+}
+
+.activity-time {
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
 .meta-list {
     display: grid;
     gap: 14px;

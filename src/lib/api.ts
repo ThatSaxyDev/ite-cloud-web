@@ -120,6 +120,20 @@ export const api = {
       body: JSON.stringify({})
     });
   },
+  activity() {
+    return apiRequest<{
+      ok: true;
+      actor: string;
+      events: Array<{
+        id: string;
+        actorType: string;
+        eventType: string;
+        source: string;
+        metadata: Record<string, unknown>;
+        createdAt: string;
+      }>;
+    }>("/activity");
+  },
   me() {
     return apiRequest<{
       ok: true;

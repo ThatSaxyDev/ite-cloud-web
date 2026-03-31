@@ -9,6 +9,7 @@ import { StartupPreloader } from "@/components/StartupPreloader";
 import { authClient } from "@/lib/auth-client";
 import { hasKnownUser, markBrowserSeen, markKnownUser } from "@/lib/browser-state";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
+import { ActivityPage } from "@/pages/ActivityPage";
 import { BillingPage } from "@/pages/BillingPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -116,6 +117,7 @@ export function App() {
           <Route index element={<Navigate to="/account/billing" replace />} />
           <Route path="billing" element={<BillingPage />} />
           <Route path="sessions" element={<AccountSessionsPage />} />
+          <Route path="activity" element={<ActivityPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

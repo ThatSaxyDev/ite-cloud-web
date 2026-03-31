@@ -12,7 +12,7 @@ type BrowserUser = {
 };
 
 type NavIconProps = {
-  kind: "billing" | "sessions" | "settings" | "collapse";
+  kind: "billing" | "sessions" | "activity" | "settings" | "collapse";
 };
 
 function NavIcon({ kind }: NavIconProps) {
@@ -29,6 +29,17 @@ function NavIcon({ kind }: NavIconProps) {
         <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
           <rect x="5" y="5" width="10" height="10" rx="1.5" />
           <path d="M9 19h10M19 9v10" />
+        </svg>
+      );
+    case "activity":
+      return (
+        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
+          <path d="M5 6.5h14" />
+          <path d="M5 12h14" />
+          <path d="M5 17.5h14" />
+          <circle cx="8" cy="6.5" r="1" />
+          <circle cx="12" cy="12" r="1" />
+          <circle cx="16" cy="17.5" r="1" />
         </svg>
       );
     case "settings":
@@ -116,6 +127,10 @@ export function AccountLayout() {
           <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/sessions">
             <span className="account-nav-icon"><NavIcon kind="sessions" /></span>
             <span className="account-nav-label">Sessions</span>
+          </NavLink>
+          <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/activity">
+            <span className="account-nav-icon"><NavIcon kind="activity" /></span>
+            <span className="account-nav-label">Activity</span>
           </NavLink>
           <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/settings">
             <span className="account-nav-icon"><NavIcon kind="settings" /></span>
