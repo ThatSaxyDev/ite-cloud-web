@@ -1092,10 +1092,12 @@ code {
         width 220ms ease,
         padding 220ms ease,
         background 220ms ease;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .account-sidebar.is-collapsed {
-    width: 78px;
+    width: 84px;
     padding-inline: 12px;
 }
 
@@ -1103,6 +1105,11 @@ code {
 .account-sidebar-bottom {
     display: grid;
     gap: 12px;
+}
+
+.account-sidebar-bottom {
+    align-self: end;
+    margin-top: auto;
 }
 
 .account-panel-header h2 {
@@ -1117,11 +1124,26 @@ code {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    min-width: 0;
+}
+
+.account-sidebar.is-collapsed .account-sidebar-head {
+    display: grid;
+    justify-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
 .account-brand {
     display: inline-flex;
     align-items: center;
+    min-width: 0;
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.account-sidebar.is-collapsed .account-brand {
+    justify-content: center;
 }
 
 .account-rail-toggle {
@@ -1142,6 +1164,7 @@ code {
     justify-content: center;
     width: 44px;
     padding: 0;
+    flex: 0 0 44px;
 }
 
 .account-rail-toggle:hover {
@@ -1163,12 +1186,15 @@ code {
     display: grid;
     gap: 6px;
     align-content: start;
+    min-width: 0;
 }
 
 .account-nav-link {
     display: flex;
     align-items: center;
     gap: 12px;
+    width: 100%;
+    min-width: 0;
     padding: 10px 12px;
     border: 1px solid transparent;
     color: var(--text-soft);
@@ -1191,16 +1217,16 @@ code {
 
 .account-nav-icon {
     display: inline-flex;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     align-items: center;
     justify-content: center;
-    flex: 0 0 18px;
+    flex: 0 0 20px;
 }
 
 .account-nav-icon-svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.55;
@@ -1235,6 +1261,7 @@ code {
 }
 
 .account-sidebar.is-collapsed .account-sidebar-bottom {
+    display: grid;
     justify-items: center;
 }
 
@@ -1245,7 +1272,9 @@ code {
 .account-user-block {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .account-user-avatar {
@@ -1262,28 +1291,45 @@ code {
     font-size: 11px;
     letter-spacing: 0.02em;
     flex: 0 0 28px;
+    overflow: hidden;
+}
+
+.account-user-avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .account-user-meta {
     display: grid;
-    gap: 4px;
+    gap: 2px;
     min-width: 0;
     transition:
         opacity 180ms ease,
         transform 180ms ease,
         max-width 180ms ease;
-    max-width: 160px;
+    max-width: 140px;
     overflow: hidden;
 }
 
 .account-user-meta strong {
-    font-size: 0.98rem;
+    font-size: 0.82rem;
     font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .account-user-meta span {
     color: var(--text-dim);
-    font-size: 0.92rem;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
 }
 
 .account-content {

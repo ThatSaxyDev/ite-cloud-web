@@ -8,6 +8,7 @@ import { markKnownUser } from "@/lib/browser-state";
 type BrowserUser = {
   email?: string;
   name?: string;
+  image?: string | null;
 };
 
 type NavIconProps = {
@@ -46,18 +47,11 @@ function NavIcon({ kind }: NavIconProps) {
   }
 }
 
-const SIDEBAR_STORAGE_KEY = "ite-account-sidebar-collapsed";
-
 export function AccountLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<BrowserUser | null>(null);
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-    return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "1";
-  });
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +68,8 @@ export function AccountLayout() {
       markKnownUser();
       setUser({
         email: session.data.user?.email,
-        name: session.data.user?.name
+        name: session.data.user?.name,
+        image: session.data.user?.image
       });
     }
 
@@ -86,11 +81,7 @@ export function AccountLayout() {
   }, [location.pathname, location.search, navigate]);
 
   function toggleCollapsed() {
-    setCollapsed((current) => {
-      const next = !current;
-      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, next ? "1" : "0");
-      return next;
-    });
+    setCollapsed((current) => !current);
   }
 
   const initial = (user?.name || user?.email || "I").slice(0, 1).toUpperCase();
@@ -134,7 +125,9 @@ export function AccountLayout() {
 
         <div className="account-sidebar-bottom">
           <div className="account-user-block">
-            <span className="account-user-avatar">{initial}</span>
+            <span className="account-user-avatar">
+              {user?.image ? <img alt={user.name || user.email || "iTE user"} className="account-user-avatar-image" src={user.image} /> : initial}
+            </span>
             <div className="account-user-meta">
               <strong>{user?.name || "iTE User"}</strong>
               <span>{user?.email || "Signed in"}</span>
