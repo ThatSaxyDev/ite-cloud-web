@@ -17,7 +17,6 @@ type BillingState = {
     planKey: string;
     bundledInference: boolean;
     proAccess: boolean;
-    includedCreditsMonthly: number;
     updatedAt: string | null;
   };
 };
@@ -29,9 +28,8 @@ type UsageState = {
     monthly: { usedCredits: number; eventCount: number };
   };
   quotas: {
-    fiveHour: { usedCredits: number; capCredits: number; remainingCredits: number };
-    sevenDay: { usedCredits: number; capCredits: number; remainingCredits: number };
-    monthly: { usedCredits: number; capCredits: number; remainingCredits: number };
+    fiveHour: { usedCredits: number; capCredits: number; remainingCredits: number; nextResetAt: string | null };
+    sevenDay: { usedCredits: number; capCredits: number; remainingCredits: number; nextResetAt: string | null };
   };
 };
 
@@ -40,6 +38,54 @@ function formatTimestamp(value: string) {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
+}
+
+function normalizeMeridiem(value: string) {
+  return value.replace(/\s?(AM|PM)$/i, (match) => match.trim().toLowerCase());
+}
+
+function formatResetLabel(value: string | null, variant: "time" | "dateTime") {
+  if (!value) {
+    return "No recent usage";
+  }
+
+  const formatted = new Intl.DateTimeFormat(
+    undefined,
+    variant === "time"
+      ? { hour: "numeric", minute: "2-digit" }
+      : { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }
+  ).format(new Date(value));
+
+  return normalizeMeridiem(formatted);
+}
+
+function formatPercentRemaining(used: number, cap: number) {
+  if (cap <= 0) {
+    return "0% remaining";
+  }
+  return `${Math.max(0, Math.round(((cap - used) / cap) * 100))}% remaining`;
+}
+
+function progressWidth(used: number, cap: number) {
+  if (cap <= 0) {
+    return 0;
+  }
+  return Math.min(100, Math.max(0, (used / cap) * 100));
+}
+
+function formatPlanName(planKey: string | null | undefined) {
+  if (!planKey || planKey === "free") {
+    return "Free";
+  }
+
+  if (planKey === "ite_pro_monthly") {
+    return "iTE Pro Monthly";
+  }
+
+  return planKey
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 export function BillingPage() {
@@ -150,7 +196,7 @@ export function BillingPage() {
           ) : null}
           <button className="button secondary" data-magnetic disabled={syncPending} onClick={() => void handleSync()} type="button">
             <span className="button-text" data-scramble>
-              {syncPending ? "Refreshing..." : "Refresh billing"}
+              {syncPending ? "Refreshing..." : "Refresh usage"}
             </span>
             <span className="button-border" />
           </button>
@@ -162,10 +208,10 @@ export function BillingPage() {
       <div className="detail-stack">
         <article className="detail-card detail-card-featured">
           <div className="detail-card-copy">
-            <strong>{paid ? "Bundled access is enabled" : "Upgrade when you are ready"}</strong>
+            <strong>{paid ? "Pro is active" : "Upgrade when you are ready"}</strong>
             <p className="muted">
               {paid
-                ? `${billing?.entitlements.includedCreditsMonthly ?? 0} monthly credits included for bundled access.`
+                ? "Bundled models are available in iTE. Usage resets continuously across the 5-hour and 7-day windows."
                 : "Free includes local models and your own keys. Pro unlocks bundled access and higher limits."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
@@ -189,45 +235,54 @@ export function BillingPage() {
           <dl className="meta-list">
             <div>
               <dt>Status</dt>
-              <dd>{billing?.subscription?.status ?? "free"}</dd>
+              <dd>{billing?.subscription?.status ?? "Free"}</dd>
             </div>
             <div>
-              <dt>Plan key</dt>
-              <dd>{billing?.entitlements.planKey ?? "free"}</dd>
-            </div>
-            <div>
-              <dt>Monthly credits</dt>
-              <dd>{billing?.entitlements.includedCreditsMonthly ?? 0}</dd>
+              <dt>Plan</dt>
+              <dd>{formatPlanName(billing?.entitlements.planKey)}</dd>
             </div>
           </dl>
         </article>
 
         <article className="detail-card">
           <strong>Usage</strong>
-          <dl className="meta-list">
-            <div>
-              <dt>5 hour window</dt>
-              <dd>
-                {usage?.quotas.fiveHour.usedCredits ?? 0} / {usage?.quotas.fiveHour.capCredits ?? 0}
-              </dd>
+          <div className="usage-limit-list">
+            <div className="usage-limit-row">
+              <div className="usage-limit-copy">
+                <strong>5h</strong>
+                <span>
+                  Resets {formatResetLabel(usage?.quotas.fiveHour.nextResetAt ?? null, "time")}
+                </span>
+              </div>
+              <div className="usage-limit-stats">
+                <strong>{formatPercentRemaining(usage?.quotas.fiveHour.usedCredits ?? 0, usage?.quotas.fiveHour.capCredits ?? 0)}</strong>
+              </div>
+              <div className="usage-progress" aria-hidden="true">
+                <span
+                  className="usage-progress-fill"
+                  style={{ width: `${progressWidth(usage?.quotas.fiveHour.usedCredits ?? 0, usage?.quotas.fiveHour.capCredits ?? 0)}%` }}
+                />
+              </div>
             </div>
-            <div>
-              <dt>7 day window</dt>
-              <dd>
-                {usage?.quotas.sevenDay.usedCredits ?? 0} / {usage?.quotas.sevenDay.capCredits ?? 0}
-              </dd>
+
+            <div className="usage-limit-row">
+              <div className="usage-limit-copy">
+                <strong>Weekly</strong>
+                <span>
+                  Resets {formatResetLabel(usage?.quotas.sevenDay.nextResetAt ?? null, "dateTime")}
+                </span>
+              </div>
+              <div className="usage-limit-stats">
+                <strong>{formatPercentRemaining(usage?.quotas.sevenDay.usedCredits ?? 0, usage?.quotas.sevenDay.capCredits ?? 0)}</strong>
+              </div>
+              <div className="usage-progress" aria-hidden="true">
+                <span
+                  className="usage-progress-fill"
+                  style={{ width: `${progressWidth(usage?.quotas.sevenDay.usedCredits ?? 0, usage?.quotas.sevenDay.capCredits ?? 0)}%` }}
+                />
+              </div>
             </div>
-            <div>
-              <dt>Monthly included</dt>
-              <dd>
-                {usage?.quotas.monthly.usedCredits ?? 0} / {usage?.quotas.monthly.capCredits ?? 0}
-              </dd>
-            </div>
-            <div>
-              <dt>Bundled requests</dt>
-              <dd>{usage?.usage.monthly.eventCount ?? 0}</dd>
-            </div>
-          </dl>
+          </div>
         </article>
       </div>
     </section>

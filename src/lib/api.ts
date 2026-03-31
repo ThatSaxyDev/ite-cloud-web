@@ -113,9 +113,8 @@ export const api = {
         monthly: { usedCredits: number; eventCount: number };
       };
       quotas: {
-        fiveHour: { usedCredits: number; capCredits: number; remainingCredits: number };
-        sevenDay: { usedCredits: number; capCredits: number; remainingCredits: number };
-        monthly: { usedCredits: number; capCredits: number; remainingCredits: number };
+        fiveHour: { usedCredits: number; capCredits: number; remainingCredits: number; nextResetAt: string | null };
+        sevenDay: { usedCredits: number; capCredits: number; remainingCredits: number; nextResetAt: string | null };
       };
     }>("/usage/summary");
   },
