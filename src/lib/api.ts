@@ -124,6 +124,33 @@ export const api = {
     return apiRequest<{
       ok: true;
       actor: string;
+      analytics: {
+        totals: {
+          todayUsdCents: number;
+          sevenDayUsdCents: number;
+          thirtyDayUsdCents: number;
+          allTimeUsdCents: number;
+          allTimeRequestCount: number;
+          currentPeriodUsdCents: number;
+          currentPeriodRequestCount: number;
+        };
+        daily: Array<{
+          date: string;
+          label: string;
+          usdCents: number;
+          requestCount: number;
+        }>;
+        byModel: Array<{
+          modelKey: string;
+          usdCents: number;
+          requestCount: number;
+          sharePercent: number;
+        }>;
+        currentPeriod: {
+          start: string | null;
+          end: string | null;
+        };
+      };
       events: Array<{
         id: string;
         actorType: string;
