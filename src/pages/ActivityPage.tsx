@@ -73,6 +73,8 @@ function modelLabel(modelKey: string) {
       return "MiniMax M2.7";
     case "glm-5":
       return "GLM-5";
+    case "glm-5.1":
+      return "GLM-5.1";
     default:
       return modelKey;
   }

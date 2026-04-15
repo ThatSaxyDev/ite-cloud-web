@@ -10,9 +10,11 @@ export function SettingsPage() {
 
       <div className="detail-stack">
         <article className="detail-card">
-          <strong>Coming next</strong>
+          <strong>BYOK lives in the app for now</strong>
           <p className="muted">
-            Account preferences, linked sign-in methods, and profile controls will live here.
+            For the current iTE launch, bring-your-own-key setup happens inside the CLI or desktop app with
+            <code> /setup </code>
+            . This account page is reserved for future profile and linked sign-in controls.
           </p>
         </article>
       </div>
