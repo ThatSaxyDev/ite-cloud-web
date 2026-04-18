@@ -24,7 +24,7 @@ export function CliAuthPage() {
   const navigate = useNavigate();
   const token = params.get("token") || "";
   const [request, setRequest] = useState<CliRequest | null>(null);
-  const [status, setStatus] = useState("Preparing sign-in");
+  const [status, setStatus] = useState("Finishing sign-in");
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<BrowserUser | null>(null);
   const [approving, setApproving] = useState(false);
@@ -32,27 +32,21 @@ export function CliAuthPage() {
 
   function getStatusBody() {
     if (isComplete) {
-      return "Your browser is linked. Return to iTE in the terminal to continue, or stay here to review your account and docs.";
+      return "You are signed in. Return to iTE in the terminal to continue.";
     }
     if (error) {
-      return "We could not finish linking this terminal session. Try again below or open your account to check your browser sign-in.";
+      return "We could not finish linking this terminal session. Try again below.";
     }
-    if (status === "Checking browser session") {
-      return "Checking whether you already have an active browser session.";
+    if (status === "Finishing sign-in") {
+      return "Linking your browser session to the terminal now.";
     }
     if (status === "Continue in browser") {
       return "Continue with GitHub, email sign-in, or account creation in the browser.";
     }
-    if (status === "Checking terminal request") {
-      return "Verifying the terminal request so we can finish sign-in cleanly.";
-    }
     if (status === "Approving terminal access") {
       return "Linking this browser session to your terminal now.";
     }
-    if (status === "Approve terminal access") {
-      return "Your browser session is ready. Finish linking access for this terminal session.";
-    }
-    return "We will open your browser and resume here when sign-in is complete.";
+    return "We will resume here when sign-in is complete.";
   }
 
   async function approveRequest(currentToken: string) {
@@ -82,11 +76,9 @@ export function CliAuthPage() {
         return;
       }
 
-      setStatus("Checking browser session");
       const session = await authClient.getSession();
       if (!session.data?.session) {
-        setStatus("Continue in browser");
-        navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}`)}`);
+        navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}`)}`, { replace: true });
         return;
       }
       setUser({
@@ -96,7 +88,6 @@ export function CliAuthPage() {
       markKnownUser();
 
       try {
-        setStatus("Checking terminal request");
         const response = await api.inspectCliRequest(token);
         setRequest(response);
 
@@ -107,7 +98,7 @@ export function CliAuthPage() {
 
         await approveRequest(token);
       } catch (caught) {
-        setStatus("Approve terminal access");
+        setStatus("Finish sign-in");
         setError(
           typeof caught === "object" && caught && "error" in caught
             ? String((caught as { error?: { message?: string } }).error?.message || "Could not sign you in.")
@@ -167,22 +158,17 @@ export function CliAuthPage() {
               </div>
             ) : null}
             <p className="auth-dismiss-note">Return to the terminal. iTE should resume automatically.</p>
+            <p className="auth-dismiss-note">If you want to keep exploring here, you can check the docs.</p>
             <div className="auth-actions">
-              <Link className="button" data-magnetic data-ripple to="/docs">
+              <Link className="button secondary" data-magnetic to="/docs">
                 <span className="button-text" data-scramble>
                   Check docs
-                </span>
-                <span className="button-shine" />
-              </Link>
-              <Link className="button secondary" data-magnetic to="/account/settings">
-                <span className="button-text" data-scramble>
-                  Open account
                 </span>
                 <span className="button-border" />
               </Link>
             </div>
           </section>
-        ) : (
+        ) : error ? (
           <section className="auth-surface">
             {request ? (
               <div className="approval-meta">
@@ -198,7 +184,7 @@ export function CliAuthPage() {
             ) : null}
             {error ? <p className="error">{error}</p> : null}
             <div className="auth-actions">
-              {request && error ? (
+              {request ? (
                 <button
                   className="button"
                   data-magnetic
@@ -217,21 +203,9 @@ export function CliAuthPage() {
                   <span className="button-shine" />
                 </button>
               ) : null}
-              <Link className="button secondary" data-magnetic to="/account/settings">
-                <span className="button-text" data-scramble>
-                  Open account
-                </span>
-                <span className="button-border" />
-              </Link>
-              <Link className="button secondary" data-magnetic to="/docs">
-                <span className="button-text" data-scramble>
-                  Check docs
-                </span>
-                <span className="button-border" />
-              </Link>
             </div>
           </section>
-        )}
+        ) : null}
       </section>
     </main>
   );
