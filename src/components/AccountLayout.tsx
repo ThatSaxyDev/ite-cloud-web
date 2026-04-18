@@ -12,41 +12,25 @@ type BrowserUser = {
 };
 
 type NavIconProps = {
-  kind: "billing" | "sessions" | "activity" | "settings" | "collapse";
+  kind: "settings" | "docs" | "collapse";
 };
 
 function NavIcon({ kind }: NavIconProps) {
   switch (kind) {
-    case "billing":
-      return (
-        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
-          <path d="M4 7.5h16M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v12A1.5 1.5 0 0 1 18 19.5H6A1.5 1.5 0 0 1 4.5 18V6A1.5 1.5 0 0 1 6 4.5Z" />
-          <path d="M8 13.5h4" />
-        </svg>
-      );
-    case "sessions":
-      return (
-        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
-          <rect x="5" y="5" width="10" height="10" rx="1.5" />
-          <path d="M9 19h10M19 9v10" />
-        </svg>
-      );
-    case "activity":
-      return (
-        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
-          <path d="M5 6.5h14" />
-          <path d="M5 12h14" />
-          <path d="M5 17.5h14" />
-          <circle cx="8" cy="6.5" r="1" />
-          <circle cx="12" cy="12" r="1" />
-          <circle cx="16" cy="17.5" r="1" />
-        </svg>
-      );
     case "settings":
       return (
         <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
           <path d="M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7Z" />
           <path d="M19.4 15.1l.1-.1l1-1.7l-1.5-2.6l-2 .2a6.9 6.9 0 0 0-1.2-.7l-.7-1.9h-3l-.7 1.9c-.4.2-.8.4-1.2.7l-2-.2l-1.5 2.6l1 1.7l.1.1l-1.1 1.9l1.5 2.6l2.2-.2c.3.2.7.4 1 .6l.8 2h3l.8-2c.3-.2.7-.4 1-.6l2.2.2l1.5-2.6l-1.1-1.9Z" />
+        </svg>
+      );
+    case "docs":
+      return (
+        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
+          <path d="M6.5 5.5h9a2 2 0 0 1 2 2v11h-9a2 2 0 0 0-2 2z" />
+          <path d="M6.5 5.5a2 2 0 0 0-2 2v11h9a2 2 0 0 1 2 2" />
+          <path d="M8.5 9.5h6" />
+          <path d="M8.5 12.5h6" />
         </svg>
       );
     case "collapse":
@@ -120,21 +104,13 @@ export function AccountLayout() {
         </div>
 
         <nav className="account-nav" aria-label="Account sections">
-          <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/billing">
-            <span className="account-nav-icon"><NavIcon kind="billing" /></span>
-            <span className="account-nav-label">Billing</span>
-          </NavLink>
-          <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/sessions">
-            <span className="account-nav-icon"><NavIcon kind="sessions" /></span>
-            <span className="account-nav-label">Sessions</span>
-          </NavLink>
-          <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/activity">
-            <span className="account-nav-icon"><NavIcon kind="activity" /></span>
-            <span className="account-nav-label">Activity</span>
-          </NavLink>
           <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/settings">
             <span className="account-nav-icon"><NavIcon kind="settings" /></span>
-            <span className="account-nav-label">Settings</span>
+            <span className="account-nav-label">Start here</span>
+          </NavLink>
+          <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/docs">
+            <span className="account-nav-icon"><NavIcon kind="docs" /></span>
+            <span className="account-nav-label">Docs</span>
           </NavLink>
         </nav>
 
