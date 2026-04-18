@@ -12,7 +12,7 @@ const QUICKSTART_COMMANDS = [
   {
     label: "Run setup",
     command: "/setup",
-    caption: "Choose the model service, key, and model you want to use."
+    caption: "Choose Ollama, OpenRouter, or another compatible provider, then enter the matching credentials."
   }
 ] as const;
 
@@ -24,8 +24,8 @@ const NEXT_STEPS = [
   },
   {
     eyebrow: "Step 2",
-    title: "Connect a model",
-    body: "Point iTE at the model service you want to use for this session."
+    title: "Choose a provider",
+    body: "Set up Ollama on this computer, connect OpenRouter with your own key, or use another OpenAI-compatible API."
   },
   {
     eyebrow: "Step 3",
@@ -133,7 +133,7 @@ export function SettingsPage() {
         <div className="onboarding-hero-copy">
           <span className="onboarding-chip">Start here</span>
           <p className="onboarding-summary">
-            Sign in, run <code>/setup</code>, and connect the model service you want to use.
+            Sign in, run <code>/setup</code>, and choose how iTE should reach your model.
           </p>
         </div>
 
