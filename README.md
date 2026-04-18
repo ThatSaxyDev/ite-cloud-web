@@ -20,6 +20,6 @@ Milestone 1 only covers:
 
 ## GitHub OAuth
 
-The login screen always shows `Continue with GitHub` during development.
+The login screen always shows `Continue with GitHub` during development
 
 To make it work, configure GitHub OAuth in `ite-cloud-api`.
