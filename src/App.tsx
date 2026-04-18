@@ -9,11 +9,12 @@ import { StartupPreloader } from "@/components/StartupPreloader";
 import { authClient } from "@/lib/auth-client";
 import { hasKnownUser, markBrowserSeen, markKnownUser } from "@/lib/browser-state";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
-import { ActivityPage } from "@/pages/ActivityPage";
-import { BillingPage } from "@/pages/BillingPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
+import { DocsPage } from "@/pages/DocsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+
+const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
 
 function HomePage() {
   const [ctaLabel, setCtaLabel] = useState("Get started");
@@ -33,7 +34,7 @@ function HomePage() {
       if (session.data?.session) {
         markKnownUser();
         setCtaLabel("Continue");
-        setCtaHref("/account/billing");
+        setCtaHref("/account/settings");
         return;
       }
 
@@ -62,7 +63,7 @@ function HomePage() {
             <Link className="interactive-link" data-magnetic data-scramble to="/login">
               Sign in
             </Link>
-            <Link className="interactive-link" data-magnetic data-scramble to="/account/billing">
+            <Link className="interactive-link" data-magnetic data-scramble to="/account/settings">
               Account
             </Link>
           </nav>
@@ -83,6 +84,10 @@ function HomePage() {
               <p className="hero-summary">
                 Plan, execute, and stay in control.
               </p>
+              <div className="hero-command-card" aria-label="Install iTE">
+                <span className="hero-command-label">Install</span>
+                <code>pipx install ite-agent</code>
+              </div>
               <div className="hero-actions">
                 <Link className="button" data-magnetic data-ripple to={ctaHref}>
                   <span className="button-text" data-scramble>
@@ -100,24 +105,37 @@ function HomePage() {
 }
 
 export function App() {
-  const [showPreloader, setShowPreloader] = useState(true);
+  const [showPreloader, setShowPreloader] = useState(() => {
+    if (typeof window === "undefined") {
+      return true;
+    }
+    return window.sessionStorage.getItem(PRELOADER_SEEN_KEY) !== "1";
+  });
+
+  function handlePreloaderComplete() {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(PRELOADER_SEEN_KEY, "1");
+    }
+    setShowPreloader(false);
+  }
 
   return (
     <>
-      {showPreloader ? <StartupPreloader onComplete={() => setShowPreloader(false)} /> : null}
+      {showPreloader ? <StartupPreloader onComplete={handlePreloaderComplete} /> : null}
       <GlobalInteractionEffects />
       <div className="app-ambient" aria-hidden="true">
         <AmbientTriangles className="triangle-field-global" />
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/docs" element={<DocsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/cli" element={<CliAuthPage />} />
         <Route path="/account" element={<AccountLayout />}>
-          <Route index element={<Navigate to="/account/billing" replace />} />
-          <Route path="billing" element={<BillingPage />} />
+          <Route index element={<Navigate to="/account/settings" replace />} />
+          <Route path="billing" element={<Navigate to="/account/settings" replace />} />
           <Route path="sessions" element={<AccountSessionsPage />} />
-          <Route path="activity" element={<ActivityPage />} />
+          <Route path="activity" element={<Navigate to="/account/settings" replace />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
