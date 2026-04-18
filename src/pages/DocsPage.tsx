@@ -193,47 +193,75 @@ pip install -e .`}</code></pre>
               <h2>Connect</h2>
               <p>
                 When cloud auth is enabled, iTE opens a hosted sign-in flow in the browser. After
-                that, you choose the model service and credentials you want to use inside the app.
+                that, you choose how iTE should reach a model inside the app.
               </p>
               <ol className="docs-ordered-list">
                 <li>Run `ite`.</li>
                 <li>Finish browser sign-in.</li>
                 <li>Return to the terminal and wait for the session to link.</li>
-                <li>Run `/setup`.</li>
+                <li>Run `/setup` and let iTE verify the provider before it saves anything.</li>
               </ol>
-              <div className="docs-note">
-                <strong>Model service support</strong>
-                <p>
-                  The current setup path expects an OpenAI-compatible endpoint, a valid key, and
-                  the exact model name exposed by that service.
-                </p>
+              <div className="docs-checklist">
+                <div className="docs-checklist-item">
+                  <strong>Ollama on this computer</strong>
+                  <span>Use this when you want local inference. Start Ollama first, then point iTE at `http://localhost:11434/v1`.</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>OpenRouter</strong>
+                  <span>Use this when you want a hosted BYOK path. Base URL is `https://openrouter.ai/api/v1` and you must create your own API key.</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>Other compatible API</strong>
+                  <span>Use this for any OpenAI-compatible provider, proxy, or self-hosted gateway that exposes a `/v1` chat completion API.</span>
+                </div>
               </div>
             </section>
 
             <section className="docs-section" id="first-run">
               <h2>First run</h2>
               <p>
-                The first successful loop should be simple: open iTE, finish sign-in, run setup,
-                and send one real prompt.
+                The first successful loop should be simple: open iTE, finish sign-in, choose a
+                provider path in `/setup`, and send one real prompt.
               </p>
               <div className="docs-code-block">
                 <span className="docs-code-label">Command flow</span>
                 <pre><code>{`ite
 /setup`}</code></pre>
               </div>
-              <div className="docs-checklist">
-                <div className="docs-checklist-item">
-                  <strong>Base URL</strong>
-                  <span>Use the exact API endpoint the model service expects.</span>
-                </div>
-                <div className="docs-checklist-item">
-                  <strong>API key</strong>
-                  <span>Paste a valid key for the selected service.</span>
-                </div>
-                <div className="docs-checklist-item">
-                  <strong>Model name</strong>
-                  <span>Use the exact model identifier exposed by the service.</span>
-                </div>
+              <div className="docs-faq-list">
+                <article className="detail-card docs-faq-card">
+                  <strong>Path 1: Ollama</strong>
+                  <p className="muted">
+                    Install Ollama, start it, and make sure the model you want is available before
+                    you run setup. Typical local flow:
+                  </p>
+                  <div className="docs-code-block">
+                    <span className="docs-code-label">Local Ollama</span>
+                    <pre><code>{`ollama serve
+ollama pull qwen2.5-coder:7b`}</code></pre>
+                  </div>
+                  <p className="muted">
+                    In `/setup`, keep the base URL as `http://localhost:11434/v1`, keep the API key
+                    as `ollama`, and enter the exact local model name you pulled. iTE now checks that
+                    Ollama is running and that the selected model exists before setup is accepted.
+                  </p>
+                </article>
+                <article className="detail-card docs-faq-card">
+                  <strong>Path 2: OpenRouter</strong>
+                  <p className="muted">
+                    Create an OpenRouter API key first. In `/setup`, choose OpenRouter, keep the
+                    base URL as `https://openrouter.ai/api/v1`, paste your key, and enter the exact
+                    model id from OpenRouter. iTE verifies the route with your key before saving.
+                  </p>
+                </article>
+                <article className="detail-card docs-faq-card">
+                  <strong>Path 3: Other compatible API</strong>
+                  <p className="muted">
+                    Paste the exact base URL, API key, and model name required by that provider.
+                    iTE expects an OpenAI-compatible chat completion API and validates the provider
+                    connection before it stores the setup.
+                  </p>
+                </article>
               </div>
             </section>
 
@@ -306,8 +334,25 @@ SQLITE_PATH=/data/ite-cloud-api.sqlite`}</code></pre>
                 <article className="detail-card docs-faq-card">
                   <strong>Requests fail after setup</strong>
                   <p className="muted">
-                    Check the base URL, confirm the key is valid, and verify that the model name is
-                    exactly correct for that service.
+                    Match the setup path to the provider you are actually using. If you chose
+                    Ollama, confirm Ollama is running locally and the model is pulled. If you chose
+                    OpenRouter or another provider, confirm the base URL, key, and model id are
+                    exactly correct.
+                  </p>
+                </article>
+                <article className="detail-card docs-faq-card">
+                  <strong>Ollama setup looks broken</strong>
+                  <p className="muted">
+                    The most common issue is that Ollama is not running yet. Start it first, then
+                    retry `/setup`. If you changed the Ollama port or host, update the base URL to
+                    match that exact local endpoint.
+                  </p>
+                </article>
+                <article className="detail-card docs-faq-card">
+                  <strong>OpenRouter returns model errors</strong>
+                  <p className="muted">
+                    Use the exact model id exposed by OpenRouter for your account. The label you see
+                    in marketing pages is often not the same string the API expects.
                   </p>
                 </article>
                 <article className="detail-card docs-faq-card">
