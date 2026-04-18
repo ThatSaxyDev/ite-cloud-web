@@ -865,6 +865,14 @@ button {
     line-height: 0.94;
 }
 
+.auth-flow-copy {
+    margin: 0;
+    max-width: 42rem;
+    color: var(--text-dim);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
 .auth-surface {
     width: min(100%, 720px);
     max-width: 420px;
@@ -969,6 +977,11 @@ input:-webkit-autofill:active {
     font-size: 0.98rem;
     line-height: 1.7;
     width: min(100%, 720px);
+}
+
+.auth-complete-surface {
+    display: grid;
+    gap: 18px;
 }
 
 .overlay-header {

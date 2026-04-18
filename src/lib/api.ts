@@ -1,20 +1,37 @@
 import { config } from "@/lib/config";
 
 async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${config.apiUrl}${path}`, {
-    credentials: "include",
-    headers: {
-      "content-type": "application/json",
-      ...(init?.headers ?? {})
-    },
-    ...init
-  });
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
-  const payload = await response.json();
-  if (!response.ok) {
-    throw payload;
+  try {
+    const response = await fetch(`${config.apiUrl}${path}`, {
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        ...(init?.headers ?? {})
+      },
+      ...init,
+      signal: init?.signal ?? controller.signal
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw payload;
+    }
+    return payload as T;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw {
+        error: {
+          message: "The request timed out. Please try again."
+        }
+      };
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
   }
-  return payload as T;
 }
 
 export const api = {
