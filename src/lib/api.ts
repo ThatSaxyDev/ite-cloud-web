@@ -88,6 +88,20 @@ export const api = {
       };
     }>("/billing/me");
   },
+  toggleBundledAccess(enabled: boolean) {
+    return apiRequest<{
+      ok: true;
+      entitlements: {
+        planKey: string;
+        bundledInference: boolean;
+        proAccess: boolean;
+        updatedAt: string | null;
+      };
+    }>("/billing/bundled-access", {
+      method: "POST",
+      body: JSON.stringify({ enabled })
+    });
+  },
   syncBilling() {
     return apiRequest<{
       ok: true;
