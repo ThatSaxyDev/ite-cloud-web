@@ -41,6 +41,7 @@ export const api = {
       ok: true;
       token: string;
       clientId: string;
+      deviceLabel?: string;
       scope?: string | null;
       status: string;
       expiresAt: string;

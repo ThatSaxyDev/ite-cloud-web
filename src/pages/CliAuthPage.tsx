@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 
 type CliRequest = {
   clientId: string;
+  deviceLabel?: string;
   token: string;
   status: string;
   expiresAt?: string;
@@ -108,7 +109,7 @@ export function CliAuthPage() {
     }
   }
 
-  const deviceLabel = request?.clientId || "ite-cli";
+  const deviceLabel = request?.deviceLabel || request?.clientId || "ite-cli";
   const accountLabel = user?.email || user?.name || "your account";
 
   return (
