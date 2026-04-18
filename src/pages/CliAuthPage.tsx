@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
-import { authClient } from "@/lib/auth-client";
 import { api } from "@/lib/api";
-import { markKnownUser } from "@/lib/browser-state";
 
 type CliRequest = {
   clientId: string;
@@ -14,19 +12,14 @@ type CliRequest = {
   scope?: string | null;
 };
 
-type BrowserUser = {
-  email?: string;
-  name?: string;
-};
-
 export function CliAuthPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const token = params.get("token") || "";
+  const isResume = params.get("resume") === "1";
   const [request, setRequest] = useState<CliRequest | null>(null);
   const [status, setStatus] = useState("Finishing sign-in");
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<BrowserUser | null>(null);
   const [approving, setApproving] = useState(false);
   const isComplete = status === "Signed in" && !error;
 
@@ -76,16 +69,10 @@ export function CliAuthPage() {
         return;
       }
 
-      const session = await authClient.getSession();
-      if (!session.data?.session) {
-        navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}`)}`, { replace: true });
+      if (!isResume) {
+        navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`, { replace: true });
         return;
       }
-      setUser({
-        email: session.data.user?.email,
-        name: session.data.user?.name
-      });
-      markKnownUser();
 
       try {
         const response = await api.inspectCliRequest(token);
@@ -98,46 +85,33 @@ export function CliAuthPage() {
 
         await approveRequest(token);
       } catch (caught) {
-        setStatus("Finish sign-in");
-        setError(
+        const message =
           typeof caught === "object" && caught && "error" in caught
             ? String((caught as { error?: { message?: string } }).error?.message || "Could not sign you in.")
-            : "Could not sign you in."
+            : "Could not sign you in.";
+
+        if (message.toLowerCase().includes("browser sign-in is required")) {
+          navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`, { replace: true });
+          return;
+        }
+
+        setStatus("Finish sign-in");
+        setError(
+          message
         );
       }
     }
 
     void load();
-  }, [navigate, token]);
-
-  async function handleSignOut() {
-    await authClient.signOut();
-    navigate("/login");
-  }
+  }, [isResume, navigate, token]);
 
   return (
     <main className="auth-page auth-page-wide">
-      {isComplete && user ? (
+      {isComplete ? (
         <header className="overlay-header">
           <Link className="overlay-header-brand" data-magnetic to="/">
             <GlitchImageLogo className="overlay-header-brand-image" />
           </Link>
-          <details className="account-dropdown">
-            <summary className="account-dropdown-trigger">
-              <span className="account-avatar">{(user.name || user.email || "i").slice(0, 1).toUpperCase()}</span>
-            </summary>
-            <div className="account-dropdown-menu">
-              <div className="account-dropdown-meta">
-                <strong>{user.name || "iTE User"}</strong>
-                <span>{user.email || "Signed in"}</span>
-              </div>
-              <button className="account-dropdown-action" data-magnetic data-ripple onClick={() => void handleSignOut()} type="button">
-                <span className="button-text" data-scramble>
-                  Sign out
-                </span>
-              </button>
-            </div>
-          </details>
         </header>
       ) : null}
 
@@ -151,12 +125,6 @@ export function CliAuthPage() {
 
         {isComplete ? (
           <section className="auth-surface auth-complete-surface">
-            {user ? (
-              <div className="approval-meta">
-                <span>Signed in as</span>
-                <code>{user.email || user.name || "iTE User"}</code>
-              </div>
-            ) : null}
             <p className="auth-dismiss-note">Return to the terminal. iTE should resume automatically.</p>
             <p className="auth-dismiss-note">If you want to keep exploring here, you can check the docs.</p>
             <div className="auth-actions">
@@ -174,12 +142,6 @@ export function CliAuthPage() {
               <div className="approval-meta">
                 <span>Terminal</span>
                 <code>{request.clientId}</code>
-              </div>
-            ) : null}
-            {user ? (
-              <div className="approval-meta">
-                <span>Signed in as</span>
-                <code>{user.email || user.name || "iTE User"}</code>
               </div>
             ) : null}
             {error ? <p className="error">{error}</p> : null}
