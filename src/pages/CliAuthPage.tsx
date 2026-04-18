@@ -9,6 +9,9 @@ import { markKnownUser } from "@/lib/browser-state";
 type CliRequest = {
   clientId: string;
   token: string;
+  status: string;
+  expiresAt?: string;
+  scope?: string | null;
 };
 
 type BrowserUser = {
@@ -24,7 +27,53 @@ export function CliAuthPage() {
   const [status, setStatus] = useState("Preparing sign-in");
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<BrowserUser | null>(null);
+  const [approving, setApproving] = useState(false);
   const isComplete = status === "Signed in" && !error;
+
+  function getStatusBody() {
+    if (isComplete) {
+      return "Your browser is linked. Return to iTE in the terminal to continue, or stay here to review your account and docs.";
+    }
+    if (error) {
+      return "We could not finish linking this terminal session. Try again below or open your account to check your browser sign-in.";
+    }
+    if (status === "Checking browser session") {
+      return "Checking whether you already have an active browser session.";
+    }
+    if (status === "Continue in browser") {
+      return "Continue with GitHub, email sign-in, or account creation in the browser.";
+    }
+    if (status === "Checking terminal request") {
+      return "Verifying the terminal request so we can finish sign-in cleanly.";
+    }
+    if (status === "Approving terminal access") {
+      return "Linking this browser session to your terminal now.";
+    }
+    if (status === "Approve terminal access") {
+      return "Your browser session is ready. Finish linking access for this terminal session.";
+    }
+    return "We will open your browser and resume here when sign-in is complete.";
+  }
+
+  async function approveRequest(currentToken: string) {
+    setApproving(true);
+    setError(null);
+    setStatus("Approving terminal access");
+
+    try {
+      await api.completeCli(currentToken);
+      setStatus("Signed in");
+    } catch (caught) {
+      setStatus("Approve terminal access");
+      setError(
+        typeof caught === "object" && caught && "error" in caught
+          ? String((caught as { error?: { message?: string } }).error?.message || "Could not sign you in.")
+          : "Could not sign you in."
+      );
+    } finally {
+      setApproving(false);
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -33,8 +82,10 @@ export function CliAuthPage() {
         return;
       }
 
+      setStatus("Checking browser session");
       const session = await authClient.getSession();
       if (!session.data?.session) {
+        setStatus("Continue in browser");
         navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}`)}`);
         return;
       }
@@ -45,11 +96,18 @@ export function CliAuthPage() {
       markKnownUser();
 
       try {
-        const response = (await api.inspectCliRequest(token)) as CliRequest;
+        setStatus("Checking terminal request");
+        const response = await api.inspectCliRequest(token);
         setRequest(response);
-        await api.completeCli(token);
-        setStatus("Signed in");
+
+        if (response.status === "approved") {
+          setStatus("Signed in");
+          return;
+        }
+
+        await approveRequest(token);
       } catch (caught) {
+        setStatus("Approve terminal access");
         setError(
           typeof caught === "object" && caught && "error" in caught
             ? String((caught as { error?: { message?: string } }).error?.message || "Could not sign you in.")
@@ -96,24 +154,78 @@ export function CliAuthPage() {
         <div className="auth-heading">
           <div className="auth-copy">
             <h1>{status}</h1>
+            <p className="auth-flow-copy">{getStatusBody()}</p>
           </div>
         </div>
 
         {isComplete ? (
-          <p className="auth-dismiss-note">You may now close this window.</p>
+          <section className="auth-surface auth-complete-surface">
+            {user ? (
+              <div className="approval-meta">
+                <span>Signed in as</span>
+                <code>{user.email || user.name || "iTE User"}</code>
+              </div>
+            ) : null}
+            <p className="auth-dismiss-note">Return to the terminal. iTE should resume automatically.</p>
+            <div className="auth-actions">
+              <Link className="button" data-magnetic data-ripple to="/docs">
+                <span className="button-text" data-scramble>
+                  Check docs
+                </span>
+                <span className="button-shine" />
+              </Link>
+              <Link className="button secondary" data-magnetic to="/account/settings">
+                <span className="button-text" data-scramble>
+                  Open account
+                </span>
+                <span className="button-border" />
+              </Link>
+            </div>
+          </section>
         ) : (
           <section className="auth-surface">
             {request ? (
               <div className="approval-meta">
-                <span>Account</span>
+                <span>Terminal</span>
                 <code>{request.clientId}</code>
+              </div>
+            ) : null}
+            {user ? (
+              <div className="approval-meta">
+                <span>Signed in as</span>
+                <code>{user.email || user.name || "iTE User"}</code>
               </div>
             ) : null}
             {error ? <p className="error">{error}</p> : null}
             <div className="auth-actions">
-              <Link className="button secondary" data-magnetic to="/account/sessions">
+              {request && error ? (
+                <button
+                  className="button"
+                  data-magnetic
+                  data-ripple
+                  disabled={approving}
+                  onClick={() => void approveRequest(token)}
+                  type="button"
+                >
+                  <span
+                    className="button-text"
+                    data-scramble
+                    data-scramble-value={approving ? "Approving..." : "Approve access"}
+                  >
+                    {approving ? "Approving..." : "Approve access"}
+                  </span>
+                  <span className="button-shine" />
+                </button>
+              ) : null}
+              <Link className="button secondary" data-magnetic to="/account/settings">
                 <span className="button-text" data-scramble>
-                  Account
+                  Open account
+                </span>
+                <span className="button-border" />
+              </Link>
+              <Link className="button secondary" data-magnetic to="/docs">
+                <span className="button-text" data-scramble>
+                  Check docs
                 </span>
                 <span className="button-border" />
               </Link>
