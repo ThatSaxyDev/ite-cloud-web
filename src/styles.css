@@ -984,6 +984,34 @@ input:-webkit-autofill:active {
     gap: 18px;
 }
 
+.auth-device-stage {
+    justify-items: center;
+    text-align: center;
+}
+
+.auth-device-heading {
+    justify-items: center;
+}
+
+.auth-device-copy {
+    justify-items: center;
+}
+
+.auth-device-surface {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+}
+
+.auth-device-emoji {
+    margin: 0;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
 .overlay-header {
     position: absolute;
     top: 24px;

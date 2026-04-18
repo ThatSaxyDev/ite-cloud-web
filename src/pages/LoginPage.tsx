@@ -83,6 +83,14 @@ export function LoginPage() {
         if (result.error) {
           throw result.error;
         }
+
+        const signInResult = await authClient.signIn.email({
+          email,
+          password
+        });
+        if (signInResult.error) {
+          throw signInResult.error;
+        }
       } else {
         const result = await authClient.signIn.email({
           email,
