@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
@@ -16,7 +16,19 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const isCliRedirect = redirectTo.startsWith("/auth/cli");
+
+  useEffect(() => {
+    async function resumeIfAlreadySignedIn() {
+      const session = await authClient.getSession();
+      if (!session.data?.session) {
+        return;
+      }
+      markKnownUser();
+      navigate(redirectTo, { replace: true });
+    }
+
+    void resumeIfAlreadySignedIn();
+  }, [navigate, redirectTo]);
 
   function switchMode(nextMode: "sign-in" | "sign-up") {
     if (nextMode === mode) {
@@ -104,6 +116,7 @@ export function LoginPage() {
         <div className="auth-heading">
           <div className="auth-copy">
             <h1>{mode === "sign-in" ? "Sign in" : "Create account"}</h1>
+            <p className="auth-flow-copy">Sign in here, then we will send you back to finish terminal access.</p>
           </div>
         </div>
 
