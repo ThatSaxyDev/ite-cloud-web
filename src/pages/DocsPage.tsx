@@ -204,11 +204,11 @@ pip install -e .`}</code></pre>
               <div className="docs-checklist">
                 <div className="docs-checklist-item">
                   <strong>Ollama on this computer</strong>
-                  <span>Use this when you want local inference. Start Ollama first, then point iTE at `http://localhost:11434/v1`.</span>
+                  <span>Use this when you want local or self-managed inference through Ollama. Start Ollama first, then let iTE use the standard local Ollama route.</span>
                 </div>
                 <div className="docs-checklist-item">
                   <strong>OpenRouter</strong>
-                  <span>Use this when you want a hosted BYOK path. Base URL is `https://openrouter.ai/api/v1` and you must create your own API key.</span>
+                  <span>Use this when you want a hosted BYOK path through OpenRouter. iTE uses the standard OpenRouter API endpoint and you provide your own key.</span>
                 </div>
                 <div className="docs-checklist-item">
                   <strong>Other compatible API</strong>
@@ -241,17 +241,17 @@ pip install -e .`}</code></pre>
 ollama pull qwen2.5-coder:7b`}</code></pre>
                   </div>
                   <p className="muted">
-                    In `/setup`, keep the base URL as `http://localhost:11434/v1`, keep the API key
-                    as `ollama`, and enter the exact local model name you pulled. iTE now checks that
-                    Ollama is running and that the selected model exists before setup is accepted.
+                    In `/setup`, choose Ollama and enter the exact model name available through your
+                    Ollama instance. iTE now checks that Ollama is running and that the selected
+                    model exists before setup is accepted.
                   </p>
                 </article>
                 <article className="detail-card docs-faq-card">
                   <strong>Path 2: OpenRouter</strong>
                   <p className="muted">
-                    Create an OpenRouter API key first. In `/setup`, choose OpenRouter, keep the
-                    base URL as `https://openrouter.ai/api/v1`, paste your key, and enter the exact
-                    model id from OpenRouter. iTE verifies the route with your key before saving.
+                    Create an OpenRouter API key first. In `/setup`, choose OpenRouter, paste your
+                    key, and enter the exact model id from OpenRouter. iTE verifies the route with
+                    your key before saving.
                   </p>
                 </article>
                 <article className="detail-card docs-faq-card">
@@ -335,17 +335,17 @@ SQLITE_PATH=/data/ite-cloud-api.sqlite`}</code></pre>
                   <strong>Requests fail after setup</strong>
                   <p className="muted">
                     Match the setup path to the provider you are actually using. If you chose
-                    Ollama, confirm Ollama is running locally and the model is pulled. If you chose
-                    OpenRouter or another provider, confirm the base URL, key, and model id are
-                    exactly correct.
+                    Ollama, confirm Ollama is running and the model is available there. If you chose
+                    OpenRouter or another provider, confirm the key and model id are correct, and
+                    for the generic path also confirm the base URL is correct.
                   </p>
                 </article>
                 <article className="detail-card docs-faq-card">
                   <strong>Ollama setup looks broken</strong>
                   <p className="muted">
                     The most common issue is that Ollama is not running yet. Start it first, then
-                    retry `/setup`. If you changed the Ollama port or host, update the base URL to
-                    match that exact local endpoint.
+                    retry `/setup`. If your Ollama instance is not using the standard local route,
+                    choose the generic provider path and enter that custom base URL directly.
                   </p>
                 </article>
                 <article className="detail-card docs-faq-card">
