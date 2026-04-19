@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
 import { markKnownUser } from "@/lib/browser-state";
+import { config } from "@/lib/config";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -50,14 +51,19 @@ export function LoginPage() {
     setError(null);
 
     try {
-      const result = await authClient.signIn.social({
+      const callbackURL = `${window.location.origin}${redirectTo}`;
+      const errorCallbackURL = `${window.location.origin}/login?redirect=${encodeURIComponent(redirectTo)}&mode=${mode}`;
+      const query = new URLSearchParams({
         provider: "github",
-        callbackURL: `${window.location.origin}${redirectTo}`
+        callbackURL,
+        errorCallbackURL
       });
 
-      if (result.error) {
-        throw result.error;
+      if (mode === "sign-up") {
+        query.set("requestSignUp", "true");
       }
+
+      window.location.assign(`${config.apiUrl}/api/auth/sign-in/social?${query.toString()}`);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught
