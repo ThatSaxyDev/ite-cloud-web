@@ -6,6 +6,52 @@ import { authClient } from "@/lib/auth-client";
 import { markKnownUser } from "@/lib/browser-state";
 import { config } from "@/lib/config";
 
+function EyeIcon({ open }: { open: boolean }) {
+  return open ? (
+    <svg aria-hidden="true" fill="none" height="18" viewBox="0 0 24 24" width="18">
+      <path
+        d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  ) : (
+    <svg aria-hidden="true" fill="none" height="18" viewBox="0 0 24 24" width="18">
+      <path
+        d="M3 3l18 18"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M10.6 6.4A10.3 10.3 0 0 1 12 6c6.5 0 10 6 10 6a18.8 18.8 0 0 1-3.2 3.8"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M6.7 6.7C4 8.3 2 12 2 12s3.5 6 10 6c1.5 0 2.8-.3 4-.8"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M9.9 9.9A3 3 0 0 0 14.1 14.1"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,8 +63,10 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [verificationOtp, setVerificationOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [formPending, setFormPending] = useState(false);
+  const [githubPending, setGithubPending] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   useEffect(() => {
     async function resumeIfAlreadySignedIn() {
@@ -33,6 +81,11 @@ export function LoginPage() {
     void resumeIfAlreadySignedIn();
   }, [navigate, redirectTo]);
 
+  useEffect(() => {
+    setGithubPending(false);
+    setFormPending(false);
+  }, [location.key, location.search]);
+
   function switchMode(nextMode: "sign-in" | "sign-up") {
     if (nextMode === mode) {
       return;
@@ -42,6 +95,9 @@ export function LoginPage() {
     setPassword("");
     setVerificationOtp("");
     setVerificationSent(false);
+    setPasswordVisible(false);
+    setFormPending(false);
+    setGithubPending(false);
 
     if (nextMode === "sign-in") {
       setName("");
@@ -62,7 +118,7 @@ export function LoginPage() {
   }
 
   async function handleGithubSignIn() {
-    setPending(true);
+    setGithubPending(true);
     setError(null);
 
     try {
@@ -85,13 +141,13 @@ export function LoginPage() {
           ? String((caught as { message?: string }).message)
           : "GitHub sign-in failed."
       );
-      setPending(false);
+      setGithubPending(false);
     }
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    setPending(true);
+    setFormPending(true);
     setError(null);
 
     try {
@@ -107,7 +163,7 @@ export function LoginPage() {
         await sendEmailVerificationOtp(email);
         setMode("verify-email");
         setVerificationSent(true);
-        setPending(false);
+        setFormPending(false);
         return;
       }
 
@@ -120,7 +176,7 @@ export function LoginPage() {
           await sendEmailVerificationOtp(email);
           setMode("verify-email");
           setVerificationSent(true);
-          setPending(false);
+          setFormPending(false);
           return;
         }
         throw result.error;
@@ -134,12 +190,12 @@ export function LoginPage() {
           : "Authentication failed."
       );
     } finally {
-      setPending(false);
+      setFormPending(false);
     }
   }
 
   async function handleResendVerification() {
-    setPending(true);
+    setFormPending(true);
     setError(null);
     try {
       await sendEmailVerificationOtp(email);
@@ -151,13 +207,13 @@ export function LoginPage() {
           : "Failed to resend verification code."
       );
     } finally {
-      setPending(false);
+      setFormPending(false);
     }
   }
 
   async function handleVerifyEmail(event: FormEvent) {
     event.preventDefault();
-    setPending(true);
+    setFormPending(true);
     setError(null);
 
     try {
@@ -195,7 +251,7 @@ export function LoginPage() {
           : "Email verification failed."
       );
     } finally {
-      setPending(false);
+      setFormPending(false);
     }
   }
 
@@ -239,20 +295,20 @@ export function LoginPage() {
                 />
               </label>
               <div className="auth-actions">
-                <button className="button" data-magnetic data-ripple disabled={pending || verificationOtp.length < 6} type="submit">
-                  <span className="button-text" data-scramble data-scramble-value={pending ? "Verifying..." : "Verify email"}>
-                    {pending ? "Verifying..." : "Verify email"}
+                <button className="button" data-magnetic data-ripple disabled={formPending || verificationOtp.length < 6} type="submit">
+                  <span className="button-text" data-scramble data-scramble-value={formPending ? "Verifying..." : "Verify email"}>
+                    {formPending ? "Verifying..." : "Verify email"}
                   </span>
                   <span className="button-shine" />
                 </button>
                 <button
                   className="button secondary"
                   data-magnetic
-                  disabled={pending}
+                  disabled={formPending}
                   onClick={() => void handleResendVerification()}
                   type="button"
                 >
-                  {pending ? "Sending..." : "Resend code"}
+                  {formPending ? "Sending..." : "Resend code"}
                 </button>
               </div>
               <div className="auth-mode-switch">
@@ -270,8 +326,8 @@ export function LoginPage() {
           ) : (
             <form className="form-surface" onSubmit={handleSubmit}>
               <>
-                <button className="button secondary" data-magnetic disabled={pending} onClick={() => void handleGithubSignIn()} type="button">
-                  Continue with GitHub
+                <button className="button secondary" data-magnetic disabled={githubPending || formPending} onClick={() => void handleGithubSignIn()} type="button">
+                  {githubPending ? "Connecting GitHub..." : "Continue with GitHub"}
                 </button>
                 <div className="auth-divider" aria-hidden="true">
                   <span />
@@ -297,22 +353,32 @@ export function LoginPage() {
               </label>
               <label className="stack">
                 <span>Password</span>
-                <input
-                  autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                />
+                <div className="password-field">
+                  <input
+                    autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+                    type={passwordVisible ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                  />
+                  <button
+                    aria-label={passwordVisible ? "Hide password" : "Show password"}
+                    className="password-toggle"
+                    onClick={() => setPasswordVisible((value) => !value)}
+                    type="button"
+                  >
+                    <EyeIcon open={passwordVisible} />
+                  </button>
+                </div>
               </label>
               {error ? <p className="error">{error}</p> : null}
               <div className="auth-actions">
-                <button className="button" data-magnetic data-ripple disabled={pending} type="submit">
+                <button className="button" data-magnetic data-ripple disabled={formPending || githubPending} type="submit">
                   <span
                     className="button-text"
                     data-scramble
-                    data-scramble-value={pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+                    data-scramble-value={formPending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
                   >
-                    {pending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+                    {formPending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
                   </span>
                   <span className="button-shine" />
                 </button>
@@ -322,7 +388,7 @@ export function LoginPage() {
                 <button
                   className="auth-mode-link"
                   data-magnetic
-                  disabled={pending}
+                  disabled={formPending || githubPending}
                   onClick={() => switchMode(mode === "sign-in" ? "sign-up" : "sign-in")}
                   type="button"
                 >
