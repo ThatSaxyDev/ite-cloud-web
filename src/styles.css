@@ -3376,7 +3376,31 @@ code {
 
 @media (max-width: 1023px) {
     .agent-viz {
-        display: none;
+        position: relative;
+        width: 100vw;
+        max-width: none;
+        min-width: auto;
+        height: 360px;
+        margin-top: 32px;
+        margin-bottom: 120px;
+        padding-left: 0;
+        overflow: hidden;
+    }
+
+    .agent-viz-content {
+        border-left: none;
+        padding: 0 24px;
+        height: 100%;
+    }
+
+    .agent-viz-header {
+        margin-bottom: 12px;
+    }
+
+    .agent-viz-stream {
+        padding-bottom: 40px;
+        mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
     }
 }
 
