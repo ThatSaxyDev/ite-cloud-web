@@ -672,14 +672,14 @@ button {
     .hero-layout {
         width: 100%;
         max-width: 20.5rem;
-        gap: 24px;
+        gap: 36px;
         justify-items: center;
     }
 
     .hero-copy {
         width: 100%;
         padding-left: 0;
-        gap: 18px;
+        gap: 24px;
         justify-items: center;
     }
 
@@ -695,7 +695,7 @@ button {
     .hero-body {
         justify-items: center;
         text-align: center;
-        gap: 16px;
+        gap: 20px;
         width: 100%;
     }
 
@@ -743,13 +743,15 @@ button {
 
     .hero-actions {
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
     }
 
     .hero-mobile-agent-viz {
         display: flex;
         width: 100%;
         justify-content: center;
+        padding-top: 10px;
+        padding-bottom: 14px;
     }
 
     .hero-desktop-agent-viz {
@@ -759,14 +761,30 @@ button {
     .hero-mobile-agent-viz .agent-viz {
         max-width: 100%;
         height: 210px;
-        margin: 2px auto 0;
+        margin: 0 auto;
+    }
+
+    .hero-mobile-agent-viz + .hero-command-card {
+        margin-top: 4px;
+    }
+
+    .hero-command-card + .hero-actions {
+        margin-top: 12px;
+    }
+
+    .hero-actions .button {
+        min-height: 50px;
+    }
+
+    .hero-actions .hero-sign-in-link {
+        margin-top: -2px;
     }
 
     .hero-floating-footer {
         position: static;
         transform: none;
         align-self: center;
-        margin: 20px auto 0;
+        margin: 32px auto 0;
         max-width: calc(100% - 24px);
         padding: 8px 12px;
         white-space: normal;
