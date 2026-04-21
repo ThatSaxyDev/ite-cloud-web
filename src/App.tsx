@@ -89,7 +89,7 @@ function HomePage() {
                   </span>
                   <span className="button-shine" />
                 </Link>
-                {ctaHref !== "/login?mode=sign-in" ? (
+                {ctaHref === "/login?mode=sign-up" ? (
                   <Link
                     className="interactive-link hero-sign-in-link"
                     data-magnetic
