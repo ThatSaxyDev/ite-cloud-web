@@ -15,6 +15,7 @@ export function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [verificationOtp, setVerificationOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
@@ -39,12 +40,25 @@ export function LoginPage() {
 
     setError(null);
     setPassword("");
+    setVerificationOtp("");
+    setVerificationSent(false);
 
     if (nextMode === "sign-in") {
       setName("");
     }
 
     setMode(nextMode);
+  }
+
+  async function sendEmailVerificationOtp(targetEmail: string) {
+    const result = await authClient.emailOtp.sendVerificationOtp({
+      email: targetEmail,
+      type: "email-verification",
+    });
+
+    if (result.error) {
+      throw result.error;
+    }
   }
 
   async function handleGithubSignIn() {
@@ -90,7 +104,7 @@ export function LoginPage() {
         if (result.error) {
           throw result.error;
         }
-        // After sign up, show verification screen
+        await sendEmailVerificationOtp(email);
         setMode("verify-email");
         setVerificationSent(true);
         setPending(false);
@@ -102,9 +116,10 @@ export function LoginPage() {
         password
       });
       if (result.error) {
-        // Check if email is not verified
         if (result.error.code === "EMAIL_NOT_VERIFIED") {
+          await sendEmailVerificationOtp(email);
           setMode("verify-email");
+          setVerificationSent(true);
           setPending(false);
           return;
         }
@@ -127,13 +142,57 @@ export function LoginPage() {
     setPending(true);
     setError(null);
     try {
-      await authClient.sendVerificationEmail({ email });
+      await sendEmailVerificationOtp(email);
       setVerificationSent(true);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught
           ? String((caught as { message?: string }).message)
-          : "Failed to resend verification email."
+          : "Failed to resend verification code."
+      );
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleVerifyEmail(event: FormEvent) {
+    event.preventDefault();
+    setPending(true);
+    setError(null);
+
+    try {
+      const verification = await authClient.emailOtp.verifyEmail({
+        email,
+        otp: verificationOtp,
+      });
+
+      if (verification.error) {
+        throw verification.error;
+      }
+
+      if (!password) {
+        setMode("sign-in");
+        setVerificationOtp("");
+        setVerificationSent(false);
+        return;
+      }
+
+      const signInResult = await authClient.signIn.email({
+        email,
+        password,
+      });
+
+      if (signInResult.error) {
+        throw signInResult.error;
+      }
+
+      markKnownUser();
+      navigate(redirectTo);
+    } catch (caught) {
+      setError(
+        typeof caught === "object" && caught && "message" in caught
+          ? String((caught as { message?: string }).message)
+          : "Email verification failed."
       );
     } finally {
       setPending(false);
@@ -153,7 +212,7 @@ export function LoginPage() {
             <h1>{mode === "sign-in" ? "Sign in" : mode === "sign-up" ? "Create account" : "Check your email"}</h1>
             <p className="auth-flow-copy">
               {mode === "verify-email"
-                ? `We sent a verification link to ${email}. Click the link to verify your account.`
+                ? `We sent a 6-digit verification code to ${email}. Enter it here to verify your account.`
                 : "Sign in here, then we will send you back to finish terminal access."}
             </p>
           </div>
@@ -161,14 +220,31 @@ export function LoginPage() {
 
         <section className="auth-surface">
           {mode === "verify-email" ? (
-            <div className="form-surface">
+            <form className="form-surface" onSubmit={handleVerifyEmail}>
               {verificationSent && (
                 <p className="success" style={{ color: "#10b981", marginBottom: 16 }}>
-                  Verification email sent!
+                  Verification code sent.
                 </p>
               )}
               {error ? <p className="error">{error}</p> : null}
+              <label className="stack">
+                <span>Verification code</span>
+                <input
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="123456"
+                  value={verificationOtp}
+                  onChange={(event) => setVerificationOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                />
+              </label>
               <div className="auth-actions">
+                <button className="button" data-magnetic data-ripple disabled={pending || verificationOtp.length < 6} type="submit">
+                  <span className="button-text" data-scramble data-scramble-value={pending ? "Verifying..." : "Verify email"}>
+                    {pending ? "Verifying..." : "Verify email"}
+                  </span>
+                  <span className="button-shine" />
+                </button>
                 <button
                   className="button secondary"
                   data-magnetic
@@ -176,21 +252,21 @@ export function LoginPage() {
                   onClick={() => void handleResendVerification()}
                   type="button"
                 >
-                  {pending ? "Sending..." : "Resend verification email"}
+                  {pending ? "Sending..." : "Resend code"}
                 </button>
               </div>
               <div className="auth-mode-switch">
-                <span>Already verified?</span>
+                <span>Use a different account?</span>
                 <button
                   className="auth-mode-link"
                   data-magnetic
-                  onClick={() => setMode("sign-in")}
+                  onClick={() => switchMode("sign-in")}
                   type="button"
                 >
                   Sign in
                 </button>
               </div>
-            </div>
+            </form>
           ) : (
             <form className="form-surface" onSubmit={handleSubmit}>
               <>
