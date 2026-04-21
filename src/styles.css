@@ -368,10 +368,11 @@ button {
 
 .hero-stage {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 1fr auto;
     min-height: 100vh;
-    padding-top: 24px;
-    padding-bottom: 28px;
+    padding-top: clamp(52px, 8vh, 92px);
+    padding-bottom: clamp(28px, 4vw, 40px);
+    position: relative;
 }
 
 .docs-stage {
@@ -459,8 +460,8 @@ button {
     align-items: center;
     justify-items: stretch;
     min-height: 0;
-    padding-top: clamp(36px, 6vw, 72px);
-    padding-bottom: clamp(20px, 4vw, 36px);
+    padding-top: clamp(16px, 3vh, 28px);
+    padding-bottom: clamp(56px, 10vh, 112px);
     animation: rise-in 700ms ease both;
 }
 
@@ -562,6 +563,49 @@ button {
     gap: 12px;
     flex-wrap: wrap;
     align-items: center;
+}
+
+.hero-sign-in-link {
+    color: var(--text-soft);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color var(--motion-fast);
+}
+
+.hero-sign-in-link:hover {
+    color: var(--text);
+}
+
+.hero-floating-footer {
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
+    padding: 14px 22px;
+    background: rgba(6, 10, 16, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.hero-floating-footer p {
+    margin: 0;
+}
+
+.hero-floating-footer a {
+    color: var(--text-soft);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.hero-floating-footer a:hover {
+    color: var(--text);
 }
 
 .auth-mode-switch {
