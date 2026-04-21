@@ -11,63 +11,63 @@ const DOC_NAV: readonly DocNavItem[] = [
   {
     id: "intro",
     label: "Intro",
-    description: "What iTE is and the shortest way to start."
+    description: "What iTE is and the shortest way to start.",
   },
   {
     id: "prerequisites",
     label: "Prerequisites",
-    description: "What you need before installing iTE."
+    description: "What you need before installing iTE.",
   },
   {
     id: "install",
     label: "Install",
-    description: "Public install commands and local options."
+    description: "Public install commands and local options.",
   },
   {
     id: "configure",
     label: "Configure",
-    description: "Set up your model provider."
+    description: "Set up your model provider.",
   },
   {
     id: "init",
     label: "Initialize",
-    description: "Project setup with AGENTS.md."
+    description: "Project setup with AGENTS.md.",
   },
   {
     id: "usage",
     label: "Usage",
-    description: "Everyday workflows and commands."
+    description: "Everyday workflows and commands.",
   },
   {
     id: "commands",
     label: "Commands",
-    description: "Full command reference."
+    description: "Full command reference.",
   },
   {
     id: "tools",
     label: "Tools",
-    description: "Built-in tools reference."
+    description: "Built-in tools reference.",
   },
   {
     id: "agents",
     label: "AGENTS.md",
-    description: "Project instructions for the AI."
+    description: "Project instructions for the AI.",
   },
   {
     id: "skills",
     label: "Skills",
-    description: "Bundles of expertise."
+    description: "Bundles of expertise.",
   },
   {
     id: "subagents",
     label: "Subagents",
-    description: "Specialist agents for parallel tasks."
+    description: "Specialist agents for parallel tasks.",
   },
   {
     id: "mcp",
     label: "MCP",
-    description: "External tool servers."
-  }
+    description: "External tool servers.",
+  },
 ] as const;
 
 const PAGE_OUTLINE = [
@@ -82,7 +82,7 @@ const PAGE_OUTLINE = [
   { id: "agents", label: "AGENTS.md" },
   { id: "skills", label: "Skills" },
   { id: "subagents", label: "Subagents" },
-  { id: "mcp", label: "MCP" }
+  { id: "mcp", label: "MCP" },
 ] as const;
 
 function CodeBlock({ label, code }: { label: string; code: string }) {
@@ -102,7 +102,9 @@ function CodeBlock({ label, code }: { label: string; code: string }) {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre><code>{code}</code></pre>
+      <pre>
+        <code>{code}</code>
+      </pre>
     </div>
   );
 }
@@ -115,7 +117,9 @@ export function DocsPage() {
     if (!normalizedQuery) {
       return true;
     }
-    return `${item.label} ${item.description}`.toLowerCase().includes(normalizedQuery);
+    return `${item.label} ${item.description}`
+      .toLowerCase()
+      .includes(normalizedQuery);
   });
 
   return (
@@ -123,15 +127,30 @@ export function DocsPage() {
       <section className="docs-stage">
         <header className="docs-header">
           <div className="docs-header-left">
-            <Link className="docs-wordmark interactive-link" data-magnetic data-scramble to="/">
+            <Link
+              className="docs-wordmark interactive-link"
+              data-magnetic
+              data-scramble
+              to="/"
+            >
               iTE
             </Link>
             <nav className="docs-header-nav" aria-label="Docs navigation">
-              <Link className="interactive-link" data-magnetic data-scramble to="/">
+              <Link
+                className="interactive-link"
+                data-magnetic
+                data-scramble
+                to="/"
+              >
                 Home
               </Link>
               <span className="docs-header-nav-current">Docs</span>
-              <Link className="interactive-link" data-magnetic data-scramble to="/account/settings">
+              <Link
+                className="interactive-link"
+                data-magnetic
+                data-scramble
+                to="/account/settings"
+              >
                 App
               </Link>
             </nav>
@@ -139,7 +158,9 @@ export function DocsPage() {
 
           <div className="docs-header-actions">
             <label className="docs-search" aria-label="Search docs sections">
-              <span className="docs-search-icon" aria-hidden="true">/</span>
+              <span className="docs-search-icon" aria-hidden="true">
+                /
+              </span>
               <input
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search docs"
@@ -157,7 +178,11 @@ export function DocsPage() {
               <span className="docs-sidebar-label">Docs</span>
               <div className="docs-sidebar-links">
                 {filteredNav.map((item) => (
-                  <a className="docs-sidebar-link" href={`#${item.id}`} key={item.id}>
+                  <a
+                    className="docs-sidebar-link"
+                    href={`#${item.id}`}
+                    key={item.id}
+                  >
                     <strong>{item.label}</strong>
                     <span>{item.description}</span>
                   </a>
@@ -196,15 +221,23 @@ export function DocsPage() {
               <p className="sessions-kicker">Intro</p>
               <h1>Get started with iTE.</h1>
               <p className="docs-summary">
-                <strong>iTE</strong> (Interactive Terminal Environment) is an AI coding agent for your terminal. 
-                Connect your model service and start coding.
+                <strong>iTE</strong> (Interactive Terminal Environment) is an AI
+                coding agent for your terminal. Connect your model service and
+                start coding.
               </p>
               <p className="docs-summary">
-                iTE runs as a chat interface in your terminal. You prompt, it responds, and together you build software. 
-                It can read files, run commands, search code, and edit files—safely, with your approval.
+                iTE runs as a chat interface in your terminal. You prompt, it
+                responds, and together you build software. It can read files,
+                run commands, search code, and edit files—safely, with your
+                approval.
               </p>
               <div className="docs-inline-actions">
-                <Link className="button" data-magnetic data-ripple to="/account/settings">
+                <Link
+                  className="button"
+                  data-magnetic
+                  data-ripple
+                  to="/account/settings"
+                >
                   <span className="button-text">Open app</span>
                   <span className="button-shine" />
                 </Link>
@@ -223,9 +256,7 @@ export function DocsPage() {
             {/* Prerequisites Section */}
             <section className="docs-section" id="prerequisites">
               <h2>Prerequisites</h2>
-              <p>
-                Before you install iTE, make sure you have:
-              </p>
+              <p>Before you install iTE, make sure you have:</p>
               <div className="docs-checklist">
                 <div className="docs-checklist-item">
                   <strong>Python 3.11+</strong>
@@ -233,7 +264,10 @@ export function DocsPage() {
                 </div>
                 <div className="docs-checklist-item">
                   <strong>Terminal emulator</strong>
-                  <span>Any terminal works—Terminal.app, iTerm2, Windows Terminal, etc.</span>
+                  <span>
+                    Any terminal works—Terminal.app, iTerm2, Windows Terminal,
+                    etc.
+                  </span>
                 </div>
                 <div className="docs-checklist-item">
                   <strong>API keys</strong>
@@ -243,7 +277,9 @@ export function DocsPage() {
               <div className="docs-note">
                 <strong>Supported terminals</strong>
                 <p>
-                  <strong>macOS:</strong> Terminal.app, iTerm2, Ghostty, Kitty, Alacritty, WezTerm<br />
+                  <strong>macOS:</strong> Terminal.app, iTerm2, Ghostty, Kitty,
+                  Alacritty, WezTerm
+                  <br />
                   <strong>Windows:</strong> Windows Terminal, PowerShell, CMD
                 </p>
               </div>
@@ -253,12 +289,16 @@ export function DocsPage() {
             <section className="docs-section" id="install">
               <h2>Install</h2>
               <p>
-                The fastest way to install iTE is through <strong>pipx</strong>. It keeps iTE isolated 
-                from your system Python and gives you the <code>ite</code> command globally.
+                The fastest way to install iTE is through <strong>pipx</strong>.
+                It keeps iTE isolated from your system Python and gives you the{" "}
+                <code>ite</code> command globally.
               </p>
-              
-              <CodeBlock label="pipx (recommended)" code="pipx install ite-agent" />
-              
+
+              <CodeBlock
+                label="pipx (recommended)"
+                code="pipx install ite-agent"
+              />
+
               <CodeBlock label="uv" code="uv tool install ite-agent" />
 
               <p>Verify the installation:</p>
@@ -269,7 +309,10 @@ export function DocsPage() {
 
               <div className="docs-note">
                 <strong>Uninstall</strong>
-                <p>If you need to remove iTE: <code>pipx uninstall ite-agent</code></p>
+                <p>
+                  If you need to remove iTE:{" "}
+                  <code>pipx uninstall ite-agent</code>
+                </p>
               </div>
             </section>
 
@@ -277,7 +320,8 @@ export function DocsPage() {
             <section className="docs-section" id="configure">
               <h2>Configure Your Provider</h2>
               <p>
-                iTE requires an OpenAI-compatible model provider. Run <code>/setup</code> inside iTE to configure:
+                iTE requires an OpenAI-compatible model provider. Run{" "}
+                <code>/setup</code> inside iTE to configure:
               </p>
               <div className="docs-ordered-list">
                 <li>Base URL — Your provider endpoint</li>
@@ -297,18 +341,32 @@ export function DocsPage() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td><strong>Ollama</strong> (Local)</td>
-                      <td><code>http://localhost:11434/v1</code></td>
-                      <td><code>ollama</code> or your key</td>
+                      <td>
+                        <strong>Ollama</strong> (Local)
+                      </td>
+                      <td>
+                        <code>http://localhost:11434/v1</code>
+                      </td>
+                      <td>
+                        <code>ollama</code> or your key
+                      </td>
                     </tr>
                     <tr>
-                      <td><strong>OpenRouter</strong></td>
-                      <td><code>https://openrouter.ai/api/v1</code></td>
+                      <td>
+                        <strong>OpenRouter</strong>
+                      </td>
+                      <td>
+                        <code>https://openrouter.ai/api/v1</code>
+                      </td>
                       <td>Your OpenRouter key</td>
                     </tr>
                     <tr>
-                      <td><strong>OpenAI</strong></td>
-                      <td><code>https://api.openai.com/v1</code></td>
+                      <td>
+                        <strong>OpenAI</strong>
+                      </td>
+                      <td>
+                        <code>https://api.openai.com/v1</code>
+                      </td>
                       <td>Your OpenAI key</td>
                     </tr>
                   </tbody>
@@ -316,14 +374,18 @@ export function DocsPage() {
               </div>
 
               <p>Start iTE and run the setup command:</p>
-              <CodeBlock label="Terminal" code={`ite
-/setup`} />
+              <CodeBlock
+                label="Terminal"
+                code={`ite
+/setup`}
+              />
 
               <div className="docs-note docs-note-featured">
                 <strong>iTE Cloud (Coming Soon)</strong>
                 <p>
-                  Bundled model access is on the roadmap. iTE Cloud will offer a curated selection of 
-                  high-quality models, managed directly within the platform. No external API keys required.
+                  Bundled model access is on the roadmap. iTE Cloud will offer a
+                  curated selection of high-quality models, managed directly
+                  within the platform. No external API keys required.
                 </p>
               </div>
             </section>
@@ -332,13 +394,14 @@ export function DocsPage() {
             <section className="docs-section" id="init">
               <h2>Initialize Your Project</h2>
               <p>
-                Projects can include an <code>AGENTS.md</code> file at the root to provide instructions to iTE 
-                on how to work with the codebase.
+                Projects can include an <code>AGENTS.md</code> file at the root
+                to provide instructions to iTE on how to work with the codebase.
               </p>
 
               <h3>The /init Command</h3>
               <p>
-                Use the <code>/init</code> command to analyze your project and create an <code>AGENTS.md</code> file:
+                Use the <code>/init</code> command to analyze your project and
+                create an <code>AGENTS.md</code> file:
               </p>
               <CodeBlock label="Terminal" code="/init" />
 
@@ -353,7 +416,8 @@ export function DocsPage() {
                 <article className="detail-card docs-faq-card">
                   <strong>Force overwrite</strong>
                   <p className="muted">
-                    To regenerate and overwrite an existing <code>AGENTS.md</code>:
+                    To regenerate and overwrite an existing{" "}
+                    <code>AGENTS.md</code>:
                   </p>
                   <CodeBlock label="Terminal" code="/init --force" />
                 </article>
@@ -364,9 +428,15 @@ export function DocsPage() {
                 <code>AGENTS.md</code> files support scope hierarchy:
               </p>
               <div className="docs-ordered-list">
-                <li>The scope is the directory containing the file and all subdirectories</li>
+                <li>
+                  The scope is the directory containing the file and all
+                  subdirectories
+                </li>
                 <li>Deeper files override parent instructions</li>
-                <li>Multiple files can exist in a project, each governing its subtree</li>
+                <li>
+                  Multiple files can exist in a project, each governing its
+                  subtree
+                </li>
               </div>
             </section>
 
@@ -374,8 +444,8 @@ export function DocsPage() {
             <section className="docs-section" id="usage">
               <h2>Usage</h2>
               <p>
-                Now that you&apos;ve configured a provider and optionally initialized your project, 
-                you&apos;re ready to use iTE.
+                Now that you&apos;ve configured a provider and optionally
+                initialized your project, you&apos;re ready to use iTE.
               </p>
 
               <h3>Ask Questions</h3>
@@ -383,29 +453,45 @@ export function DocsPage() {
               <div className="docs-example-grid">
                 <article className="detail-card docs-example-card">
                   <span className="onboarding-step-eyebrow">Ask</span>
-                  <p>How is authentication handled in src/auth/index.ts</p>
+                  <p>
+                    How is state management handled in
+                    app/features/settings.dart
+                  </p>
                 </article>
               </div>
               <div className="docs-note">
-                <strong>Tip:</strong> Use the <code>@</code> key to fuzzy search for files in the project.
+                <strong>Tip:</strong> Use the <code>@</code> key to fuzzy search
+                for files in the project.
               </div>
 
               <h3>Add Features</h3>
               <p>You can ask iTE to add new features. First, create a plan:</p>
-              
+
               <div className="docs-ordered-list">
-                <li><strong>Create a plan</strong> — Enable plan mode with <code>/plan on</code></li>
-                <li><strong>Iterate on the plan</strong> — Give feedback or add more details</li>
-                <li><strong>Build the feature</strong> — Disable plan mode with <code>/plan off</code> and execute</li>
+                <li>
+                  <strong>Create a plan</strong> — Enable plan mode with{" "}
+                  <code>/plan on</code>
+                </li>
+                <li>
+                  <strong>Iterate on the plan</strong> — Give feedback or add
+                  more details
+                </li>
+                <li>
+                  <strong>Build the feature</strong> — Disable plan mode with{" "}
+                  <code>/plan off</code> and execute
+                </li>
               </div>
 
-              <CodeBlock label="Plan mode" code={`/plan on
+              <CodeBlock
+                label="Plan mode"
+                code={`/plan on
 
 Add a user profile page with avatar upload and display name editing.
 
 /plan off
 
-Sounds good! Go ahead and make the changes.`} />
+Sounds good! Go ahead and make the changes.`}
+              />
 
               <h3>Make Changes</h3>
               <p>For straightforward changes, ask iTE directly:</p>
@@ -418,8 +504,11 @@ Sounds good! Go ahead and make the changes.`} />
 
               <h3>Undo Changes</h3>
               <p>If something goes wrong, you can undo:</p>
-              <CodeBlock label="Undo / Redo" code={`/undo  # Reverts file changes from the last turn
-/redo  # Reapply reverted changes`} />
+              <CodeBlock
+                label="Undo / Redo"
+                code={`/undo  # Reverts file changes from the last turn
+/redo  # Reapply reverted changes`}
+              />
 
               <h3>Sessions</h3>
               <p>Conversations auto-save. List or resume previous sessions:</p>
@@ -429,7 +518,9 @@ Sounds good! Go ahead and make the changes.`} />
             {/* Commands Section */}
             <section className="docs-section" id="commands">
               <h2>Commands</h2>
-              <p>Type <code>/help</code> in iTE to see available commands.</p>
+              <p>
+                Type <code>/help</code> in iTE to see available commands.
+              </p>
 
               <h3>Session Management</h3>
               <div className="docs-table-wrapper">
@@ -442,23 +533,33 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>/new</code></td>
+                      <td>
+                        <code>/new</code>
+                      </td>
                       <td>Start a new conversation thread</td>
                     </tr>
                     <tr>
-                      <td><code>/sessions</code></td>
+                      <td>
+                        <code>/sessions</code>
+                      </td>
                       <td>List saved conversations and resume</td>
                     </tr>
                     <tr>
-                      <td><code>/rename &lt;name&gt;</code></td>
+                      <td>
+                        <code>/rename &lt;name&gt;</code>
+                      </td>
                       <td>Rename the current conversation</td>
                     </tr>
                     <tr>
-                      <td><code>/exit</code> or <code>/quit</code></td>
+                      <td>
+                        <code>/exit</code> or <code>/quit</code>
+                      </td>
                       <td>Close iTE</td>
                     </tr>
                     <tr>
-                      <td><code>/close</code></td>
+                      <td>
+                        <code>/close</code>
+                      </td>
                       <td>Close the current thread</td>
                     </tr>
                   </tbody>
@@ -476,23 +577,36 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>/setup</code></td>
+                      <td>
+                        <code>/setup</code>
+                      </td>
                       <td>Configure model provider</td>
                     </tr>
                     <tr>
-                      <td><code>/config</code></td>
+                      <td>
+                        <code>/config</code>
+                      </td>
                       <td>View current configuration</td>
                     </tr>
                     <tr>
-                      <td><code>/model &lt;name&gt;</code></td>
+                      <td>
+                        <code>/model &lt;name&gt;</code>
+                      </td>
                       <td>Change model</td>
                     </tr>
                     <tr>
-                      <td><code>/approval &lt;mode&gt;</code></td>
-                      <td>Set approval mode: on_request, on_failure, auto, auto_edit, yolo</td>
+                      <td>
+                        <code>/approval &lt;mode&gt;</code>
+                      </td>
+                      <td>
+                        Set approval mode: on_request, on_failure, auto,
+                        auto_edit, yolo
+                      </td>
                     </tr>
                     <tr>
-                      <td><code>/logout</code></td>
+                      <td>
+                        <code>/logout</code>
+                      </td>
                       <td>Log out of iTE Cloud</td>
                     </tr>
                   </tbody>
@@ -510,27 +624,39 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>/plan</code></td>
+                      <td>
+                        <code>/plan</code>
+                      </td>
                       <td>Show plan mode status</td>
                     </tr>
                     <tr>
-                      <td><code>/plan on</code></td>
+                      <td>
+                        <code>/plan on</code>
+                      </td>
                       <td>Enable plan mode</td>
                     </tr>
                     <tr>
-                      <td><code>/plan off</code></td>
+                      <td>
+                        <code>/plan off</code>
+                      </td>
                       <td>Disable plan mode</td>
                     </tr>
                     <tr>
-                      <td><code>/todos</code></td>
+                      <td>
+                        <code>/todos</code>
+                      </td>
                       <td>Manage task lists</td>
                     </tr>
                     <tr>
-                      <td><code>/attach &lt;path&gt;</code></td>
+                      <td>
+                        <code>/attach &lt;path&gt;</code>
+                      </td>
                       <td>Queue files for next message</td>
                     </tr>
                     <tr>
-                      <td><code>/clear</code></td>
+                      <td>
+                        <code>/clear</code>
+                      </td>
                       <td>Clear conversation history</td>
                     </tr>
                   </tbody>
@@ -548,19 +674,27 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>/branch</code></td>
+                      <td>
+                        <code>/branch</code>
+                      </td>
                       <td>List or switch git branches</td>
                     </tr>
                     <tr>
-                      <td><code>/branch --create &lt;name&gt;</code></td>
+                      <td>
+                        <code>/branch --create &lt;name&gt;</code>
+                      </td>
                       <td>Create and switch to new branch</td>
                     </tr>
                     <tr>
-                      <td><code>/undo</code></td>
+                      <td>
+                        <code>/undo</code>
+                      </td>
                       <td>Revert file changes from last turn</td>
                     </tr>
                     <tr>
-                      <td><code>/redo</code></td>
+                      <td>
+                        <code>/redo</code>
+                      </td>
                       <td>Reapply reverted changes</td>
                     </tr>
                   </tbody>
@@ -578,19 +712,27 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>/init</code></td>
+                      <td>
+                        <code>/init</code>
+                      </td>
                       <td>Analyze project and create AGENTS.md</td>
                     </tr>
                     <tr>
-                      <td><code>/skills</code></td>
+                      <td>
+                        <code>/skills</code>
+                      </td>
                       <td>List available skills</td>
                     </tr>
                     <tr>
-                      <td><code>/skills use &lt;name&gt;</code></td>
+                      <td>
+                        <code>/skills use &lt;name&gt;</code>
+                      </td>
                       <td>Activate a skill</td>
                     </tr>
                     <tr>
-                      <td><code>/skills add &lt;path&gt;</code></td>
+                      <td>
+                        <code>/skills add &lt;path&gt;</code>
+                      </td>
                       <td>Install a skill pack</td>
                     </tr>
                   </tbody>
@@ -608,23 +750,33 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>on_request</code></td>
+                      <td>
+                        <code>on_request</code>
+                      </td>
                       <td>Ask before every mutating action</td>
                     </tr>
                     <tr>
-                      <td><code>on_failure</code></td>
+                      <td>
+                        <code>on_failure</code>
+                      </td>
                       <td>Auto-approve, ask only on failure</td>
                     </tr>
                     <tr>
-                      <td><code>auto</code></td>
+                      <td>
+                        <code>auto</code>
+                      </td>
                       <td>Auto-approve all safe operations</td>
                     </tr>
                     <tr>
-                      <td><code>auto_edit</code></td>
+                      <td>
+                        <code>auto_edit</code>
+                      </td>
                       <td>Auto-approve edits, confirm commands</td>
                     </tr>
                     <tr>
-                      <td><code>yolo</code></td>
+                      <td>
+                        <code>yolo</code>
+                      </td>
                       <td>Approve everything — no guardrails</td>
                     </tr>
                   </tbody>
@@ -636,7 +788,8 @@ Sounds good! Go ahead and make the changes.`} />
             <section className="docs-section" id="tools">
               <h2>Tools</h2>
               <p>
-                iTE includes a comprehensive set of built-in tools for reading, writing, searching, executing, and managing your codebase.
+                iTE includes a comprehensive set of built-in tools for reading,
+                writing, searching, executing, and managing your codebase.
               </p>
 
               <h3>Read Tools</h3>
@@ -650,39 +803,57 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>read_file</code></td>
+                      <td>
+                        <code>read_file</code>
+                      </td>
                       <td>Read file contents with offset and limit</td>
                     </tr>
                     <tr>
-                      <td><code>read_json</code></td>
+                      <td>
+                        <code>read_json</code>
+                      </td>
                       <td>Read and parse JSON files</td>
                     </tr>
                     <tr>
-                      <td><code>read_toml</code></td>
+                      <td>
+                        <code>read_toml</code>
+                      </td>
                       <td>Read and parse TOML files</td>
                     </tr>
                     <tr>
-                      <td><code>read_yaml</code></td>
+                      <td>
+                        <code>read_yaml</code>
+                      </td>
                       <td>Read and parse YAML files</td>
                     </tr>
                     <tr>
-                      <td><code>read_pdf</code></td>
+                      <td>
+                        <code>read_pdf</code>
+                      </td>
                       <td>Extract text from PDF documents</td>
                     </tr>
                     <tr>
-                      <td><code>read_image</code></td>
+                      <td>
+                        <code>read_image</code>
+                      </td>
                       <td>Read image metadata and OCR text</td>
                     </tr>
                     <tr>
-                      <td><code>list_dir</code></td>
+                      <td>
+                        <code>list_dir</code>
+                      </td>
                       <td>List directory contents</td>
                     </tr>
                     <tr>
-                      <td><code>glob</code></td>
+                      <td>
+                        <code>glob</code>
+                      </td>
                       <td>Find files by pattern</td>
                     </tr>
                     <tr>
-                      <td><code>grep</code></td>
+                      <td>
+                        <code>grep</code>
+                      </td>
                       <td>Search for patterns in file content</td>
                     </tr>
                   </tbody>
@@ -700,27 +871,39 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>write_file</code></td>
+                      <td>
+                        <code>write_file</code>
+                      </td>
                       <td>Create or overwrite files</td>
                     </tr>
                     <tr>
-                      <td><code>edit</code></td>
+                      <td>
+                        <code>edit</code>
+                      </td>
                       <td>Make surgical text replacements</td>
                     </tr>
                     <tr>
-                      <td><code>apply_patch</code></td>
+                      <td>
+                        <code>apply_patch</code>
+                      </td>
                       <td>Apply multi-file patch edits</td>
                     </tr>
                     <tr>
-                      <td><code>edit_json</code></td>
+                      <td>
+                        <code>edit_json</code>
+                      </td>
                       <td>Edit JSON files using structured paths</td>
                     </tr>
                     <tr>
-                      <td><code>edit_toml</code></td>
+                      <td>
+                        <code>edit_toml</code>
+                      </td>
                       <td>Edit TOML files using structured paths</td>
                     </tr>
                     <tr>
-                      <td><code>edit_yaml</code></td>
+                      <td>
+                        <code>edit_yaml</code>
+                      </td>
                       <td>Edit YAML files using structured paths</td>
                     </tr>
                   </tbody>
@@ -738,19 +921,27 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>shell</code></td>
+                      <td>
+                        <code>shell</code>
+                      </td>
                       <td>Execute shell commands with timeout</td>
                     </tr>
                     <tr>
-                      <td><code>shell_start</code></td>
+                      <td>
+                        <code>shell_start</code>
+                      </td>
                       <td>Start persistent shell sessions</td>
                     </tr>
                     <tr>
-                      <td><code>shell_poll</code></td>
+                      <td>
+                        <code>shell_poll</code>
+                      </td>
                       <td>Read output from running sessions</td>
                     </tr>
                     <tr>
-                      <td><code>shell_send</code></td>
+                      <td>
+                        <code>shell_send</code>
+                      </td>
                       <td>Send input to running sessions</td>
                     </tr>
                   </tbody>
@@ -768,27 +959,39 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>git_status</code></td>
+                      <td>
+                        <code>git_status</code>
+                      </td>
                       <td>Inspect repository state</td>
                     </tr>
                     <tr>
-                      <td><code>git_diff</code></td>
+                      <td>
+                        <code>git_diff</code>
+                      </td>
                       <td>Show working tree diffs</td>
                     </tr>
                     <tr>
-                      <td><code>git_log</code></td>
+                      <td>
+                        <code>git_log</code>
+                      </td>
                       <td>View commit history</td>
                     </tr>
                     <tr>
-                      <td><code>git_branch</code></td>
+                      <td>
+                        <code>git_branch</code>
+                      </td>
                       <td>List, create, or switch branches</td>
                     </tr>
                     <tr>
-                      <td><code>git_commit</code></td>
+                      <td>
+                        <code>git_commit</code>
+                      </td>
                       <td>Create commits</td>
                     </tr>
                     <tr>
-                      <td><code>git_push</code></td>
+                      <td>
+                        <code>git_push</code>
+                      </td>
                       <td>Push to remote</td>
                     </tr>
                   </tbody>
@@ -806,19 +1009,27 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>spawn_subagent</code></td>
+                      <td>
+                        <code>spawn_subagent</code>
+                      </td>
                       <td>Start specialist subagents</td>
                     </tr>
                     <tr>
-                      <td><code>spawn_subagents</code></td>
+                      <td>
+                        <code>spawn_subagents</code>
+                      </td>
                       <td>Start multiple subagents in parallel</td>
                     </tr>
                     <tr>
-                      <td><code>wait_subagent</code></td>
+                      <td>
+                        <code>wait_subagent</code>
+                      </td>
                       <td>Wait for subagent completion</td>
                     </tr>
                     <tr>
-                      <td><code>list_subagents</code></td>
+                      <td>
+                        <code>list_subagents</code>
+                      </td>
                       <td>List active subagents</td>
                     </tr>
                   </tbody>
@@ -836,15 +1047,21 @@ Sounds good! Go ahead and make the changes.`} />
                   </thead>
                   <tbody>
                     <tr>
-                      <td><code>run_tests</code></td>
+                      <td>
+                        <code>run_tests</code>
+                      </td>
                       <td>Run project tests</td>
                     </tr>
                     <tr>
-                      <td><code>run_linter</code></td>
+                      <td>
+                        <code>run_linter</code>
+                      </td>
                       <td>Run project linter</td>
                     </tr>
                     <tr>
-                      <td><code>run_typecheck</code></td>
+                      <td>
+                        <code>run_typecheck</code>
+                      </td>
                       <td>Run type checker</td>
                     </tr>
                   </tbody>
@@ -856,12 +1073,15 @@ Sounds good! Go ahead and make the changes.`} />
             <section className="docs-section" id="agents">
               <h2>AGENTS.md</h2>
               <p>
-                <code>AGENTS.md</code> files provide project-specific instructions to iTE, similar to how 
+                <code>AGENTS.md</code> files provide project-specific
+                instructions to iTE, similar to how
                 <code>README.md</code> works for humans.
               </p>
 
               <h3>Creating AGENTS.md</h3>
-              <p>Use the <code>/init</code> command:</p>
+              <p>
+                Use the <code>/init</code> command:
+              </p>
               <CodeBlock label="Terminal" code="/init" />
 
               <h3>Scope Hierarchy</h3>
@@ -875,7 +1095,9 @@ Sounds good! Go ahead and make the changes.`} />
               </div>
 
               <h3>Example</h3>
-              <CodeBlock label="AGENTS.md" code={`# My Project
+              <CodeBlock
+                label="AGENTS.md"
+                code={`# My Project
 
 ## Architecture
 - Python/FastAPI backend in src/api/
@@ -889,44 +1111,61 @@ Sounds good! Go ahead and make the changes.`} />
 
 ## Tool Preferences
 - Use \`uv\` for package management
-- Use \`ruff\` for linting`} />
+- Use \`ruff\` for linting`}
+              />
             </section>
 
             {/* Skills Section */}
             <section className="docs-section" id="skills">
               <h2>Skills</h2>
               <p>
-                Skills are instruction bundles that extend iTE&apos;s capabilities on specific tasks.
+                Skills are instruction bundles that extend iTE&apos;s
+                capabilities on specific tasks.
               </p>
 
               <h3>How Skills Work</h3>
               <p>
-                Skills are interoperable <code>SKILL.md</code> bundles. They can be:
+                Skills are interoperable <code>SKILL.md</code> bundles. They can
+                be:
               </p>
               <div className="docs-ordered-list">
-                <li><strong>Global:</strong> Installed in <code>~/.config/ite/skills/</code> (always trusted)</li>
-                <li><strong>Project:</strong> Installed in <code>.agents/skills/</code> or <code>.ite/skills/</code> (require trust)</li>
+                <li>
+                  <strong>Global:</strong> Installed in{" "}
+                  <code>~/.config/ite/skills/</code> (always trusted)
+                </li>
+                <li>
+                  <strong>Project:</strong> Installed in{" "}
+                  <code>.agents/skills/</code> or <code>.ite/skills/</code>{" "}
+                  (require trust)
+                </li>
               </div>
 
               <h3>Compatibility</h3>
               <p>
-                iTE discovers skills from common agent roots including <code>.agents/skills</code>, 
-                <code>.codex/skills</code>, <code>.cursor/skills</code>, <code>.claude/skills</code>, 
+                iTE discovers skills from common agent roots including{" "}
+                <code>.agents/skills</code>,<code>.codex/skills</code>,{" "}
+                <code>.cursor/skills</code>, <code>.claude/skills</code>,
                 <code>.gemini/skills</code>, and <code>.opencode/skills</code>.
               </p>
 
               <h3>Commands</h3>
-              <CodeBlock label="Skills commands" code={`/skills                    # List available skills
+              <CodeBlock
+                label="Skills commands"
+                code={`/skills                    # List available skills
 /skills show <name>        # Inspect a skill
 /skills use <name>         # Activate a skill
 /skills add <path>         # Install a skill pack
-/skills trust              # Trust project skills`} />
+/skills trust              # Trust project skills`}
+              />
 
               <div className="docs-note">
                 <strong>Trust Model</strong>
                 <ul>
                   <li>Global skills are trusted by default</li>
-                  <li>Project skills require explicit trust with <code>/skills trust</code></li>
+                  <li>
+                    Project skills require explicit trust with{" "}
+                    <code>/skills trust</code>
+                  </li>
                 </ul>
               </div>
             </section>
@@ -935,8 +1174,9 @@ Sounds good! Go ahead and make the changes.`} />
             <section className="docs-section" id="subagents">
               <h2>Subagents</h2>
               <p>
-                Subagents are specialized AI agents that handle specific tasks independently. 
-                They run in parallel and return structured results to the main agent.
+                Subagents are specialized AI agents that handle specific tasks
+                independently. They run in parallel and return structured
+                results to the main agent.
               </p>
 
               <h3>Built-in Subagents</h3>
@@ -968,22 +1208,33 @@ Sounds good! Go ahead and make the changes.`} />
               </div>
 
               <h3>Using Subagents</h3>
-              <CodeBlock label="Spawn a subagent" code={`spawn_subagent subagent="security_auditor" goal="Audit the authentication module"`} />
+              <CodeBlock
+                label="Spawn a subagent"
+                code={`spawn_subagent subagent="security_auditor" goal="Audit the authentication module"`}
+              />
 
-              <CodeBlock label="Parallel execution" code={`spawn_subagents requests=[
+              <CodeBlock
+                label="Parallel execution"
+                code={`spawn_subagents requests=[
   {subagent: "code_reviewer", goal: "Review PR changes"},
   {subagent: "security_auditor", goal: "Check for SQL injection risks"}
-]`} />
+]`}
+              />
 
               <h3>Creating Custom Subagents</h3>
-              <p>Use <code>/subagent create</code> to define custom subagents interactively. They are saved to <code>.ite/subagents/&lt;name&gt;.toml</code>.</p>
+              <p>
+                Use <code>/subagent create</code> to define custom subagents
+                interactively. They are saved to{" "}
+                <code>.ite/subagents/&lt;name&gt;.toml</code>.
+              </p>
             </section>
 
             {/* MCP Section */}
             <section className="docs-section" id="mcp">
               <h2>MCP Servers</h2>
               <p>
-                iTE supports the Model Context Protocol (MCP) for extending capabilities with external tools.
+                iTE supports the Model Context Protocol (MCP) for extending
+                capabilities with external tools.
               </p>
 
               <h3>What MCP Does</h3>
@@ -996,24 +1247,35 @@ Sounds good! Go ahead and make the changes.`} />
               </div>
 
               <h3>Configuration</h3>
-              <p>Configure MCP servers in <code>.ite/config.toml</code>:</p>
-              <CodeBlock label=".ite/config.toml" code={`[mcp_servers.sqlite]
+              <p>
+                Configure MCP servers in <code>.ite/config.toml</code>:
+              </p>
+              <CodeBlock
+                label=".ite/config.toml"
+                code={`[mcp_servers.sqlite]
 command = "uvx"
 args = ["mcp-server-sqlite", "--db-path", "data.db"]
 auto_connect = true
 
 [mcp_servers.filesystem]
 command = "npx"
-args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`} />
+args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`}
+              />
 
               <h3>Commands</h3>
-              <CodeBlock label="MCP commands" code={`/mcp                      # Show MCP server status
+              <CodeBlock
+                label="MCP commands"
+                code={`/mcp                      # Show MCP server status
 /mcp start <server>       # Connect an MCP server
-/mcp stop <server>        # Disconnect an MCP server`} />
+/mcp stop <server>        # Disconnect an MCP server`}
+              />
 
               <div className="docs-note">
                 <strong>Security</strong>
-                <p>MCP servers run as separate processes. Review configurations before connecting to new servers.</p>
+                <p>
+                  MCP servers run as separate processes. Review configurations
+                  before connecting to new servers.
+                </p>
               </div>
             </section>
           </article>
@@ -1022,7 +1284,11 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`} />
             <span className="docs-sidebar-label">On this page</span>
             <div className="docs-outline-links">
               {PAGE_OUTLINE.map((item) => (
-                <a className="docs-outline-link" href={`#${item.id}`} key={item.id}>
+                <a
+                  className="docs-outline-link"
+                  href={`#${item.id}`}
+                  key={item.id}
+                >
                   {item.label}
                 </a>
               ))}
