@@ -466,7 +466,8 @@ button {
 
 @media (min-width: 1024px) {
     .hero-layout {
-        grid-template-columns: 1fr 0.95fr;
+        grid-template-columns: minmax(auto, 480px) 1fr;
+        gap: clamp(48px, 8vw, 120px);
         align-items: center;
     }
 }
@@ -2498,7 +2499,8 @@ code {
 }
 
 @keyframes agent-pulse {
-    0%, 100% {
+    0%,
+    100% {
         transform: scale(1);
         opacity: 0.6;
     }
@@ -2509,10 +2511,12 @@ code {
 }
 
 @keyframes agent-cursor-blink {
-    0%, 50% {
+    0%,
+    50% {
         opacity: 1;
     }
-    51%, 100% {
+    51%,
+    100% {
         opacity: 0;
     }
 }
@@ -2958,7 +2962,9 @@ code {
         color: var(--text-soft);
         cursor: pointer;
         border-radius: 8px;
-        transition: background 0.2s ease, color 0.2s ease;
+        transition:
+            background 0.2s ease,
+            color 0.2s ease;
         flex-shrink: 0;
     }
 
@@ -3359,10 +3365,12 @@ code {
 .agent-viz {
     position: relative;
     width: 100%;
-    max-width: 480px;
+    max-width: none;
+    min-width: 800px;
     height: 300px;
     display: flex;
     flex-direction: column;
+    padding-left: 50px;
     animation: agent-fade-slide 800ms ease 400ms both;
 }
 
@@ -3447,8 +3455,13 @@ code {
 }
 
 @keyframes agent-dot-pulse {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.8; }
+    0%,
+    100% {
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 0.8;
+    }
 }
 
 .agent-viz-live {
@@ -3490,8 +3503,13 @@ code {
 }
 
 @keyframes marker-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .agent-viz-marker {
@@ -3630,7 +3648,7 @@ code {
     background: rgba(13, 17, 23, 0.95);
     border: 1px solid rgba(48, 54, 61, 0.8);
     border-radius: 8px;
-    box-shadow: 
+    box-shadow:
         0 0 60px rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
     overflow: hidden;
@@ -3701,8 +3719,15 @@ code {
 }
 
 @keyframes agent-dot-pulse {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.3); }
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.3);
+    }
 }
 
 .agent-viz-controls {
@@ -3763,8 +3788,13 @@ code {
 }
 
 @keyframes agent-icon-pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
 }
 
 .agent-viz-tool-icon {
@@ -3876,8 +3906,15 @@ code {
 }
 
 @keyframes agent-spark {
-    0%, 100% { opacity: 0.3; box-shadow: 0 0 0 rgba(126, 231, 135, 0); }
-    50% { opacity: 1; box-shadow: 0 0 8px rgba(126, 231, 135, 0.6); }
+    0%,
+    100% {
+        opacity: 0.3;
+        box-shadow: 0 0 0 rgba(126, 231, 135, 0);
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 8px rgba(126, 231, 135, 0.6);
+    }
 }
 
 .agent-viz-activity .agent-viz-label {
