@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 
 import { AmbientTriangles } from "@/components/AmbientTriangles";
+import { AgentVisualization } from "@/components/AgentVisualization";
 import { AccountLayout } from "@/components/AccountLayout";
 import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
@@ -98,6 +99,7 @@ function HomePage() {
               </div>
             </div>
           </div>
+          <AgentVisualization />
         </div>
       </section>
     </main>
