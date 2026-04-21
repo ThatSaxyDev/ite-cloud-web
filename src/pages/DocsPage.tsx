@@ -9,9 +9,14 @@ type DocNavItem = {
 
 const DOC_NAV: readonly DocNavItem[] = [
   {
-    id: "overview",
+    id: "intro",
     label: "Intro",
     description: "What iTE is and the shortest way to start."
+  },
+  {
+    id: "prerequisites",
+    label: "Prerequisites",
+    description: "What you need before installing iTE."
   },
   {
     id: "install",
@@ -19,47 +24,88 @@ const DOC_NAV: readonly DocNavItem[] = [
     description: "Public install commands and local options."
   },
   {
-    id: "connect",
-    label: "Connect",
-    description: "Sign in and choose the model service you want to use."
+    id: "configure",
+    label: "Configure",
+    description: "Set up your model provider."
   },
   {
-    id: "first-run",
-    label: "First run",
-    description: "Open iTE, run setup, and send the first prompt."
+    id: "init",
+    label: "Initialize",
+    description: "Project setup with AGENTS.md."
   },
   {
     id: "usage",
     label: "Usage",
-    description: "What good prompts and normal usage look like."
+    description: "Everyday workflows and commands."
   },
   {
-    id: "sessions",
-    label: "Sessions",
-    description: "Understand browser sign-in and linked sessions."
+    id: "commands",
+    label: "Commands",
+    description: "Full command reference."
   },
   {
-    id: "deploy",
-    label: "Deploy",
-    description: "Run the API and web app in production."
+    id: "tools",
+    label: "Tools",
+    description: "Built-in tools reference."
   },
   {
-    id: "troubleshooting",
-    label: "Troubleshooting",
-    description: "Common issues and what to check first."
+    id: "agents",
+    label: "AGENTS.md",
+    description: "Project instructions for the AI."
+  },
+  {
+    id: "skills",
+    label: "Skills",
+    description: "Bundles of expertise."
+  },
+  {
+    id: "subagents",
+    label: "Subagents",
+    description: "Specialist agents for parallel tasks."
+  },
+  {
+    id: "mcp",
+    label: "MCP",
+    description: "External tool servers."
   }
 ] as const;
 
 const PAGE_OUTLINE = [
-  { id: "overview", label: "Overview" },
+  { id: "intro", label: "Intro" },
+  { id: "prerequisites", label: "Prerequisites" },
   { id: "install", label: "Install" },
-  { id: "connect", label: "Connect" },
-  { id: "first-run", label: "First run" },
+  { id: "configure", label: "Configure" },
+  { id: "init", label: "Initialize" },
   { id: "usage", label: "Usage" },
-  { id: "sessions", label: "Sessions" },
-  { id: "deploy", label: "Deploy" },
-  { id: "troubleshooting", label: "Troubleshooting" }
+  { id: "commands", label: "Commands" },
+  { id: "tools", label: "Tools" },
+  { id: "agents", label: "AGENTS.md" },
+  { id: "skills", label: "Skills" },
+  { id: "subagents", label: "Subagents" },
+  { id: "mcp", label: "MCP" }
 ] as const;
+
+function CodeBlock({ label, code }: { label: string; code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="docs-code-block">
+      <div className="docs-code-header">
+        <span className="docs-code-label">{label}</span>
+        <button className="docs-copy-button" onClick={handleCopy} type="button">
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <pre><code>{code}</code></pre>
+    </div>
+  );
+}
 
 export function DocsPage() {
   const [query, setQuery] = useState("");
@@ -69,7 +115,6 @@ export function DocsPage() {
     if (!normalizedQuery) {
       return true;
     }
-
     return `${item.label} ${item.description}`.toLowerCase().includes(normalizedQuery);
   });
 
@@ -134,24 +179,29 @@ export function DocsPage() {
                 </a>
                 <a
                   className="docs-sidebar-link"
-                  href="https://github.com/ThatSaxyDev/ite/blob/main/docs/PRODUCTION_DEPLOYMENT.md"
+                  href="https://pypi.org/project/ite-agent/"
                   rel="noreferrer"
                   target="_blank"
                 >
-                  <strong>Production guide</strong>
-                  <span>Render setup, auth config, and deployment details.</span>
+                  <strong>PyPI</strong>
+                  <span>Package and installation details.</span>
                 </a>
               </div>
             </div>
           </aside>
 
           <article className="docs-article">
-            <section className="docs-hero-block" id="overview">
+            {/* Intro Section */}
+            <section className="docs-hero-block" id="intro">
               <p className="sessions-kicker">Intro</p>
               <h1>Get started with iTE.</h1>
               <p className="docs-summary">
-                iTE is an AI coding agent for the terminal. The app stays light. The docs carry
-                the setup, commands, deployment details, and troubleshooting.
+                <strong>iTE</strong> (Interactive Terminal Environment) is an AI coding agent for your terminal. 
+                Connect your model service and start coding.
+              </p>
+              <p className="docs-summary">
+                iTE runs as a chat interface in your terminal. You prompt, it responds, and together you build software. 
+                It can read files, run commands, search code, and edit files—safely, with your approval.
               </p>
               <div className="docs-inline-actions">
                 <Link className="button" data-magnetic data-ripple to="/account/settings">
@@ -170,198 +220,800 @@ export function DocsPage() {
               </div>
             </section>
 
+            {/* Prerequisites Section */}
+            <section className="docs-section" id="prerequisites">
+              <h2>Prerequisites</h2>
+              <p>
+                Before you install iTE, make sure you have:
+              </p>
+              <div className="docs-checklist">
+                <div className="docs-checklist-item">
+                  <strong>Python 3.11+</strong>
+                  <span>Required runtime for iTE</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>Terminal emulator</strong>
+                  <span>Any terminal works—Terminal.app, iTerm2, Windows Terminal, etc.</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>API keys</strong>
+                  <span>For LLM providers (unless using iTE Cloud)</span>
+                </div>
+              </div>
+              <div className="docs-note">
+                <strong>Supported terminals</strong>
+                <p>
+                  <strong>macOS:</strong> Terminal.app, iTerm2, Ghostty, Kitty, Alacritty, WezTerm<br />
+                  <strong>Windows:</strong> Windows Terminal, PowerShell, CMD
+                </p>
+              </div>
+            </section>
+
+            {/* Install Section */}
             <section className="docs-section" id="install">
               <h2>Install</h2>
               <p>
-                The fastest public install path is `pipx`, because it gives you the `ite` command
-                globally without mixing it into another Python environment.
+                The fastest way to install iTE is through <strong>pipx</strong>. It keeps iTE isolated 
+                from your system Python and gives you the <code>ite</code> command globally.
               </p>
-              <div className="docs-code-block">
-                <span className="docs-code-label">Terminal</span>
-                <pre><code>pipx install ite-agent</code></pre>
-              </div>
-              <p>You can also install from source while developing locally.</p>
-              <div className="docs-code-block">
-                <span className="docs-code-label">Local development</span>
-                <pre><code>{`git clone https://github.com/ThatSaxyDev/ite.git
-cd ite
-pip install -e .`}</code></pre>
+              
+              <CodeBlock label="pipx (recommended)" code="pipx install ite-agent" />
+              
+              <CodeBlock label="uv" code="uv tool install ite-agent" />
+
+              <p>Verify the installation:</p>
+              <CodeBlock label="Terminal" code="ite --version" />
+
+              <p>Upgrade to the latest version:</p>
+              <CodeBlock label="Upgrade" code="pipx upgrade ite-agent" />
+
+              <div className="docs-note">
+                <strong>Uninstall</strong>
+                <p>If you need to remove iTE: <code>pipx uninstall ite-agent</code></p>
               </div>
             </section>
 
-            <section className="docs-section" id="connect">
-              <h2>Connect</h2>
+            {/* Configure Section */}
+            <section className="docs-section" id="configure">
+              <h2>Configure Your Provider</h2>
               <p>
-                When cloud auth is enabled, iTE opens a hosted sign-in flow in the browser. After
-                that, you choose how iTE should reach a model inside the app.
+                iTE requires an OpenAI-compatible model provider. Run <code>/setup</code> inside iTE to configure:
               </p>
-              <ol className="docs-ordered-list">
-                <li>Run `ite`.</li>
-                <li>Finish browser sign-in.</li>
-                <li>Return to the terminal and wait for the session to link.</li>
-                <li>Run `/setup` and let iTE verify the provider before it saves anything.</li>
-              </ol>
-              <div className="docs-checklist">
-                <div className="docs-checklist-item">
-                  <strong>Ollama on this computer</strong>
-                  <span>Use this when you want local or self-managed inference through Ollama. Start Ollama first, then let iTE use the standard local Ollama route.</span>
-                </div>
-                <div className="docs-checklist-item">
-                  <strong>OpenRouter</strong>
-                  <span>Use this when you want a hosted BYOK path through OpenRouter. iTE uses the standard OpenRouter API endpoint and you provide your own key.</span>
-                </div>
-                <div className="docs-checklist-item">
-                  <strong>Other compatible API</strong>
-                  <span>Use this for any OpenAI-compatible provider, proxy, or self-hosted gateway that exposes a `/v1` chat completion API.</span>
-                </div>
+              <div className="docs-ordered-list">
+                <li>Base URL — Your provider endpoint</li>
+                <li>API Key — Your provider key</li>
+                <li>Model — The exact model name</li>
+              </div>
+
+              <h3>Supported Providers</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Provider</th>
+                      <th>Base URL</th>
+                      <th>API Key</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Ollama</strong> (Local)</td>
+                      <td><code>http://localhost:11434/v1</code></td>
+                      <td><code>ollama</code> or your key</td>
+                    </tr>
+                    <tr>
+                      <td><strong>OpenRouter</strong></td>
+                      <td><code>https://openrouter.ai/api/v1</code></td>
+                      <td>Your OpenRouter key</td>
+                    </tr>
+                    <tr>
+                      <td><strong>OpenAI</strong></td>
+                      <td><code>https://api.openai.com/v1</code></td>
+                      <td>Your OpenAI key</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <p>Start iTE and run the setup command:</p>
+              <CodeBlock label="Terminal" code={`ite
+/setup`} />
+
+              <div className="docs-note docs-note-featured">
+                <strong>iTE Cloud (Coming Soon)</strong>
+                <p>
+                  Bundled model access is on the roadmap. iTE Cloud will offer a curated selection of 
+                  high-quality models, managed directly within the platform. No external API keys required.
+                </p>
               </div>
             </section>
 
-            <section className="docs-section" id="first-run">
-              <h2>First run</h2>
+            {/* Initialize Section */}
+            <section className="docs-section" id="init">
+              <h2>Initialize Your Project</h2>
               <p>
-                The first successful loop should be simple: open iTE, finish sign-in, choose a
-                provider path in `/setup`, and send one real prompt.
+                Projects can include an <code>AGENTS.md</code> file at the root to provide instructions to iTE 
+                on how to work with the codebase.
               </p>
-              <div className="docs-code-block">
-                <span className="docs-code-label">Command flow</span>
-                <pre><code>{`ite
-/setup`}</code></pre>
+
+              <h3>The /init Command</h3>
+              <p>
+                Use the <code>/init</code> command to analyze your project and create an <code>AGENTS.md</code> file:
+              </p>
+              <CodeBlock label="Terminal" code="/init" />
+
+              <p>This detects:</p>
+              <div className="docs-ordered-list">
+                <li>Language/framework (Python, JavaScript, Rust, etc.)</li>
+                <li>Test/build setup</li>
+                <li>Key directory structure</li>
               </div>
+
               <div className="docs-faq-list">
                 <article className="detail-card docs-faq-card">
-                  <strong>Path 1: Ollama</strong>
+                  <strong>Force overwrite</strong>
                   <p className="muted">
-                    Install Ollama, start it, and make sure the model you want is available before
-                    you run setup. Typical local flow:
+                    To regenerate and overwrite an existing <code>AGENTS.md</code>:
                   </p>
-                  <div className="docs-code-block">
-                    <span className="docs-code-label">Local Ollama</span>
-                    <pre><code>{`ollama serve
-ollama pull qwen2.5-coder:7b`}</code></pre>
-                  </div>
-                  <p className="muted">
-                    In `/setup`, choose Ollama and enter the exact model name available through your
-                    Ollama instance. iTE now checks that Ollama is running and that the selected
-                    model exists before setup is accepted.
-                  </p>
+                  <CodeBlock label="Terminal" code="/init --force" />
                 </article>
-                <article className="detail-card docs-faq-card">
-                  <strong>Path 2: OpenRouter</strong>
-                  <p className="muted">
-                    Create an OpenRouter API key first. In `/setup`, choose OpenRouter, paste your
-                    key, and enter the exact model id from OpenRouter. iTE verifies the route with
-                    your key before saving.
-                  </p>
-                </article>
-                <article className="detail-card docs-faq-card">
-                  <strong>Path 3: Other compatible API</strong>
-                  <p className="muted">
-                    Paste the exact base URL, API key, and model name required by that provider.
-                    iTE expects an OpenAI-compatible chat completion API and validates the provider
-                    connection before it stores the setup.
-                  </p>
-                </article>
+              </div>
+
+              <h3>AGENTS.md Scope</h3>
+              <p>
+                <code>AGENTS.md</code> files support scope hierarchy:
+              </p>
+              <div className="docs-ordered-list">
+                <li>The scope is the directory containing the file and all subdirectories</li>
+                <li>Deeper files override parent instructions</li>
+                <li>Multiple files can exist in a project, each governing its subtree</li>
               </div>
             </section>
 
+            {/* Usage Section */}
             <section className="docs-section" id="usage">
               <h2>Usage</h2>
               <p>
-                Once setup is complete, use iTE normally. Ask questions about the codebase, request
-                changes, or iterate on plans before implementation.
+                Now that you&apos;ve configured a provider and optionally initialized your project, 
+                you&apos;re ready to use iTE.
               </p>
+
+              <h3>Ask Questions</h3>
+              <p>You can ask iTE to explain the codebase to you:</p>
               <div className="docs-example-grid">
                 <article className="detail-card docs-example-card">
                   <span className="onboarding-step-eyebrow">Ask</span>
-                  <p>Explain how authentication works in this repo.</p>
+                  <p>How is authentication handled in src/auth/index.ts</p>
                 </article>
+              </div>
+              <div className="docs-note">
+                <strong>Tip:</strong> Use the <code>@</code> key to fuzzy search for files in the project.
+              </div>
+
+              <h3>Add Features</h3>
+              <p>You can ask iTE to add new features. First, create a plan:</p>
+              
+              <div className="docs-ordered-list">
+                <li><strong>Create a plan</strong> — Enable plan mode with <code>/plan on</code></li>
+                <li><strong>Iterate on the plan</strong> — Give feedback or add more details</li>
+                <li><strong>Build the feature</strong> — Disable plan mode with <code>/plan off</code> and execute</li>
+              </div>
+
+              <CodeBlock label="Plan mode" code={`/plan on
+
+Add a user profile page with avatar upload and display name editing.
+
+/plan off
+
+Sounds good! Go ahead and make the changes.`} />
+
+              <h3>Make Changes</h3>
+              <p>For straightforward changes, ask iTE directly:</p>
+              <div className="docs-example-grid">
                 <article className="detail-card docs-example-card">
                   <span className="onboarding-step-eyebrow">Change</span>
-                  <p>Add a loading state to the sessions page and verify the build.</p>
+                  <p>Add error handling to the login function in src/auth.ts</p>
                 </article>
-                <article className="detail-card docs-example-card">
-                  <span className="onboarding-step-eyebrow">Plan</span>
-                  <p>Draft the rollout plan for shipping the API on Render tonight.</p>
-                </article>
+              </div>
+
+              <h3>Undo Changes</h3>
+              <p>If something goes wrong, you can undo:</p>
+              <CodeBlock label="Undo / Redo" code={`/undo  # Reverts file changes from the last turn
+/redo  # Reapply reverted changes`} />
+
+              <h3>Sessions</h3>
+              <p>Conversations auto-save. List or resume previous sessions:</p>
+              <CodeBlock label="Sessions" code="/sessions" />
+            </section>
+
+            {/* Commands Section */}
+            <section className="docs-section" id="commands">
+              <h2>Commands</h2>
+              <p>Type <code>/help</code> in iTE to see available commands.</p>
+
+              <h3>Session Management</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Command</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>/new</code></td>
+                      <td>Start a new conversation thread</td>
+                    </tr>
+                    <tr>
+                      <td><code>/sessions</code></td>
+                      <td>List saved conversations and resume</td>
+                    </tr>
+                    <tr>
+                      <td><code>/rename &lt;name&gt;</code></td>
+                      <td>Rename the current conversation</td>
+                    </tr>
+                    <tr>
+                      <td><code>/exit</code> or <code>/quit</code></td>
+                      <td>Close iTE</td>
+                    </tr>
+                    <tr>
+                      <td><code>/close</code></td>
+                      <td>Close the current thread</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Configuration</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Command</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>/setup</code></td>
+                      <td>Configure model provider</td>
+                    </tr>
+                    <tr>
+                      <td><code>/config</code></td>
+                      <td>View current configuration</td>
+                    </tr>
+                    <tr>
+                      <td><code>/model &lt;name&gt;</code></td>
+                      <td>Change model</td>
+                    </tr>
+                    <tr>
+                      <td><code>/approval &lt;mode&gt;</code></td>
+                      <td>Set approval mode: on_request, on_failure, auto, auto_edit, yolo</td>
+                    </tr>
+                    <tr>
+                      <td><code>/logout</code></td>
+                      <td>Log out of iTE Cloud</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Workflow</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Command</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>/plan</code></td>
+                      <td>Show plan mode status</td>
+                    </tr>
+                    <tr>
+                      <td><code>/plan on</code></td>
+                      <td>Enable plan mode</td>
+                    </tr>
+                    <tr>
+                      <td><code>/plan off</code></td>
+                      <td>Disable plan mode</td>
+                    </tr>
+                    <tr>
+                      <td><code>/todos</code></td>
+                      <td>Manage task lists</td>
+                    </tr>
+                    <tr>
+                      <td><code>/attach &lt;path&gt;</code></td>
+                      <td>Queue files for next message</td>
+                    </tr>
+                    <tr>
+                      <td><code>/clear</code></td>
+                      <td>Clear conversation history</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Version Control &amp; History</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Command</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>/branch</code></td>
+                      <td>List or switch git branches</td>
+                    </tr>
+                    <tr>
+                      <td><code>/branch --create &lt;name&gt;</code></td>
+                      <td>Create and switch to new branch</td>
+                    </tr>
+                    <tr>
+                      <td><code>/undo</code></td>
+                      <td>Revert file changes from last turn</td>
+                    </tr>
+                    <tr>
+                      <td><code>/redo</code></td>
+                      <td>Reapply reverted changes</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Project &amp; Skills</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Command</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>/init</code></td>
+                      <td>Analyze project and create AGENTS.md</td>
+                    </tr>
+                    <tr>
+                      <td><code>/skills</code></td>
+                      <td>List available skills</td>
+                    </tr>
+                    <tr>
+                      <td><code>/skills use &lt;name&gt;</code></td>
+                      <td>Activate a skill</td>
+                    </tr>
+                    <tr>
+                      <td><code>/skills add &lt;path&gt;</code></td>
+                      <td>Install a skill pack</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Approval Modes</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Mode</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>on_request</code></td>
+                      <td>Ask before every mutating action</td>
+                    </tr>
+                    <tr>
+                      <td><code>on_failure</code></td>
+                      <td>Auto-approve, ask only on failure</td>
+                    </tr>
+                    <tr>
+                      <td><code>auto</code></td>
+                      <td>Auto-approve all safe operations</td>
+                    </tr>
+                    <tr>
+                      <td><code>auto_edit</code></td>
+                      <td>Auto-approve edits, confirm commands</td>
+                    </tr>
+                    <tr>
+                      <td><code>yolo</code></td>
+                      <td>Approve everything — no guardrails</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
 
-            <section className="docs-section" id="sessions">
-              <h2>Sessions</h2>
+            {/* Tools Section */}
+            <section className="docs-section" id="tools">
+              <h2>Tools</h2>
               <p>
-                Sessions help you verify where you are signed in and revoke stale terminal links if
-                needed. They are available in the app, but they should stay secondary to setup and
-                usage.
+                iTE includes a comprehensive set of built-in tools for reading, writing, searching, executing, and managing your codebase.
               </p>
-              <p>
-                Open the account area if you need to confirm a linked session, inspect recent
-                activity on that session, or revoke access from a machine you no longer use.
-              </p>
-            </section>
 
-            <section className="docs-section" id="deploy">
-              <h2>Deploy</h2>
-              <p>
-                The current production path is Render for the API and web app, with SQLite stored
-                on a persistent disk for the API service.
-              </p>
-              <div className="docs-code-block">
-                <span className="docs-code-label">Required API environment</span>
-                <pre><code>{`HOST=0.0.0.0
-PORT=4000
-WEB_ORIGIN=https://app.example.com
-BETTER_AUTH_URL=https://api.example.com
-BETTER_AUTH_SECRET=<strong secret>
-SQLITE_PATH=/data/ite-cloud-api.sqlite`}</code></pre>
+              <h3>Read Tools</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Tool</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>read_file</code></td>
+                      <td>Read file contents with offset and limit</td>
+                    </tr>
+                    <tr>
+                      <td><code>read_json</code></td>
+                      <td>Read and parse JSON files</td>
+                    </tr>
+                    <tr>
+                      <td><code>read_toml</code></td>
+                      <td>Read and parse TOML files</td>
+                    </tr>
+                    <tr>
+                      <td><code>read_yaml</code></td>
+                      <td>Read and parse YAML files</td>
+                    </tr>
+                    <tr>
+                      <td><code>read_pdf</code></td>
+                      <td>Extract text from PDF documents</td>
+                    </tr>
+                    <tr>
+                      <td><code>read_image</code></td>
+                      <td>Read image metadata and OCR text</td>
+                    </tr>
+                    <tr>
+                      <td><code>list_dir</code></td>
+                      <td>List directory contents</td>
+                    </tr>
+                    <tr>
+                      <td><code>glob</code></td>
+                      <td>Find files by pattern</td>
+                    </tr>
+                    <tr>
+                      <td><code>grep</code></td>
+                      <td>Search for patterns in file content</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <p>
-                The full deployment runbook remains available in the external production guide for
-                the exact Render setup.
-              </p>
+
+              <h3>Write Tools</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Tool</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>write_file</code></td>
+                      <td>Create or overwrite files</td>
+                    </tr>
+                    <tr>
+                      <td><code>edit</code></td>
+                      <td>Make surgical text replacements</td>
+                    </tr>
+                    <tr>
+                      <td><code>apply_patch</code></td>
+                      <td>Apply multi-file patch edits</td>
+                    </tr>
+                    <tr>
+                      <td><code>edit_json</code></td>
+                      <td>Edit JSON files using structured paths</td>
+                    </tr>
+                    <tr>
+                      <td><code>edit_toml</code></td>
+                      <td>Edit TOML files using structured paths</td>
+                    </tr>
+                    <tr>
+                      <td><code>edit_yaml</code></td>
+                      <td>Edit YAML files using structured paths</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Execute Tools</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Tool</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>shell</code></td>
+                      <td>Execute shell commands with timeout</td>
+                    </tr>
+                    <tr>
+                      <td><code>shell_start</code></td>
+                      <td>Start persistent shell sessions</td>
+                    </tr>
+                    <tr>
+                      <td><code>shell_poll</code></td>
+                      <td>Read output from running sessions</td>
+                    </tr>
+                    <tr>
+                      <td><code>shell_send</code></td>
+                      <td>Send input to running sessions</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Git Tools</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Tool</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>git_status</code></td>
+                      <td>Inspect repository state</td>
+                    </tr>
+                    <tr>
+                      <td><code>git_diff</code></td>
+                      <td>Show working tree diffs</td>
+                    </tr>
+                    <tr>
+                      <td><code>git_log</code></td>
+                      <td>View commit history</td>
+                    </tr>
+                    <tr>
+                      <td><code>git_branch</code></td>
+                      <td>List, create, or switch branches</td>
+                    </tr>
+                    <tr>
+                      <td><code>git_commit</code></td>
+                      <td>Create commits</td>
+                    </tr>
+                    <tr>
+                      <td><code>git_push</code></td>
+                      <td>Push to remote</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Subagent Tools</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Tool</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>spawn_subagent</code></td>
+                      <td>Start specialist subagents</td>
+                    </tr>
+                    <tr>
+                      <td><code>spawn_subagents</code></td>
+                      <td>Start multiple subagents in parallel</td>
+                    </tr>
+                    <tr>
+                      <td><code>wait_subagent</code></td>
+                      <td>Wait for subagent completion</td>
+                    </tr>
+                    <tr>
+                      <td><code>list_subagents</code></td>
+                      <td>List active subagents</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>Verification Tools</h3>
+              <div className="docs-table-wrapper">
+                <table className="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Tool</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>run_tests</code></td>
+                      <td>Run project tests</td>
+                    </tr>
+                    <tr>
+                      <td><code>run_linter</code></td>
+                      <td>Run project linter</td>
+                    </tr>
+                    <tr>
+                      <td><code>run_typecheck</code></td>
+                      <td>Run type checker</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
-            <section className="docs-section" id="troubleshooting">
-              <h2>Troubleshooting</h2>
-              <div className="docs-faq-list">
-                <article className="detail-card docs-faq-card">
-                  <strong>Browser sign-in does not finish</strong>
-                  <p className="muted">
-                    Check that the browser opened the correct hosted app, then confirm the API
-                    origin, web origin, and GitHub OAuth callback all match production.
-                  </p>
-                </article>
-                <article className="detail-card docs-faq-card">
-                  <strong>Requests fail after setup</strong>
-                  <p className="muted">
-                    Match the setup path to the provider you are actually using. If you chose
-                    Ollama, confirm Ollama is running and the model is available there. If you chose
-                    OpenRouter or another provider, confirm the key and model id are correct, and
-                    for the generic path also confirm the base URL is correct.
-                  </p>
-                </article>
-                <article className="detail-card docs-faq-card">
-                  <strong>Ollama setup looks broken</strong>
-                  <p className="muted">
-                    The most common issue is that Ollama is not running yet. Start it first, then
-                    retry `/setup`. If your Ollama instance is not using the standard local route,
-                    choose the generic provider path and enter that custom base URL directly.
-                  </p>
-                </article>
-                <article className="detail-card docs-faq-card">
-                  <strong>OpenRouter returns model errors</strong>
-                  <p className="muted">
-                    Use the exact model id exposed by OpenRouter for your account. The label you see
-                    in marketing pages is often not the same string the API expects.
-                  </p>
-                </article>
-                <article className="detail-card docs-faq-card">
-                  <strong>Session disappears after restart</strong>
-                  <p className="muted">
-                    Confirm the cloud API is writing to persistent SQLite storage and that refresh
-                    requests can still reach the same API origin.
-                  </p>
-                </article>
+            {/* AGENTS.md Section */}
+            <section className="docs-section" id="agents">
+              <h2>AGENTS.md</h2>
+              <p>
+                <code>AGENTS.md</code> files provide project-specific instructions to iTE, similar to how 
+                <code>README.md</code> works for humans.
+              </p>
+
+              <h3>Creating AGENTS.md</h3>
+              <p>Use the <code>/init</code> command:</p>
+              <CodeBlock label="Terminal" code="/init" />
+
+              <h3>Scope Hierarchy</h3>
+              <p>
+                <code>AGENTS.md</code> files support scope-based overrides:
+              </p>
+              <div className="docs-ordered-list">
+                <li>The file covers its directory and all subdirectories</li>
+                <li>Deeper files override parent files for their scope</li>
+                <li>Multiple files can exist in one project</li>
+              </div>
+
+              <h3>Example</h3>
+              <CodeBlock label="AGENTS.md" code={`# My Project
+
+## Architecture
+- Python/FastAPI backend in src/api/
+- React frontend in src/web/
+
+## Development Guidelines
+- Use pytest for tests
+- Run \`make test\` before committing
+- Prefer \`read_json\`/\`edit_json\` for structured files
+- Follow PEP 8 for Python code
+
+## Tool Preferences
+- Use \`uv\` for package management
+- Use \`ruff\` for linting`} />
+            </section>
+
+            {/* Skills Section */}
+            <section className="docs-section" id="skills">
+              <h2>Skills</h2>
+              <p>
+                Skills are instruction bundles that extend iTE&apos;s capabilities on specific tasks.
+              </p>
+
+              <h3>How Skills Work</h3>
+              <p>
+                Skills are interoperable <code>SKILL.md</code> bundles. They can be:
+              </p>
+              <div className="docs-ordered-list">
+                <li><strong>Global:</strong> Installed in <code>~/.config/ite/skills/</code> (always trusted)</li>
+                <li><strong>Project:</strong> Installed in <code>.agents/skills/</code> or <code>.ite/skills/</code> (require trust)</li>
+              </div>
+
+              <h3>Compatibility</h3>
+              <p>
+                iTE discovers skills from common agent roots including <code>.agents/skills</code>, 
+                <code>.codex/skills</code>, <code>.cursor/skills</code>, <code>.claude/skills</code>, 
+                <code>.gemini/skills</code>, and <code>.opencode/skills</code>.
+              </p>
+
+              <h3>Commands</h3>
+              <CodeBlock label="Skills commands" code={`/skills                    # List available skills
+/skills show <name>        # Inspect a skill
+/skills use <name>         # Activate a skill
+/skills add <path>         # Install a skill pack
+/skills trust              # Trust project skills`} />
+
+              <div className="docs-note">
+                <strong>Trust Model</strong>
+                <ul>
+                  <li>Global skills are trusted by default</li>
+                  <li>Project skills require explicit trust with <code>/skills trust</code></li>
+                </ul>
+              </div>
+            </section>
+
+            {/* Subagents Section */}
+            <section className="docs-section" id="subagents">
+              <h2>Subagents</h2>
+              <p>
+                Subagents are specialized AI agents that handle specific tasks independently. 
+                They run in parallel and return structured results to the main agent.
+              </p>
+
+              <h3>Built-in Subagents</h3>
+              <div className="docs-checklist">
+                <div className="docs-checklist-item">
+                  <strong>security_auditor</strong>
+                  <span>Security vulnerability analysis</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>code_reviewer</strong>
+                  <span>Code quality review</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>codebase_investigator</strong>
+                  <span>Explore code structure and patterns</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>tooling_guardian</strong>
+                  <span>Validate tool configurations</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>verification_reviewer</strong>
+                  <span>Regression-focused change validation</span>
+                </div>
+                <div className="docs-checklist-item">
+                  <strong>init_investigator</strong>
+                  <span>Generate AGENTS.md for projects</span>
+                </div>
+              </div>
+
+              <h3>Using Subagents</h3>
+              <CodeBlock label="Spawn a subagent" code={`spawn_subagent subagent="security_auditor" goal="Audit the authentication module"`} />
+
+              <CodeBlock label="Parallel execution" code={`spawn_subagents requests=[
+  {subagent: "code_reviewer", goal: "Review PR changes"},
+  {subagent: "security_auditor", goal: "Check for SQL injection risks"}
+]`} />
+
+              <h3>Creating Custom Subagents</h3>
+              <p>Use <code>/subagent create</code> to define custom subagents interactively. They are saved to <code>.ite/subagents/&lt;name&gt;.toml</code>.</p>
+            </section>
+
+            {/* MCP Section */}
+            <section className="docs-section" id="mcp">
+              <h2>MCP Servers</h2>
+              <p>
+                iTE supports the Model Context Protocol (MCP) for extending capabilities with external tools.
+              </p>
+
+              <h3>What MCP Does</h3>
+              <p>MCP servers provide specialized capabilities:</p>
+              <div className="docs-ordered-list">
+                <li>Database access</li>
+                <li>API integrations</li>
+                <li>Custom tools</li>
+                <li>External services</li>
+              </div>
+
+              <h3>Configuration</h3>
+              <p>Configure MCP servers in <code>.ite/config.toml</code>:</p>
+              <CodeBlock label=".ite/config.toml" code={`[mcp_servers.sqlite]
+command = "uvx"
+args = ["mcp-server-sqlite", "--db-path", "data.db"]
+auto_connect = true
+
+[mcp_servers.filesystem]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`} />
+
+              <h3>Commands</h3>
+              <CodeBlock label="MCP commands" code={`/mcp                      # Show MCP server status
+/mcp start <server>       # Connect an MCP server
+/mcp stop <server>        # Disconnect an MCP server`} />
+
+              <div className="docs-note">
+                <strong>Security</strong>
+                <p>MCP servers run as separate processes. Review configurations before connecting to new servers.</p>
               </div>
             </section>
           </article>
