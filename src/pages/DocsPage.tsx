@@ -1,6 +1,22 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" height="18" viewBox="0 0 24 24" width="18">
+      <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" height="20" viewBox="0 0 24 24" width="20">
+      <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+    </svg>
+  );
+}
 
 type DocNavItem = {
   id: string;
@@ -9,81 +25,18 @@ type DocNavItem = {
 };
 
 const DOC_NAV: readonly DocNavItem[] = [
-  {
-    id: "intro",
-    label: "Intro",
-    description: "What iTE is and the shortest way to start.",
-  },
-  {
-    id: "prerequisites",
-    label: "Prerequisites",
-    description: "What you need before installing iTE.",
-  },
-  {
-    id: "install",
-    label: "Install",
-    description: "Public install commands and local options.",
-  },
-  {
-    id: "configure",
-    label: "Configure",
-    description: "Set up your model provider.",
-  },
-  {
-    id: "init",
-    label: "Initialize",
-    description: "Project setup with AGENTS.md.",
-  },
-  {
-    id: "usage",
-    label: "Usage",
-    description: "Everyday workflows and commands.",
-  },
-  {
-    id: "commands",
-    label: "Commands",
-    description: "Full command reference.",
-  },
-  {
-    id: "tools",
-    label: "Tools",
-    description: "Built-in tools reference.",
-  },
-  {
-    id: "agents",
-    label: "AGENTS.md",
-    description: "Project instructions for the AI.",
-  },
-  {
-    id: "skills",
-    label: "Skills",
-    description: "Bundles of expertise.",
-  },
-  {
-    id: "subagents",
-    label: "Subagents",
-    description: "Specialist agents for parallel tasks.",
-  },
-  {
-    id: "mcp",
-    label: "MCP",
-    description: "External tool servers.",
-  },
-] as const;
-
-const PAGE_OUTLINE = [
-  { id: "intro", label: "Intro" },
-  { id: "prerequisites", label: "Prerequisites" },
-  { id: "install", label: "Install" },
-  { id: "configure", label: "Configure" },
-  { id: "init", label: "Initialize" },
-  { id: "usage", label: "Usage" },
-  { id: "commands", label: "Commands" },
-  { id: "tools", label: "Tools" },
-  { id: "agents", label: "AGENTS.md" },
-  { id: "skills", label: "Skills" },
-  { id: "subagents", label: "Subagents" },
-  { id: "mcp", label: "MCP" },
+  { id: "intro", label: "Intro", description: "What iTE is and the shortest way to start." },
+  { id: "prerequisites", label: "Prerequisites", description: "What you need before installing iTE." },
+  { id: "install", label: "Install", description: "Public install commands and local options." },
+  { id: "configure", label: "Configure", description: "Set up your model provider." },
+  { id: "init", label: "Initialize", description: "Project setup with AGENTS.md." },
+  { id: "usage", label: "Usage", description: "Everyday workflows and commands." },
+  { id: "commands", label: "Commands", description: "Full command reference." },
+  { id: "tools", label: "Tools", description: "Built-in tools reference." },
+  { id: "agents", label: "AGENTS.md", description: "Project instructions for the AI." },
+  { id: "skills", label: "Skills", description: "Bundles of expertise." },
+  { id: "subagents", label: "Subagents", description: "Specialist agents for parallel tasks." },
+  { id: "mcp", label: "MCP", description: "External tool servers." },
 ] as const;
 
 function CodeBlock({ label, code }: { label: string; code: string }) {
@@ -110,40 +63,176 @@ function CodeBlock({ label, code }: { label: string; code: string }) {
   );
 }
 
+function SidebarContent({
+  filteredNav,
+  closeMobileNav,
+}: { filteredNav: DocNavItem[]; closeMobileNav: () => void }) {
+  return (
+    <>
+      <div className="docs-sidebar-group">
+        <span className="docs-sidebar-label">Docs</span>
+        <div className="docs-sidebar-links">
+          {filteredNav.map((item) => (
+            <a className="docs-sidebar-link" href={`#${item.id}`} key={item.id} onClick={closeMobileNav}>
+              <strong>{item.label}</strong>
+              <span>{item.description}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div className="docs-sidebar-group docs-sidebar-group-compact">
+        <span className="docs-sidebar-label">External</span>
+        <div className="docs-sidebar-links">
+          <a
+            className="docs-sidebar-link"
+            href="https://pypi.org/project/ite-agent/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <strong>PyPI</strong>
+            <span>Package and installation details.</span>
+          </a>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function DocsPage() {
   const [query, setQuery] = useState("");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const headerRef = useRef<HTMLElement>(null);
+
   const normalizedQuery = query.trim().toLowerCase();
 
   const filteredNav = DOC_NAV.filter((item) => {
-    if (!normalizedQuery) {
-      return true;
-    }
-    return `${item.label} ${item.description}`
-      .toLowerCase()
-      .includes(normalizedQuery);
+    if (!normalizedQuery) return true;
+    return `${item.label} ${item.description}`.toLowerCase().includes(normalizedQuery);
   });
+
+  const toggleMobileNav = () => setMobileNavOpen((prev) => !prev);
+  const closeMobileNav = () => setMobileNavOpen(false);
+
+  // Auto-hide/show header on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDelta = currentScrollY - lastScrollY.current;
+
+      // Always show header at top of page
+      if (currentScrollY < 60) {
+        setHeaderVisible(true);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+
+      // Hide when scrolling down, show when scrolling up
+      if (scrollDelta > 10) {
+        setHeaderVisible(false);
+      } else if (scrollDelta < -10) {
+        setHeaderVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Prevent body scroll when mobile nav is open
+  useEffect(() => {
+    if (mobileNavOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileNavOpen]);
 
   return (
     <main className="docs-shell">
+      {/* Persistent Mobile Header */}
+      <header
+        ref={headerRef}
+        className="docs-mobile-header"
+        data-visible={headerVisible}
+      >
+        <div className="docs-mobile-header-inner">
+          <button
+            aria-label="Open navigation"
+            className="docs-mobile-menu-btn"
+            onClick={toggleMobileNav}
+            type="button"
+          >
+            <MenuIcon />
+          </button>
+          <Link className="docs-mobile-logo" to="/" onClick={closeMobileNav}>
+            <GlitchImageLogo />
+          </Link>
+          <div className="docs-mobile-header-spacer" />
+        </div>
+
+        {/* Mobile Search Bar */}
+        <div className="docs-mobile-search-row">
+          <label className="docs-search docs-search-mobile" aria-label="Search docs sections">
+            <span className="docs-search-icon" aria-hidden="true">/</span>
+            <input
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search docs"
+              type="search"
+              value={query}
+            />
+          </label>
+        </div>
+      </header>
+
+      {/* Mobile Nav Drawer */}
+      {mobileNavOpen && (
+        <div
+          aria-hidden="true"
+          className="docs-mobile-nav-overlay"
+          onClick={closeMobileNav}
+        />
+      )}
+      <aside className="docs-mobile-drawer" data-open={mobileNavOpen} aria-label="Documentation sections">
+        <div className="docs-mobile-drawer-header">
+          <Link className="docs-mobile-logo" to="/" onClick={closeMobileNav}>
+            <GlitchImageLogo />
+          </Link>
+          <button
+            aria-label="Close navigation"
+            className="docs-mobile-menu-btn"
+            onClick={closeMobileNav}
+            type="button"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+        <div className="docs-mobile-drawer-content">
+          <SidebarContent filteredNav={filteredNav} closeMobileNav={closeMobileNav} />
+        </div>
+      </aside>
+
       <section className="docs-stage">
+        {/* Desktop Header */}
         <header className="docs-header">
           <div className="docs-header-left">
-            <Link
-              className="docs-logo"
-              data-magnetic
-              to="/"
-            >
+            <Link className="docs-logo" data-magnetic to="/">
               <GlitchImageLogo className="docs-logo-image" />
             </Link>
           </div>
 
           <div className="docs-header-actions">
             <label className="docs-search" aria-label="Search docs sections">
-              <span className="docs-search-icon" aria-hidden="true">
-                /
-              </span>
+              <span className="docs-search-icon" aria-hidden="true">/</span>
               <input
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search docs"
                 type="search"
                 value={query}
@@ -155,36 +244,7 @@ export function DocsPage() {
 
         <div className="docs-layout">
           <aside className="docs-sidebar" aria-label="Documentation sections">
-            <div className="docs-sidebar-group">
-              <span className="docs-sidebar-label">Docs</span>
-              <div className="docs-sidebar-links">
-                {filteredNav.map((item) => (
-                  <a
-                    className="docs-sidebar-link"
-                    href={`#${item.id}`}
-                    key={item.id}
-                  >
-                    <strong>{item.label}</strong>
-                    <span>{item.description}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <div className="docs-sidebar-group docs-sidebar-group-compact">
-              <span className="docs-sidebar-label">External</span>
-              <div className="docs-sidebar-links">
-                <a
-                  className="docs-sidebar-link"
-                  href="https://pypi.org/project/ite-agent/"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <strong>PyPI</strong>
-                  <span>Package and installation details.</span>
-                </a>
-              </div>
-            </div>
+            <SidebarContent filteredNav={filteredNav} closeMobileNav={closeMobileNav} />
           </aside>
 
           <article className="docs-article">
@@ -196,38 +256,8 @@ export function DocsPage() {
                 <strong>iTE</strong> is an AI coding agent for your terminal.
               </p>
               <div className="docs-image-container">
-                <img
-                  alt="iTE terminal interface"
-                  className="docs-image"
-                  src="/docs-image.png"
-                />
+                <img alt="iTE terminal interface" className="docs-image" src="/docs-image.png" />
               </div>
-              {/*<p className="docs-summary">
-                iTE runs as a chat interface in your terminal. You prompt, it
-                responds, and together you build software. It can read files,
-                run commands, search code, and edit files—safely, with your
-                approval.
-              </p>*/}
-              {/*<div className="docs-inline-actions">
-                <Link
-                  className="button"
-                  data-magnetic
-                  data-ripple
-                  to="/account/settings"
-                >
-                  <span className="button-text">Open app</span>
-                  <span className="button-shine" />
-                </Link>
-                <a
-                  className="button secondary"
-                  data-magnetic
-                  href="https://pypi.org/project/ite-agent/"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <span className="button-text">View PyPI</span>
-                </a>
-              </div>*/}
             </section>
 
             {/* Prerequisites Section */}
@@ -241,10 +271,7 @@ export function DocsPage() {
                 </div>
                 <div className="docs-checklist-item">
                   <strong>Terminal emulator</strong>
-                  <span>
-                    Any terminal works—Terminal.app, iTerm2, Windows Terminal,
-                    etc.
-                  </span>
+                  <span>Any terminal works—Terminal.app, iTerm2, Windows Terminal, etc.</span>
                 </div>
                 <div className="docs-checklist-item">
                   <strong>API keys</strong>
@@ -254,8 +281,7 @@ export function DocsPage() {
               <div className="docs-note">
                 <strong>Supported terminals</strong>
                 <p>
-                  <strong>macOS:</strong> Terminal.app, iTerm2, Ghostty, Kitty,
-                  Alacritty, WezTerm
+                  <strong>macOS:</strong> Terminal.app, iTerm2, Ghostty, Kitty, Alacritty, WezTerm
                   <br />
                   <strong>Windows:</strong> Windows Terminal, PowerShell, CMD
                 </p>
@@ -266,16 +292,10 @@ export function DocsPage() {
             <section className="docs-section" id="install">
               <h2 data-scramble="true">Install</h2>
               <p>
-                The fastest way to install iTE is through <strong>pipx</strong>.
-                It keeps iTE isolated from your system Python and gives you the{" "}
-                <code>ite</code> command globally.
+                The fastest way to install iTE is through <strong>pipx</strong>. It keeps iTE isolated from your system Python and gives you the <code>ite</code> command globally.
               </p>
 
-              <CodeBlock
-                label="pipx (recommended)"
-                code="pipx install ite-agent"
-              />
-
+              <CodeBlock label="pipx (recommended)" code="pipx install ite-agent" />
               <CodeBlock label="uv" code="uv tool install ite-agent" />
 
               <p>Verify the installation:</p>
@@ -287,8 +307,7 @@ export function DocsPage() {
               <div className="docs-note">
                 <strong>Uninstall</strong>
                 <p>
-                  If you need to remove iTE:{" "}
-                  <code>pipx uninstall ite-agent</code>
+                  If you need to remove iTE: <code>pipx uninstall ite-agent</code>
                 </p>
               </div>
             </section>
@@ -297,8 +316,7 @@ export function DocsPage() {
             <section className="docs-section" id="configure">
               <h2 data-scramble="true">Configure Your Provider</h2>
               <p>
-                iTE requires an OpenAI-compatible model provider. Run{" "}
-                <code>/setup</code> inside iTE to configure:
+                iTE requires an OpenAI-compatible model provider. Run <code>/setup</code> inside iTE to configure:
               </p>
               <div className="docs-ordered-list">
                 <li>Base URL — Your provider endpoint</li>
@@ -318,32 +336,18 @@ export function DocsPage() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td>
-                        <strong>Ollama</strong> (Local)
-                      </td>
-                      <td>
-                        <code>http://localhost:11434/v1</code>
-                      </td>
-                      <td>
-                        <code>ollama</code> or your key
-                      </td>
+                      <td><strong>Ollama</strong> (Local)</td>
+                      <td><code>http://localhost:11434/v1</code></td>
+                      <td><code>ollama</code> or your key</td>
                     </tr>
                     <tr>
-                      <td>
-                        <strong>OpenRouter</strong>
-                      </td>
-                      <td>
-                        <code>https://openrouter.ai/api/v1</code>
-                      </td>
+                      <td><strong>OpenRouter</strong></td>
+                      <td><code>https://openrouter.ai/api/v1</code></td>
                       <td>Your OpenRouter key</td>
                     </tr>
                     <tr>
-                      <td>
-                        <strong>OpenAI</strong>
-                      </td>
-                      <td>
-                        <code>https://api.openai.com/v1</code>
-                      </td>
+                      <td><strong>OpenAI</strong></td>
+                      <td><code>https://api.openai.com/v1</code></td>
                       <td>Your OpenAI key</td>
                     </tr>
                   </tbody>
@@ -359,11 +363,7 @@ export function DocsPage() {
 
               <div className="docs-note docs-note-featured">
                 <strong>iTE Cloud (Coming Soon)</strong>
-                <p>
-                  Bundled model access is on the roadmap. iTE Cloud will offer a
-                  curated selection of high-quality models, managed directly
-                  within the platform. No external API keys required.
-                </p>
+                <p>Bundled model access is on the roadmap. iTE Cloud will offer a curated selection of high-quality models, managed directly within the platform. No external API keys required.</p>
               </div>
             </section>
 
@@ -371,14 +371,12 @@ export function DocsPage() {
             <section className="docs-section" id="init">
               <h2 data-scramble="true">Initialize Your Project</h2>
               <p>
-                Projects can include an <code>AGENTS.md</code> file at the root
-                to provide instructions to iTE on how to work with the codebase.
+                Projects can include an <code>AGENTS.md</code> file at the root to provide instructions to iTE on how to work with the codebase.
               </p>
 
               <h3>The /init Command</h3>
               <p>
-                Use the <code>/init</code> command to analyze your project and
-                create an <code>AGENTS.md</code> file:
+                Use the <code>/init</code> command to analyze your project and create an <code>AGENTS.md</code> file:
               </p>
               <CodeBlock label="Terminal" code="/init" />
 
@@ -393,8 +391,7 @@ export function DocsPage() {
                 <article className="detail-card docs-faq-card">
                   <strong>Force overwrite</strong>
                   <p className="muted">
-                    To regenerate and overwrite an existing{" "}
-                    <code>AGENTS.md</code>:
+                    To regenerate and overwrite an existing <code>AGENTS.md</code>:
                   </p>
                   <CodeBlock label="Terminal" code="/init --force" />
                 </article>
@@ -405,58 +402,35 @@ export function DocsPage() {
                 <code>AGENTS.md</code> files support scope hierarchy:
               </p>
               <div className="docs-ordered-list">
-                <li>
-                  The scope is the directory containing the file and all
-                  subdirectories
-                </li>
+                <li>The scope is the directory containing the file and all subdirectories</li>
                 <li>Deeper files override parent instructions</li>
-                <li>
-                  Multiple files can exist in a project, each governing its
-                  subtree
-                </li>
+                <li>Multiple files can exist in a project, each governing its subtree</li>
               </div>
             </section>
 
             {/* Usage Section */}
             <section className="docs-section" id="usage">
               <h2 data-scramble="true">Usage</h2>
-              <p>
-                Now that you&apos;ve configured a provider and optionally
-                initialized your project, you&apos;re ready to use iTE.
-              </p>
+              <p>Now that you&apos;ve configured a provider and optionally initialized your project, you&apos;re ready to use iTE.</p>
 
               <h3>Ask Questions</h3>
               <p>You can ask iTE to explain the codebase to you:</p>
               <div className="docs-example-grid">
                 <article className="detail-card docs-example-card">
                   <span className="onboarding-step-eyebrow">Ask</span>
-                  <p>
-                    How is state management handled in
-                    app/features/settings.dart
-                  </p>
+                  <p>How is state management handled in app/features/settings.dart</p>
                 </article>
               </div>
               <div className="docs-note">
-                <strong>Tip:</strong> Use the <code>@</code> key to fuzzy search
-                for files in the project.
+                <strong>Tip:</strong> Use the <code>@</code> key to fuzzy search for files in the project.
               </div>
 
               <h3>Add Features</h3>
               <p>You can ask iTE to add new features. First, create a plan:</p>
-
               <div className="docs-ordered-list">
-                <li>
-                  <strong>Create a plan</strong> — Enable plan mode with{" "}
-                  <code>/plan on</code>
-                </li>
-                <li>
-                  <strong>Iterate on the plan</strong> — Give feedback or add
-                  more details
-                </li>
-                <li>
-                  <strong>Build the feature</strong> — Disable plan mode with{" "}
-                  <code>/plan off</code> and execute
-                </li>
+                <li><strong>Create a plan</strong> — Enable plan mode with <code>/plan on</code></li>
+                <li><strong>Iterate on the plan</strong> — Give feedback or add more details</li>
+                <li><strong>Build the feature</strong> — Disable plan mode with <code>/plan off</code> and execute</li>
               </div>
 
               <CodeBlock
@@ -495,50 +469,20 @@ Sounds good! Go ahead and make the changes.`}
             {/* Commands Section */}
             <section className="docs-section" id="commands">
               <h2 data-scramble="true">Commands</h2>
-              <p>
-                Type <code>/help</code> in iTE to see available commands.
-              </p>
+              <p>Type <code>/help</code> in iTE to see available commands.</p>
 
               <h3>Session Management</h3>
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Command</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>/new</code>
-                      </td>
-                      <td>Start a new conversation thread</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/sessions</code>
-                      </td>
-                      <td>List saved conversations and resume</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/rename &lt;name&gt;</code>
-                      </td>
-                      <td>Rename the current conversation</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/exit</code> or <code>/quit</code>
-                      </td>
-                      <td>Close iTE</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/close</code>
-                      </td>
-                      <td>Close the current thread</td>
-                    </tr>
+                    <tr><td><code>/new</code></td><td>Start a new conversation thread</td></tr>
+                    <tr><td><code>/sessions</code></td><td>List saved conversations and resume</td></tr>
+                    <tr><td><code>/rename &lt;name&gt;</code></td><td>Rename the current conversation</td></tr>
+                    <tr><td><code>/exit</code> or <code>/quit</code></td><td>Close iTE</td></tr>
+                    <tr><td><code>/close</code></td><td>Close the current thread</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -547,45 +491,14 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Command</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>/setup</code>
-                      </td>
-                      <td>Configure model provider</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/config</code>
-                      </td>
-                      <td>View current configuration</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/model &lt;name&gt;</code>
-                      </td>
-                      <td>Change model</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/approval &lt;mode&gt;</code>
-                      </td>
-                      <td>
-                        Set approval mode: on_request, on_failure, auto,
-                        auto_edit, yolo
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/logout</code>
-                      </td>
-                      <td>Log out of iTE Cloud</td>
-                    </tr>
+                    <tr><td><code>/setup</code></td><td>Configure model provider</td></tr>
+                    <tr><td><code>/config</code></td><td>View current configuration</td></tr>
+                    <tr><td><code>/model &lt;name&gt;</code></td><td>Change model</td></tr>
+                    <tr><td><code>/approval &lt;mode&gt;</code></td><td>Set approval mode: on_request, on_failure, auto, auto_edit, yolo</td></tr>
+                    <tr><td><code>/logout</code></td><td>Log out of iTE Cloud</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -594,48 +507,15 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Command</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>/plan</code>
-                      </td>
-                      <td>Show plan mode status</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/plan on</code>
-                      </td>
-                      <td>Enable plan mode</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/plan off</code>
-                      </td>
-                      <td>Disable plan mode</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/todos</code>
-                      </td>
-                      <td>Manage task lists</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/attach &lt;path&gt;</code>
-                      </td>
-                      <td>Queue files for next message</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/clear</code>
-                      </td>
-                      <td>Clear conversation history</td>
-                    </tr>
+                    <tr><td><code>/plan</code></td><td>Show plan mode status</td></tr>
+                    <tr><td><code>/plan on</code></td><td>Enable plan mode</td></tr>
+                    <tr><td><code>/plan off</code></td><td>Disable plan mode</td></tr>
+                    <tr><td><code>/todos</code></td><td>Manage task lists</td></tr>
+                    <tr><td><code>/attach &lt;path&gt;</code></td><td>Queue files for next message</td></tr>
+                    <tr><td><code>/clear</code></td><td>Clear conversation history</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -644,36 +524,13 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Command</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>/branch</code>
-                      </td>
-                      <td>List or switch git branches</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/branch --create &lt;name&gt;</code>
-                      </td>
-                      <td>Create and switch to new branch</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/undo</code>
-                      </td>
-                      <td>Revert file changes from last turn</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/redo</code>
-                      </td>
-                      <td>Reapply reverted changes</td>
-                    </tr>
+                    <tr><td><code>/branch</code></td><td>List or switch git branches</td></tr>
+                    <tr><td><code>/branch --create &lt;name&gt;</code></td><td>Create and switch to new branch</td></tr>
+                    <tr><td><code>/undo</code></td><td>Revert file changes from last turn</td></tr>
+                    <tr><td><code>/redo</code></td><td>Reapply reverted changes</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -682,36 +539,14 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Command</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>/init</code>
-                      </td>
-                      <td>Analyze project and create AGENTS.md</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/skills</code>
-                      </td>
-                      <td>List available skills</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/skills use &lt;name&gt;</code>
-                      </td>
-                      <td>Activate a skill</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/skills add &lt;path&gt;</code>
-                      </td>
-                      <td>Install a skill pack</td>
-                    </tr>
+                    <tr><td><code>/init</code></td><td>Analyze project and create AGENTS.md</td></tr>
+                    <tr><td><code>/skills</code></td><td>List available skills</td></tr>
+                    <tr><td><code>/skills show &lt;name&gt;</code></td><td>Inspect a skill</td></tr>
+                    <tr><td><code>/skills use &lt;name&gt;</code></td><td>Activate a skill</td></tr>
+                    <tr><td><code>/skills add &lt;path&gt;</code></td><td>Install a skill pack</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -720,42 +555,14 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Mode</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Mode</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>on_request</code>
-                      </td>
-                      <td>Ask before every mutating action</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>on_failure</code>
-                      </td>
-                      <td>Auto-approve, ask only on failure</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>auto</code>
-                      </td>
-                      <td>Auto-approve all safe operations</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>auto_edit</code>
-                      </td>
-                      <td>Auto-approve edits, confirm commands</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>yolo</code>
-                      </td>
-                      <td>Approve everything — no guardrails</td>
-                    </tr>
+                    <tr><td><code>on_request</code></td><td>Ask before every mutating action</td></tr>
+                    <tr><td><code>on_failure</code></td><td>Auto-approve, ask only on failure</td></tr>
+                    <tr><td><code>auto</code></td><td>Auto-approve all safe operations</td></tr>
+                    <tr><td><code>auto_edit</code></td><td>Auto-approve edits, confirm commands</td></tr>
+                    <tr><td><code>yolo</code></td><td>Approve everything — no guardrails</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -764,75 +571,24 @@ Sounds good! Go ahead and make the changes.`}
             {/* Tools Section */}
             <section className="docs-section" id="tools">
               <h2 data-scramble="true">Tools</h2>
-              <p>
-                iTE includes a comprehensive set of built-in tools for reading,
-                writing, searching, executing, and managing your codebase.
-              </p>
+              <p>iTE includes a comprehensive set of built-in tools for reading, writing, searching, executing, and managing your codebase.</p>
 
               <h3>Read Tools</h3>
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Tool</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Tool</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>read_file</code>
-                      </td>
-                      <td>Read file contents with offset and limit</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>read_json</code>
-                      </td>
-                      <td>Read and parse JSON files</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>read_toml</code>
-                      </td>
-                      <td>Read and parse TOML files</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>read_yaml</code>
-                      </td>
-                      <td>Read and parse YAML files</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>read_pdf</code>
-                      </td>
-                      <td>Extract text from PDF documents</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>read_image</code>
-                      </td>
-                      <td>Read image metadata and OCR text</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>list_dir</code>
-                      </td>
-                      <td>List directory contents</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>glob</code>
-                      </td>
-                      <td>Find files by pattern</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>grep</code>
-                      </td>
-                      <td>Search for patterns in file content</td>
-                    </tr>
+                    <tr><td><code>read_file</code></td><td>Read file contents with offset and limit</td></tr>
+                    <tr><td><code>read_json</code></td><td>Read and parse JSON files</td></tr>
+                    <tr><td><code>read_toml</code></td><td>Read and parse TOML files</td></tr>
+                    <tr><td><code>read_yaml</code></td><td>Read and parse YAML files</td></tr>
+                    <tr><td><code>read_pdf</code></td><td>Extract text from PDF documents</td></tr>
+                    <tr><td><code>read_image</code></td><td>Read image metadata and OCR text</td></tr>
+                    <tr><td><code>list_dir</code></td><td>List directory contents</td></tr>
+                    <tr><td><code>glob</code></td><td>Find files by pattern</td></tr>
+                    <tr><td><code>grep</code></td><td>Search for patterns in file content</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -841,48 +597,15 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Tool</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Tool</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>write_file</code>
-                      </td>
-                      <td>Create or overwrite files</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>edit</code>
-                      </td>
-                      <td>Make surgical text replacements</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>apply_patch</code>
-                      </td>
-                      <td>Apply multi-file patch edits</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>edit_json</code>
-                      </td>
-                      <td>Edit JSON files using structured paths</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>edit_toml</code>
-                      </td>
-                      <td>Edit TOML files using structured paths</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>edit_yaml</code>
-                      </td>
-                      <td>Edit YAML files using structured paths</td>
-                    </tr>
+                    <tr><td><code>write_file</code></td><td>Create or overwrite files</td></tr>
+                    <tr><td><code>edit</code></td><td>Make surgical text replacements</td></tr>
+                    <tr><td><code>apply_patch</code></td><td>Apply multi-file patch edits</td></tr>
+                    <tr><td><code>edit_json</code></td><td>Edit JSON files using structured paths</td></tr>
+                    <tr><td><code>edit_toml</code></td><td>Edit TOML files using structured paths</td></tr>
+                    <tr><td><code>edit_yaml</code></td><td>Edit YAML files using structured paths</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -891,36 +614,13 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Tool</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Tool</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>shell</code>
-                      </td>
-                      <td>Execute shell commands with timeout</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>shell_start</code>
-                      </td>
-                      <td>Start persistent shell sessions</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>shell_poll</code>
-                      </td>
-                      <td>Read output from running sessions</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>shell_send</code>
-                      </td>
-                      <td>Send input to running sessions</td>
-                    </tr>
+                    <tr><td><code>shell</code></td><td>Execute shell commands with timeout</td></tr>
+                    <tr><td><code>shell_start</code></td><td>Start persistent shell sessions</td></tr>
+                    <tr><td><code>shell_poll</code></td><td>Read output from running sessions</td></tr>
+                    <tr><td><code>shell_send</code></td><td>Send input to running sessions</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -929,48 +629,15 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Tool</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Tool</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>git_status</code>
-                      </td>
-                      <td>Inspect repository state</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>git_diff</code>
-                      </td>
-                      <td>Show working tree diffs</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>git_log</code>
-                      </td>
-                      <td>View commit history</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>git_branch</code>
-                      </td>
-                      <td>List, create, or switch branches</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>git_commit</code>
-                      </td>
-                      <td>Create commits</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>git_push</code>
-                      </td>
-                      <td>Push to remote</td>
-                    </tr>
+                    <tr><td><code>git_status</code></td><td>Inspect repository state</td></tr>
+                    <tr><td><code>git_diff</code></td><td>Show working tree diffs</td></tr>
+                    <tr><td><code>git_log</code></td><td>View commit history</td></tr>
+                    <tr><td><code>git_branch</code></td><td>List, create, or switch branches</td></tr>
+                    <tr><td><code>git_commit</code></td><td>Create commits</td></tr>
+                    <tr><td><code>git_push</code></td><td>Push to remote</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -979,36 +646,13 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Tool</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Tool</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>spawn_subagent</code>
-                      </td>
-                      <td>Start specialist subagents</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>spawn_subagents</code>
-                      </td>
-                      <td>Start multiple subagents in parallel</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>wait_subagent</code>
-                      </td>
-                      <td>Wait for subagent completion</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>list_subagents</code>
-                      </td>
-                      <td>List active subagents</td>
-                    </tr>
+                    <tr><td><code>spawn_subagent</code></td><td>Start specialist subagents</td></tr>
+                    <tr><td><code>spawn_subagents</code></td><td>Start multiple subagents in parallel</td></tr>
+                    <tr><td><code>wait_subagent</code></td><td>Wait for subagent completion</td></tr>
+                    <tr><td><code>list_subagents</code></td><td>List active subagents</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1017,30 +661,12 @@ Sounds good! Go ahead and make the changes.`}
               <div className="docs-table-wrapper">
                 <table className="docs-table">
                   <thead>
-                    <tr>
-                      <th>Tool</th>
-                      <th>Description</th>
-                    </tr>
+                    <tr><th>Tool</th><th>Description</th></tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <code>run_tests</code>
-                      </td>
-                      <td>Run project tests</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>run_linter</code>
-                      </td>
-                      <td>Run project linter</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>run_typecheck</code>
-                      </td>
-                      <td>Run type checker</td>
-                    </tr>
+                    <tr><td><code>run_tests</code></td><td>Run project tests</td></tr>
+                    <tr><td><code>run_linter</code></td><td>Run project linter</td></tr>
+                    <tr><td><code>run_typecheck</code></td><td>Run type checker</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1050,15 +676,11 @@ Sounds good! Go ahead and make the changes.`}
             <section className="docs-section" id="agents">
               <h2 data-scramble="true">AGENTS.md</h2>
               <p>
-                <code>AGENTS.md</code> files provide project-specific
-                instructions to iTE, similar to how
-                <code>README.md</code> works for humans.
+                <code>AGENTS.md</code> files provide project-specific instructions to iTE, similar to how <code>README.md</code> works for humans.
               </p>
 
               <h3>Creating AGENTS.md</h3>
-              <p>
-                Use the <code>/init</code> command:
-              </p>
+              <p>Use the <code>/init</code> command:</p>
               <CodeBlock label="Terminal" code="/init" />
 
               <h3>Scope Hierarchy</h3>
@@ -1095,34 +717,18 @@ Sounds good! Go ahead and make the changes.`}
             {/* Skills Section */}
             <section className="docs-section" id="skills">
               <h2 data-scramble="true">Skills</h2>
-              <p>
-                Skills are instruction bundles that extend iTE&apos;s
-                capabilities on specific tasks.
-              </p>
+              <p>Skills are instruction bundles that extend iTE&apos;s capabilities on specific tasks.</p>
 
               <h3>How Skills Work</h3>
-              <p>
-                Skills are interoperable <code>SKILL.md</code> bundles. They can
-                be:
-              </p>
+              <p>Skills are interoperable <code>SKILL.md</code> bundles. They can be:</p>
               <div className="docs-ordered-list">
-                <li>
-                  <strong>Global:</strong> Installed in{" "}
-                  <code>~/.config/ite/skills/</code> (always trusted)
-                </li>
-                <li>
-                  <strong>Project:</strong> Installed in{" "}
-                  <code>.agents/skills/</code> or <code>.ite/skills/</code>{" "}
-                  (require trust)
-                </li>
+                <li><strong>Global:</strong> Installed in <code>~/.config/ite/skills/</code> (always trusted)</li>
+                <li><strong>Project:</strong> Installed in <code>.agents/skills/</code> or <code>.ite/skills/</code> (require trust)</li>
               </div>
 
               <h3>Compatibility</h3>
               <p>
-                iTE discovers skills from common agent roots including{" "}
-                <code>.agents/skills</code>,<code>.codex/skills</code>,{" "}
-                <code>.cursor/skills</code>, <code>.claude/skills</code>,
-                <code>.gemini/skills</code>, and <code>.opencode/skills</code>.
+                iTE discovers skills from common agent roots including <code>.agents/skills</code>, <code>.codex/skills</code>, <code>.cursor/skills</code>, <code>.claude/skills</code>, <code>.gemini/skills</code>, and <code>.opencode/skills</code>.
               </p>
 
               <h3>Commands</h3>
@@ -1139,10 +745,7 @@ Sounds good! Go ahead and make the changes.`}
                 <strong>Trust Model</strong>
                 <ul>
                   <li>Global skills are trusted by default</li>
-                  <li>
-                    Project skills require explicit trust with{" "}
-                    <code>/skills trust</code>
-                  </li>
+                  <li>Project skills require explicit trust with <code>/skills trust</code></li>
                 </ul>
               </div>
             </section>
@@ -1150,11 +753,7 @@ Sounds good! Go ahead and make the changes.`}
             {/* Subagents Section */}
             <section className="docs-section" id="subagents">
               <h2 data-scramble="true">Subagents</h2>
-              <p>
-                Subagents are specialized AI agents that handle specific tasks
-                independently. They run in parallel and return structured
-                results to the main agent.
-              </p>
+              <p>Subagents are specialized AI agents that handle specific tasks independently. They run in parallel and return structured results to the main agent.</p>
 
               <h3>Built-in Subagents</h3>
               <div className="docs-checklist">
@@ -1189,7 +788,6 @@ Sounds good! Go ahead and make the changes.`}
                 label="Spawn a subagent"
                 code={`spawn_subagent subagent="security_auditor" goal="Audit the authentication module"`}
               />
-
               <CodeBlock
                 label="Parallel execution"
                 code={`spawn_subagents requests=[
@@ -1200,19 +798,14 @@ Sounds good! Go ahead and make the changes.`}
 
               <h3>Creating Custom Subagents</h3>
               <p>
-                Use <code>/subagent create</code> to define custom subagents
-                interactively. They are saved to{" "}
-                <code>.ite/subagents/&lt;name&gt;.toml</code>.
+                Use <code>/subagent create</code> to define custom subagents interactively. They are saved to <code>.ite/subagents/&lt;name&gt;.toml</code>.
               </p>
             </section>
 
             {/* MCP Section */}
             <section className="docs-section" id="mcp">
               <h2 data-scramble="true">MCP Servers</h2>
-              <p>
-                iTE supports the Model Context Protocol (MCP) for extending
-                capabilities with external tools.
-              </p>
+              <p>iTE supports the Model Context Protocol (MCP) for extending capabilities with external tools.</p>
 
               <h3>What MCP Does</h3>
               <p>MCP servers provide specialized capabilities:</p>
@@ -1224,9 +817,7 @@ Sounds good! Go ahead and make the changes.`}
               </div>
 
               <h3>Configuration</h3>
-              <p>
-                Configure MCP servers in <code>.ite/config.toml</code>:
-              </p>
+              <p>Configure MCP servers in <code>.ite/config.toml</code>:</p>
               <CodeBlock
                 label=".ite/config.toml"
                 code={`[mcp_servers.sqlite]
@@ -1249,10 +840,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`}
 
               <div className="docs-note">
                 <strong>Security</strong>
-                <p>
-                  MCP servers run as separate processes. Review configurations
-                  before connecting to new servers.
-                </p>
+                <p>MCP servers run as separate processes. Review configurations before connecting to new servers.</p>
               </div>
             </section>
           </article>
@@ -1261,11 +849,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`}
         <footer className="docs-footer">
           <p>
             © {new Date().getFullYear()} iTE. Built by{" "}
-            <a
-              href="https://kiishi.space"
-              rel="noreferrer"
-              target="_blank"
-            >
+            <a href="https://kiishi.space" rel="noreferrer" target="_blank">
               Kishi David
             </a>
             .

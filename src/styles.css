@@ -1780,16 +1780,20 @@ code {
 
 .docs-layout {
     display: grid;
-    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(
-            180px,
-            220px
-        );
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
     gap: 32px;
     align-items: start;
 }
 
-.docs-sidebar,
-.docs-outline {
+/* Mobile nav toggle - desktop: hidden */
+.docs-mobile-nav-toggle,
+.docs-mobile-nav-overlay,
+.docs-mobile-header,
+.docs-mobile-drawer {
+    display: none;
+}
+
+.docs-sidebar {
     position: sticky;
     top: 24px;
     display: grid;
@@ -1814,14 +1818,12 @@ code {
     text-transform: uppercase;
 }
 
-.docs-sidebar-links,
-.docs-outline-links {
+.docs-sidebar-links {
     display: grid;
     gap: 8px;
 }
 
-.docs-sidebar-link,
-.docs-outline-link {
+.docs-sidebar-link {
     display: grid;
     gap: 4px;
     padding: 10px 12px;
@@ -1833,8 +1835,7 @@ code {
         color var(--motion-fast);
 }
 
-.docs-sidebar-link:hover,
-.docs-outline-link:hover {
+.docs-sidebar-link:hover {
     border-color: var(--line);
     background: rgba(255, 255, 255, 0.03);
     color: var(--text);
@@ -2850,14 +2851,375 @@ code {
         max-width: none;
     }
 
-    .docs-sidebar,
-    .docs-outline {
-        position: static;
+    .docs-layout {
+        gap: 18px;
     }
 
-    .onboarding-summary {
-        max-width: 14ch;
-        font-size: clamp(2rem, 10vw, 3rem);
+    /* Mobile docs navigation - persistent header with auto-hide */
+    .docs-mobile-header {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: rgba(2, 2, 2, 0.97);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line);
+        transform: translateY(0);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .docs-mobile-header[data-visible="false"] {
+        transform: translateY(-100%);
+    }
+
+    .docs-mobile-header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 10px 14px;
+        height: 52px;
+    }
+
+    .docs-mobile-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: var(--text-soft);
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background 0.2s ease, color 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .docs-mobile-menu-btn:hover,
+    .docs-mobile-menu-btn:active {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+    }
+
+    .docs-mobile-menu-btn svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .docs-mobile-logo {
+        display: flex;
+        align-items: center;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .docs-mobile-logo svg,
+    .docs-mobile-logo img {
+        height: 22px;
+        width: auto;
+        display: block;
+    }
+
+    .docs-mobile-header-spacer {
+        width: 40px;
+        flex-shrink: 0;
+    }
+
+    .docs-mobile-search-row {
+        padding: 10px 14px 12px;
+    }
+
+    .docs-search-mobile {
+        width: 100%;
+        min-width: 0;
+        min-height: 40px;
+        padding: 0 12px;
+    }
+
+    .docs-search-mobile input {
+        font-size: 15px;
+    }
+
+    .docs-search-mobile .docs-search-shortcut {
+        display: none;
+    }
+
+    /* Mobile drawer */
+    .docs-mobile-nav-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 110;
+        backdrop-filter: blur(4px);
+    }
+
+    .docs-mobile-drawer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(80vw, 280px);
+        height: 100vh;
+        z-index: 120;
+        background: rgba(8, 8, 8, 0.99);
+        border-right: 1px solid var(--line);
+        transform: translateX(-101%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .docs-mobile-drawer[data-open="true"] {
+        transform: translateX(0);
+    }
+
+    .docs-mobile-drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        flex-shrink: 0;
+        height: 52px;
+    }
+
+    .docs-mobile-drawer-header .docs-mobile-logo {
+        margin-left: 2px;
+    }
+
+    .docs-mobile-drawer-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Adjust main content for fixed header */
+    .docs-shell {
+        padding-top: 105px;
+    }
+
+    .docs-stage {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .docs-header {
+        display: none;
+    }
+
+    .docs-sidebar {
+        display: none;
+    }
+
+    /* Mobile typography - smaller, readable sizes */
+    .docs-article {
+        gap: 28px;
+    }
+
+    .docs-article h2 {
+        font-size: 1.35rem;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin: 0 0 12px;
+    }
+
+    .docs-article h3 {
+        font-size: 1.05rem;
+        line-height: 1.3;
+        margin: 20px 0 10px;
+    }
+
+    .docs-hero-block {
+        gap: 12px;
+        padding-bottom: 22px;
+    }
+
+    .docs-hero-block h2 {
+        font-size: 1.5rem;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+    }
+
+    .docs-hero-block .sessions-kicker {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+    }
+
+    .docs-summary {
+        font-size: 0.95rem;
+        line-height: 1.55;
+        margin: 0;
+    }
+
+    .docs-article p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0 0 14px;
+    }
+
+    /* Tables - horizontal scroll on mobile */
+    .docs-table-wrapper {
+        margin: 14px -14px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 14px;
+    }
+
+    .docs-table {
+        min-width: 100%;
+        font-size: 0.875rem;
+    }
+
+    .docs-table th,
+    .docs-table td {
+        padding: 10px 12px;
+        white-space: nowrap;
+    }
+
+    /* Code blocks - smaller text, scroll */
+    .docs-code-block pre {
+        font-size: 0.8rem;
+        line-height: 1.5;
+        padding: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .docs-code-block code {
+        word-break: break-word;
+        white-space: pre-wrap;
+    }
+
+    .docs-code-header {
+        padding: 8px 12px;
+    }
+
+    .docs-code-label,
+    .docs-copy-button {
+        font-size: 10px;
+    }
+
+    /* Lists and cards */
+    .docs-checklist {
+        gap: 10px;
+        margin: 14px 0;
+    }
+
+    .docs-checklist-item {
+        padding: 12px 14px;
+        gap: 4px;
+    }
+
+    .docs-checklist-item strong {
+        font-size: 0.95rem;
+    }
+
+    .docs-checklist-item span {
+        font-size: 0.85rem;
+    }
+
+    .docs-example-grid {
+        gap: 12px;
+        margin: 14px 0;
+    }
+
+    .docs-example-card {
+        padding: 14px;
+    }
+
+    .docs-example-card p {
+        font-size: 0.9rem;
+    }
+
+    .docs-ordered-list {
+        gap: 8px;
+        margin: 14px 0;
+        padding-left: 20px;
+    }
+
+    .docs-ordered-list li {
+        font-size: 0.95rem;
+    }
+
+    /* Notes */
+    .docs-note {
+        padding: 14px;
+        margin: 16px 0;
+        font-size: 0.9rem;
+    }
+
+    .docs-note strong {
+        font-size: 0.9rem;
+    }
+
+    /* Footer */
+    .docs-footer {
+        margin-top: 40px;
+        padding-top: 24px;
+        font-size: 0.85rem;
+    }
+
+    /* Drawer sidebar links */
+    .docs-mobile-drawer .docs-sidebar-group {
+        gap: 10px;
+    }
+
+    .docs-mobile-drawer .docs-sidebar-label {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+    }
+
+    .docs-mobile-drawer .docs-sidebar-link {
+        padding: 10px 12px;
+        gap: 3px;
+    }
+
+    .docs-mobile-drawer .docs-sidebar-link strong {
+        font-size: 0.9rem;
+    }
+
+    .docs-mobile-drawer .docs-sidebar-link span {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    /* Image container - better mobile containment */
+    .docs-image-container {
+        margin: 16px -14px;
+        border-radius: 0;
+        overflow: hidden;
+    }
+
+    .docs-image {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        display: block;
+    }
+
+    /* Ensure content doesn't overflow on small screens */
+    .docs-article {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* FAQ cards - better mobile spacing */
+    .docs-faq-list {
+        gap: 12px;
+    }
+
+    .docs-faq-card {
+        padding: 14px;
+    }
+
+    .docs-faq-card p {
+        font-size: 0.875rem;
     }
 }
 
