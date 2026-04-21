@@ -8,7 +8,11 @@ import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects"
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { StartupPreloader } from "@/components/StartupPreloader";
 import { authClient } from "@/lib/auth-client";
-import { hasKnownUser, markBrowserSeen, markKnownUser } from "@/lib/browser-state";
+import {
+  hasKnownUser,
+  markBrowserSeen,
+  markKnownUser,
+} from "@/lib/browser-state";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
 import { DocsPage } from "@/pages/DocsPage";
@@ -20,6 +24,7 @@ const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
 function HomePage() {
   const [ctaLabel, setCtaLabel] = useState("Get started");
   const [ctaHref, setCtaHref] = useState("/login?mode=sign-up");
+  const [installMethod, setInstallMethod] = useState<"pipx" | "uv">("pipx");
 
   useEffect(() => {
     let cancelled = false;
@@ -56,20 +61,12 @@ function HomePage() {
     };
   }, []);
 
+  const installCommand =
+    installMethod === "pipx" ? "pipx install ite-agent" : "uv tool install ite-agent";
+
   return (
     <main className="hero-shell">
       <section className="hero-stage">
-        <header className="hero-topbar">
-          <nav className="hero-nav">
-            <Link className="interactive-link" data-magnetic data-scramble to="/login">
-              Sign in
-            </Link>
-            <Link className="interactive-link" data-magnetic data-scramble to="/account/settings">
-              Account
-            </Link>
-          </nav>
-        </header>
-
         <div className="hero-layout">
           <div className="hero-copy">
             <div
@@ -85,9 +82,36 @@ function HomePage() {
               <p className="hero-summary">
                 Plan, execute, and stay in control.
               </p>
+              <div className="hero-mobile-agent-viz">
+                <AgentVisualization />
+              </div>
               <div className="hero-command-card" aria-label="Install iTE">
-                <span className="hero-command-label">Install</span>
-                <code>pipx install ite-agent</code>
+                <div className="hero-command-header">
+                  <span className="hero-command-label">Install</span>
+                  <div className="hero-command-switch" aria-label="Choose install method" role="tablist">
+                    <button
+                      aria-selected={installMethod === "pipx"}
+                      className="hero-command-toggle"
+                      data-active={installMethod === "pipx"}
+                      onClick={() => setInstallMethod("pipx")}
+                      role="tab"
+                      type="button"
+                    >
+                      pipx
+                    </button>
+                    <button
+                      aria-selected={installMethod === "uv"}
+                      className="hero-command-toggle"
+                      data-active={installMethod === "uv"}
+                      onClick={() => setInstallMethod("uv")}
+                      role="tab"
+                      type="button"
+                    >
+                      uv
+                    </button>
+                  </div>
+                </div>
+                <code>{installCommand}</code>
               </div>
               <div className="hero-actions">
                 <Link className="button" data-magnetic data-ripple to={ctaHref}>
@@ -96,11 +120,39 @@ function HomePage() {
                   </span>
                   <span className="button-shine" />
                 </Link>
+                {ctaHref === "/login?mode=sign-up" ? (
+                  <Link
+                    className="interactive-link hero-sign-in-link"
+                    data-magnetic
+                    data-scramble
+                    to="/login?mode=sign-in"
+                  >
+                    Sign in
+                  </Link>
+                ) : null}
               </div>
             </div>
           </div>
-          <AgentVisualization />
+          <div className="hero-desktop-agent-viz">
+            <AgentVisualization />
+          </div>
         </div>
+
+        <footer className="hero-floating-footer">
+          <p>
+            © {new Date().getFullYear()} iTE. Built by{" "}
+            <a
+              className="interactive-link"
+              data-scramble
+              href="https://kiishi.space"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Kiishi David
+            </a>
+            .
+          </p>
+        </footer>
       </section>
     </main>
   );
@@ -123,7 +175,9 @@ export function App() {
 
   return (
     <>
-      {showPreloader ? <StartupPreloader onComplete={handlePreloaderComplete} /> : null}
+      {showPreloader ? (
+        <StartupPreloader onComplete={handlePreloaderComplete} />
+      ) : null}
       <GlobalInteractionEffects />
       <div className="app-ambient" aria-hidden="true">
         <AmbientTriangles className="triangle-field-global" />
@@ -135,9 +189,15 @@ export function App() {
         <Route path="/auth/cli" element={<CliAuthPage />} />
         <Route path="/account" element={<AccountLayout />}>
           <Route index element={<Navigate to="/account/settings" replace />} />
-          <Route path="billing" element={<Navigate to="/account/settings" replace />} />
+          <Route
+            path="billing"
+            element={<Navigate to="/account/settings" replace />}
+          />
           <Route path="sessions" element={<AccountSessionsPage />} />
-          <Route path="activity" element={<Navigate to="/account/settings" replace />} />
+          <Route
+            path="activity"
+            element={<Navigate to="/account/settings" replace />}
+          />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

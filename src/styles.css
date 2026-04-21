@@ -367,11 +367,14 @@ button {
 }
 
 .hero-stage {
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     min-height: 100vh;
-    padding-top: 24px;
-    padding-bottom: 28px;
+    padding-top: clamp(52px, 8vh, 92px);
+    padding-bottom: clamp(88px, 12vh, 128px);
+    position: relative;
 }
 
 .docs-stage {
@@ -458,9 +461,10 @@ button {
     gap: clamp(48px, 6vw, 88px);
     align-items: center;
     justify-items: stretch;
+    width: min(100%, 1400px);
     min-height: 0;
-    padding-top: clamp(36px, 6vw, 72px);
-    padding-bottom: clamp(20px, 4vw, 36px);
+    padding-top: 0;
+    padding-bottom: 0;
     animation: rise-in 700ms ease both;
 }
 
@@ -477,6 +481,7 @@ button {
     align-content: center;
     gap: 32px;
     min-height: 100%;
+    align-self: center;
     justify-self: stretch;
     width: min(100%, 560px);
     padding-left: clamp(20px, 3vw, 40px);
@@ -485,8 +490,8 @@ button {
 .hero-brand-block {
     display: grid;
     gap: 16px;
-    max-width: 24rem;
-    justify-items: center;
+    max-width: none;
+    justify-items: start;
 }
 
 .hero-brand-image {
@@ -542,6 +547,13 @@ button {
     background: rgba(255, 255, 255, 0.022);
 }
 
+.hero-command-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
 .hero-command-label {
     color: var(--text-dim);
     font-size: 11px;
@@ -555,6 +567,46 @@ button {
     font-size: 0.96rem;
 }
 
+.hero-mobile-agent-viz {
+    display: none;
+}
+
+.hero-desktop-agent-viz {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.hero-command-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.hero-command-toggle {
+    padding: 4px 9px;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition:
+        color var(--motion-fast),
+        background-color var(--motion-fast);
+}
+
+.hero-command-toggle[data-active="true"] {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.hero-command-toggle:hover {
+    color: var(--text-soft);
+}
+
 .hero-actions,
 .auth-actions,
 .row {
@@ -562,6 +614,182 @@ button {
     gap: 12px;
     flex-wrap: wrap;
     align-items: center;
+}
+
+.hero-sign-in-link {
+    color: var(--text-soft);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color var(--motion-fast);
+}
+
+.hero-sign-in-link:hover {
+    color: var(--text);
+}
+
+.hero-floating-footer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    bottom: clamp(20px, 3vw, 28px);
+    transform: translateX(-50%);
+    padding: 14px 22px;
+    background: rgba(6, 10, 16, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.hero-floating-footer p {
+    margin: 0;
+}
+
+.hero-floating-footer a {
+    color: var(--text-soft);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.hero-floating-footer a:hover {
+    color: var(--text);
+}
+
+@media (max-width: 1023px) {
+    .hero-stage {
+        align-items: center;
+        padding-top: clamp(84px, 14vh, 116px);
+        padding-bottom: 24px;
+    }
+
+    .hero-layout {
+        width: 100%;
+        max-width: 20.5rem;
+        gap: 36px;
+        justify-items: center;
+    }
+
+    .hero-copy {
+        width: 100%;
+        padding-left: 0;
+        gap: 24px;
+        justify-items: center;
+    }
+
+    .hero-brand-block {
+        justify-items: center;
+        gap: 12px;
+    }
+
+    .hero-brand-image {
+        width: min(100%, 8.75rem);
+    }
+
+    .hero-body {
+        justify-items: center;
+        text-align: center;
+        gap: 20px;
+        width: 100%;
+    }
+
+    .hero-body h1 {
+        font-size: clamp(2.7rem, 13vw, 4rem);
+        max-width: 7ch;
+    }
+
+    .hero-summary {
+        max-width: 16rem;
+        font-size: 0.98rem;
+        line-height: 1.6;
+    }
+
+    .hero-command-card {
+        width: 100%;
+        padding: 14px 14px 12px;
+        gap: 12px;
+    }
+
+    .hero-command-card code {
+        display: block;
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 0.88rem;
+        text-align: left;
+        white-space: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .hero-command-card code::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hero-command-header {
+        gap: 10px;
+    }
+
+    .hero-command-toggle {
+        padding: 4px 8px;
+        font-size: 9px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .hero-mobile-agent-viz {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        padding-top: 10px;
+        padding-bottom: 14px;
+    }
+
+    .hero-desktop-agent-viz {
+        display: none;
+    }
+
+    .hero-mobile-agent-viz .agent-viz {
+        max-width: 100%;
+        height: 210px;
+        margin: 0 auto;
+    }
+
+    .hero-mobile-agent-viz + .hero-command-card {
+        margin-top: 4px;
+    }
+
+    .hero-command-card + .hero-actions {
+        margin-top: 12px;
+    }
+
+    .hero-actions .button {
+        min-height: 50px;
+    }
+
+    .hero-actions .hero-sign-in-link {
+        margin-top: -2px;
+    }
+
+    .hero-floating-footer {
+        position: static;
+        transform: none;
+        align-self: center;
+        margin: 32px auto 0;
+        max-width: calc(100% - 24px);
+        padding: 8px 12px;
+        white-space: normal;
+        text-align: center;
+    }
 }
 
 .auth-mode-switch {
@@ -3651,7 +3879,10 @@ code {
 
 @media (max-width: 1023px) {
     .agent-viz {
-        display: none;
+        display: flex;
+        max-width: min(100%, 26rem);
+        height: 240px;
+        margin: 0 auto;
     }
 }
 
