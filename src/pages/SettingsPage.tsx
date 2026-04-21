@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-
-import { api } from "@/lib/api";
 
 const QUICKSTART_COMMANDS = [
   {
@@ -36,48 +34,6 @@ const NEXT_STEPS = [
 
 export function SettingsPage() {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
-  const [bundledEnabled, setBundledEnabled] = useState(false);
-  const [bundledLoading, setBundledLoading] = useState(true);
-  const [bundledSaving, setBundledSaving] = useState(false);
-  const [bundledError, setBundledError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    void (async () => {
-      try {
-        const payload = await api.billingMe();
-        if (!active) {
-          return;
-        }
-        setBundledEnabled(Boolean(payload.entitlements.bundledInference));
-        setBundledError(null);
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-        const message =
-          typeof error === "object"
-          && error
-          && "error" in error
-          && typeof error.error === "object"
-          && error.error
-          && "message" in error.error
-          && typeof error.error.message === "string"
-            ? error.error.message
-            : "Could not load bundled access right now.";
-        setBundledError(message);
-      } finally {
-        if (active) {
-          setBundledLoading(false);
-        }
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   async function handleCopy(command: string) {
     try {
@@ -88,35 +44,6 @@ export function SettingsPage() {
       }, 1400);
     } catch {
       setCopiedCommand(null);
-    }
-  }
-
-  async function handleBundledToggle() {
-    if (bundledSaving || bundledLoading) {
-      return;
-    }
-
-    const nextEnabled = !bundledEnabled;
-    setBundledSaving(true);
-    setBundledError(null);
-
-    try {
-      const payload = await api.toggleBundledAccess(nextEnabled);
-      setBundledEnabled(Boolean(payload.entitlements.bundledInference));
-    } catch (error) {
-      const message =
-        typeof error === "object"
-        && error
-        && "error" in error
-        && typeof error.error === "object"
-        && error.error
-        && "message" in error.error
-        && typeof error.error.message === "string"
-          ? error.error.message
-          : "Could not update bundled access right now.";
-      setBundledError(message);
-    } finally {
-      setBundledSaving(false);
     }
   }
 
@@ -167,32 +94,6 @@ export function SettingsPage() {
             <p className="muted">{item.body}</p>
           </article>
         ))}
-      </section>
-
-      <section className="detail-card bundled-access-card">
-        <div className="bundled-access-row">
-          <div className="bundled-access-copy">
-            <strong>Bundled access</strong>
-            <p className="muted">
-              Toggle hosted bundled model access for this account while the bundled path is still being staged.
-            </p>
-          </div>
-
-          <div className="bundled-access-controls">
-            <span className={`bundled-access-pill ${bundledEnabled ? "is-on" : "is-off"}`}>
-              {bundledLoading ? "Checking" : bundledEnabled ? "Enabled" : "Disabled"}
-            </span>
-            <button
-              className="bundled-access-button"
-              onClick={() => void handleBundledToggle()}
-              type="button"
-              disabled={bundledLoading || bundledSaving}
-            >
-              {bundledSaving ? "Saving" : bundledEnabled ? "Turn off" : "Turn on"}
-            </button>
-          </div>
-        </div>
-        {bundledError ? <p className="bundled-access-error">{bundledError}</p> : null}
       </section>
 
       <section className="detail-card onboarding-links-card">
