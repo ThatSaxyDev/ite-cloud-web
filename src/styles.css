@@ -1175,6 +1175,38 @@ button {
     letter-spacing: 0.12em;
 }
 
+.password-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-field input {
+    padding-right: 54px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    transition: color var(--motion-fast);
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+    color: var(--text);
+}
+
+.password-toggle:focus-visible {
+    outline: none;
+}
+
 input {
     width: 100%;
     min-height: 58px;
