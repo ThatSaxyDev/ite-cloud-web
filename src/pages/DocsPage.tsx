@@ -191,7 +191,7 @@ export function DocsPage() {
             {/* Intro Section */}
             <section className="docs-hero-block" id="intro">
               <p className="sessions-kicker">Intro</p>
-              <h2>Get started with iTE.</h2>
+              <h2 data-scramble="true">Get started with iTE.</h2>
               <p className="docs-summary">
                 <strong>iTE</strong> is an AI coding agent for your terminal.
               </p>
@@ -232,7 +232,7 @@ export function DocsPage() {
 
             {/* Prerequisites Section */}
             <section className="docs-section" id="prerequisites">
-              <h2>Prerequisites</h2>
+              <h2 data-scramble="true">Prerequisites</h2>
               <p>Before you install iTE, make sure you have:</p>
               <div className="docs-checklist">
                 <div className="docs-checklist-item">
@@ -264,7 +264,7 @@ export function DocsPage() {
 
             {/* Install Section */}
             <section className="docs-section" id="install">
-              <h2>Install</h2>
+              <h2 data-scramble="true">Install</h2>
               <p>
                 The fastest way to install iTE is through <strong>pipx</strong>.
                 It keeps iTE isolated from your system Python and gives you the{" "}
@@ -295,7 +295,7 @@ export function DocsPage() {
 
             {/* Configure Section */}
             <section className="docs-section" id="configure">
-              <h2>Configure Your Provider</h2>
+              <h2 data-scramble="true">Configure Your Provider</h2>
               <p>
                 iTE requires an OpenAI-compatible model provider. Run{" "}
                 <code>/setup</code> inside iTE to configure:
@@ -369,7 +369,7 @@ export function DocsPage() {
 
             {/* Initialize Section */}
             <section className="docs-section" id="init">
-              <h2>Initialize Your Project</h2>
+              <h2 data-scramble="true">Initialize Your Project</h2>
               <p>
                 Projects can include an <code>AGENTS.md</code> file at the root
                 to provide instructions to iTE on how to work with the codebase.
@@ -419,7 +419,7 @@ export function DocsPage() {
 
             {/* Usage Section */}
             <section className="docs-section" id="usage">
-              <h2>Usage</h2>
+              <h2 data-scramble="true">Usage</h2>
               <p>
                 Now that you&apos;ve configured a provider and optionally
                 initialized your project, you&apos;re ready to use iTE.
@@ -494,7 +494,7 @@ Sounds good! Go ahead and make the changes.`}
 
             {/* Commands Section */}
             <section className="docs-section" id="commands">
-              <h2>Commands</h2>
+              <h2 data-scramble="true">Commands</h2>
               <p>
                 Type <code>/help</code> in iTE to see available commands.
               </p>
@@ -763,7 +763,7 @@ Sounds good! Go ahead and make the changes.`}
 
             {/* Tools Section */}
             <section className="docs-section" id="tools">
-              <h2>Tools</h2>
+              <h2 data-scramble="true">Tools</h2>
               <p>
                 iTE includes a comprehensive set of built-in tools for reading,
                 writing, searching, executing, and managing your codebase.
@@ -1048,7 +1048,7 @@ Sounds good! Go ahead and make the changes.`}
 
             {/* AGENTS.md Section */}
             <section className="docs-section" id="agents">
-              <h2>AGENTS.md</h2>
+              <h2 data-scramble="true">AGENTS.md</h2>
               <p>
                 <code>AGENTS.md</code> files provide project-specific
                 instructions to iTE, similar to how
@@ -1094,7 +1094,7 @@ Sounds good! Go ahead and make the changes.`}
 
             {/* Skills Section */}
             <section className="docs-section" id="skills">
-              <h2>Skills</h2>
+              <h2 data-scramble="true">Skills</h2>
               <p>
                 Skills are instruction bundles that extend iTE&apos;s
                 capabilities on specific tasks.
@@ -1149,7 +1149,7 @@ Sounds good! Go ahead and make the changes.`}
 
             {/* Subagents Section */}
             <section className="docs-section" id="subagents">
-              <h2>Subagents</h2>
+              <h2 data-scramble="true">Subagents</h2>
               <p>
                 Subagents are specialized AI agents that handle specific tasks
                 independently. They run in parallel and return structured
@@ -1208,7 +1208,7 @@ Sounds good! Go ahead and make the changes.`}
 
             {/* MCP Section */}
             <section className="docs-section" id="mcp">
-              <h2>MCP Servers</h2>
+              <h2 data-scramble="true">MCP Servers</h2>
               <p>
                 iTE supports the Model Context Protocol (MCP) for extending
                 capabilities with external tools.
