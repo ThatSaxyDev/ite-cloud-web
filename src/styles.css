@@ -1733,6 +1733,19 @@ code {
     color: var(--text);
 }
 
+.docs-logo {
+    display: inline-flex;
+    align-items: center;
+    width: 48px;
+    height: 32px;
+}
+
+.docs-logo-image {
+    height: auto;
+    width: 100%;
+    display: block;
+}
+
 .docs-search {
     display: flex;
     align-items: center;

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 
 type DocNavItem = {
   id: string;
@@ -128,32 +129,12 @@ export function DocsPage() {
         <header className="docs-header">
           <div className="docs-header-left">
             <Link
-              className="docs-wordmark interactive-link"
+              className="docs-logo"
               data-magnetic
-              data-scramble
               to="/"
             >
-              iTE
+              <GlitchImageLogo className="docs-logo-image" />
             </Link>
-            <nav className="docs-header-nav" aria-label="Docs navigation">
-              <Link
-                className="interactive-link"
-                data-magnetic
-                data-scramble
-                to="/"
-              >
-                Home
-              </Link>
-              <span className="docs-header-nav-current">Docs</span>
-              <Link
-                className="interactive-link"
-                data-magnetic
-                data-scramble
-                to="/account/settings"
-              >
-                App
-              </Link>
-            </nav>
           </div>
 
           <div className="docs-header-actions">
