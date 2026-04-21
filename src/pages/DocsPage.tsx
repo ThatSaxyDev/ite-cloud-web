@@ -64,20 +64,39 @@ function CodeBlock({ label, code }: { label: string; code: string }) {
 }
 
 function SidebarContent({
+  query,
+  setQuery,
   filteredNav,
   closeMobileNav,
-}: { filteredNav: DocNavItem[]; closeMobileNav: () => void }) {
+}: { query: string; setQuery: (q: string) => void; filteredNav: DocNavItem[]; closeMobileNav: () => void }) {
   return (
     <>
+      {/* Search in sidebar */}
+      <div className="docs-sidebar-search">
+        <label className="docs-search docs-search-sidebar" aria-label="Search docs sections">
+          <span className="docs-search-icon" aria-hidden="true">/</span>
+          <input
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search docs"
+            type="search"
+            value={query}
+          />
+        </label>
+      </div>
+
       <div className="docs-sidebar-group">
         <span className="docs-sidebar-label">Docs</span>
         <div className="docs-sidebar-links">
-          {filteredNav.map((item) => (
-            <a className="docs-sidebar-link" href={`#${item.id}`} key={item.id} onClick={closeMobileNav}>
-              <strong>{item.label}</strong>
-              <span>{item.description}</span>
-            </a>
-          ))}
+          {filteredNav.length > 0 ? (
+            filteredNav.map((item) => (
+              <a className="docs-sidebar-link" href={`#${item.id}`} key={item.id} onClick={closeMobileNav}>
+                <strong>{item.label}</strong>
+                <span>{item.description}</span>
+              </a>
+            ))
+          ) : (
+            <div className="docs-sidebar-empty">No results found</div>
+          )}
         </div>
       </div>
 
@@ -177,19 +196,6 @@ export function DocsPage() {
           </Link>
           <div className="docs-mobile-header-spacer" />
         </div>
-
-        {/* Mobile Search Bar */}
-        <div className="docs-mobile-search-row">
-          <label className="docs-search docs-search-mobile" aria-label="Search docs sections">
-            <span className="docs-search-icon" aria-hidden="true">/</span>
-            <input
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search docs"
-              type="search"
-              value={query}
-            />
-          </label>
-        </div>
       </header>
 
       {/* Mobile Nav Drawer */}
@@ -215,7 +221,7 @@ export function DocsPage() {
           </button>
         </div>
         <div className="docs-mobile-drawer-content">
-          <SidebarContent filteredNav={filteredNav} closeMobileNav={closeMobileNav} />
+          <SidebarContent query={query} setQuery={setQuery} filteredNav={filteredNav} closeMobileNav={closeMobileNav} />
         </div>
       </aside>
 
@@ -227,24 +233,11 @@ export function DocsPage() {
               <GlitchImageLogo className="docs-logo-image" />
             </Link>
           </div>
-
-          <div className="docs-header-actions">
-            <label className="docs-search" aria-label="Search docs sections">
-              <span className="docs-search-icon" aria-hidden="true">/</span>
-              <input
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search docs"
-                type="search"
-                value={query}
-              />
-              <span className="docs-search-shortcut">Ctrl K</span>
-            </label>
-          </div>
         </header>
 
         <div className="docs-layout">
           <aside className="docs-sidebar" aria-label="Documentation sections">
-            <SidebarContent filteredNav={filteredNav} closeMobileNav={closeMobileNav} />
+            <SidebarContent query={query} setQuery={setQuery} filteredNav={filteredNav} closeMobileNav={closeMobileNav} />
           </aside>
 
           <article className="docs-article">

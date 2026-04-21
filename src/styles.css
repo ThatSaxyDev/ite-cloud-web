@@ -1810,6 +1810,28 @@ code {
     border-top: 1px solid var(--line);
 }
 
+.docs-sidebar-search {
+    margin-bottom: 6px;
+}
+
+.docs-search-sidebar {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 10px;
+}
+
+.docs-search-sidebar .docs-search-shortcut {
+    display: none;
+}
+
+.docs-sidebar-empty {
+    padding: 12px;
+    color: var(--text-dim);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
 .docs-sidebar-label {
     color: var(--text-dim);
     font-size: 11px;
@@ -2931,32 +2953,17 @@ code {
         flex-shrink: 0;
     }
 
-    .docs-mobile-search-row {
-        padding: 10px 14px 12px;
-    }
-
-    .docs-search-mobile {
-        width: 100%;
-        min-width: 0;
-        min-height: 40px;
-        padding: 0 12px;
-    }
-
-    .docs-search-mobile input {
-        font-size: 15px;
-    }
-
-    .docs-search-mobile .docs-search-shortcut {
-        display: none;
-    }
-
     /* Mobile drawer */
     .docs-mobile-nav-overlay {
         position: fixed;
         inset: 0;
+        width: 100vw;
+        height: 100vh;
         background: rgba(0, 0, 0, 0.7);
         z-index: 110;
         backdrop-filter: blur(4px);
+        cursor: pointer;
+        touch-action: none;
     }
 
     .docs-mobile-drawer {
@@ -2999,9 +3006,9 @@ code {
         -webkit-overflow-scrolling: touch;
     }
 
-    /* Adjust main content for fixed header */
+    /* Adjust main content for fixed header (now shorter without search) */
     .docs-shell {
-        padding-top: 105px;
+        padding-top: 64px;
     }
 
     .docs-stage {
