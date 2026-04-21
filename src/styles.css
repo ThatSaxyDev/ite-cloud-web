@@ -147,7 +147,9 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+        opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .preloader.hidden {
@@ -230,7 +232,12 @@ button {
     left: 50%;
     width: 150px;
     height: 150px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.028) 48%, transparent 74%);
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.09) 0%,
+        rgba(255, 255, 255, 0.028) 48%,
+        transparent 74%
+    );
     transform: translate(-50%, -50%);
     mix-blend-mode: overlay;
 }
@@ -265,7 +272,12 @@ button {
     width: 260px;
     height: 260px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.022) 48%, transparent 72%);
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.022) 48%,
+        transparent 72%
+    );
     z-index: 9981;
     mix-blend-mode: overlay;
 }
@@ -601,7 +613,9 @@ button {
     place-items: center;
     transform-style: preserve-3d;
     perspective: 900px;
-    transition: transform 320ms ease, filter 320ms ease;
+    transition:
+        transform 320ms ease,
+        filter 320ms ease;
 }
 
 .triangle-field::before,
@@ -613,26 +627,24 @@ button {
 }
 
 .triangle-field::before {
-    background:
-        radial-gradient(
-            circle at 50% 50%,
-            rgba(0, 0, 0, 0.92) 0,
-            rgba(0, 0, 0, 0.86) 2.6rem,
-            rgba(255, 255, 255, 0.055) 4.8rem,
-            transparent 8.4rem
-        );
+    background: radial-gradient(
+        circle at 50% 50%,
+        rgba(0, 0, 0, 0.92) 0,
+        rgba(0, 0, 0, 0.86) 2.6rem,
+        rgba(255, 255, 255, 0.055) 4.8rem,
+        transparent 8.4rem
+    );
     filter: blur(34px);
     opacity: 0.42;
     animation: triangle-core-pulse 6.5s ease-in-out infinite;
 }
 
 .triangle-field::after {
-    background:
-        radial-gradient(
-            circle at 50% 50%,
-            rgba(255, 255, 255, 0.022),
-            transparent 20rem
-        );
+    background: radial-gradient(
+        circle at 50% 50%,
+        rgba(255, 255, 255, 0.022),
+        transparent 20rem
+    );
     opacity: 0.08;
 }
 
@@ -718,7 +730,6 @@ button {
         border-color: rgba(255, 255, 255, 0.28);
         box-shadow: 0 0 32px rgba(255, 255, 255, 0.2);
     }
-
 }
 
 .button {
@@ -781,7 +792,12 @@ button {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.32),
+        transparent
+    );
     transition: left 0.5s ease;
 }
 
@@ -1571,7 +1587,11 @@ code {
     padding: 28px;
     border: 1px solid var(--line);
     background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 28rem),
+        radial-gradient(
+            circle at top left,
+            rgba(255, 255, 255, 0.06),
+            transparent 28rem
+        ),
         rgba(255, 255, 255, 0.02);
 }
 
@@ -1713,6 +1733,19 @@ code {
     color: var(--text);
 }
 
+.docs-logo {
+    display: inline-flex;
+    align-items: center;
+    width: 48px;
+    height: 32px;
+}
+
+.docs-logo-image {
+    height: auto;
+    width: 100%;
+    display: block;
+}
+
 .docs-search {
     display: flex;
     align-items: center;
@@ -1747,7 +1780,10 @@ code {
 
 .docs-layout {
     display: grid;
-    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(180px, 220px);
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(
+            180px,
+            220px
+        );
     gap: 32px;
     align-items: start;
 }
@@ -1837,6 +1873,38 @@ code {
     letter-spacing: -0.09em;
 }
 
+.docs-hero-block h2 {
+    margin: 0;
+    max-width: none;
+    font-size: clamp(2rem, 3.2vw, 2.8rem);
+    line-height: 1.05;
+    letter-spacing: -0.05em;
+    position: relative;
+}
+
+.docs-hero-block h2[data-scramble] {
+    display: inline-block;
+    position: relative;
+}
+
+.docs-hero-block h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 1px;
+    background: var(--white);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.docs-hero-block h2:hover::before {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
 .docs-summary {
     margin: 0;
     max-width: 42rem;
@@ -1862,6 +1930,33 @@ code {
     margin: 0;
     font-size: clamp(1.7rem, 2vw, 2.15rem);
     letter-spacing: -0.05em;
+    position: relative;
+    display: inline-block;
+    cursor: default;
+}
+
+.docs-section h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 1px;
+    background: var(--white);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.docs-section h2:hover::before {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.docs-section h3 {
+    margin: 0;
+    font-size: clamp(1.3rem, 1.6vw, 1.5rem);
+    letter-spacing: -0.03em;
 }
 
 .docs-section p,
@@ -1873,6 +1968,64 @@ code {
 
 .docs-section p {
     margin: 0;
+}
+
+.docs-footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+.docs-footer a {
+    color: var(--text-soft);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.docs-footer a:hover {
+    color: var(--text);
+}
+
+.docs-code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.docs-copy-button {
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.docs-copy-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.docs-image-container {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1.5px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.015);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.docs-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    opacity: 0.95;
 }
 
 .docs-code-block {
@@ -2427,21 +2580,33 @@ code {
         opacity: calc(var(--tri-opacity) * 0.12);
         filter: grayscale(1) brightness(0.7);
         transform: rotate(var(--tri-rotate))
-            translate3d(calc(var(--tri-tx) * 0.14), calc(var(--tri-ty) * 0.14), -820px)
+            translate3d(
+                calc(var(--tri-tx) * 0.14),
+                calc(var(--tri-ty) * 0.14),
+                -820px
+            )
             scale(0.18);
     }
     48% {
         opacity: calc(var(--tri-opacity) * 0.42);
         filter: grayscale(1) brightness(0.94);
         transform: rotate(var(--tri-rotate))
-            translate3d(calc(var(--tri-tx) * 0.46), calc(var(--tri-ty) * 0.46), -180px)
+            translate3d(
+                calc(var(--tri-tx) * 0.46),
+                calc(var(--tri-ty) * 0.46),
+                -180px
+            )
             scale(0.52);
     }
     82% {
         opacity: calc(var(--tri-opacity) * 1.34);
         filter: grayscale(1) brightness(1.32);
         transform: rotate(var(--tri-rotate))
-            translate3d(calc(var(--tri-tx) * 0.86), calc(var(--tri-ty) * 0.86), 640px)
+            translate3d(
+                calc(var(--tri-tx) * 0.86),
+                calc(var(--tri-ty) * 0.86),
+                640px
+            )
             scale(0.92);
     }
     100% {

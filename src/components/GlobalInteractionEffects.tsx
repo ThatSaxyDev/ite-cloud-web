@@ -44,6 +44,8 @@ function scrambleText(element: HTMLElement, duration = 400) {
 }
 
 export function GlobalInteractionEffects() {
+  /* 
+  // Custom cursor disabled for performance
   useEffect(() => {
     const isTouch = window.matchMedia("(pointer: coarse)").matches;
     if (isTouch) {
@@ -236,7 +238,32 @@ export function GlobalInteractionEffects() {
       clearMagnetic(activeMagnetic);
     };
   }, []);
+  */
 
+  // Keep only text scramble effect
+  useEffect(() => {
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    if (isTouch) {
+      return;
+    }
+
+    function handleOver(event: MouseEvent) {
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      const scramble = target?.closest<HTMLElement>("[data-scramble]");
+      if (scramble) {
+        scrambleText(scramble);
+      }
+    }
+
+    document.addEventListener("mouseover", handleOver);
+
+    return () => {
+      document.removeEventListener("mouseover", handleOver);
+    };
+  }, []);
+
+  /* 
+  // Cursor elements disabled
   return (
     <>
       <div className="cursor-container" aria-hidden="true">
@@ -247,4 +274,7 @@ export function GlobalInteractionEffects() {
       <div className="mouse-illumination" aria-hidden="true" />
     </>
   );
+  */
+
+  return null;
 }
