@@ -2892,10 +2892,11 @@ code {
         border-bottom: 1px solid var(--line);
         transform: translateY(0);
         transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        padding-top: env(safe-area-inset-top);
     }
 
     .docs-mobile-header[data-visible="false"] {
-        transform: translateY(-100%);
+        transform: translateY(calc(-100% - env(safe-area-inset-top, 0px)));
     }
 
     .docs-mobile-header-inner {
@@ -2972,6 +2973,7 @@ code {
         left: 0;
         width: min(80vw, 280px);
         height: 100vh;
+        height: 100dvh;
         z-index: 120;
         background: rgba(8, 8, 8, 0.99);
         border-right: 1px solid var(--line);
@@ -2979,6 +2981,7 @@ code {
         transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         display: flex;
         flex-direction: column;
+        padding-top: env(safe-area-inset-top);
     }
 
     .docs-mobile-drawer[data-open="true"] {
@@ -2990,9 +2993,11 @@ code {
         align-items: center;
         justify-content: space-between;
         padding: 10px 14px;
+        padding-top: max(10px, env(safe-area-inset-top));
         border-bottom: 1px solid var(--line);
         flex-shrink: 0;
-        height: 52px;
+        height: auto;
+        min-height: 52px;
     }
 
     .docs-mobile-drawer-header .docs-mobile-logo {
