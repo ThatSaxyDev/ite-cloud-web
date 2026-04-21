@@ -546,6 +546,13 @@ button {
     background: rgba(255, 255, 255, 0.022);
 }
 
+.hero-command-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
 .hero-command-label {
     color: var(--text-dim);
     font-size: 11px;
@@ -557,6 +564,36 @@ button {
 .hero-command-card code {
     font-family: var(--font-mono);
     font-size: 0.96rem;
+}
+
+.hero-command-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.hero-command-toggle {
+    padding: 4px 9px;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition:
+        color var(--motion-fast),
+        background-color var(--motion-fast);
+}
+
+.hero-command-toggle[data-active="true"] {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.hero-command-toggle:hover {
+    color: var(--text-soft);
 }
 
 .hero-actions,

@@ -24,6 +24,7 @@ const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
 function HomePage() {
   const [ctaLabel, setCtaLabel] = useState("Get started");
   const [ctaHref, setCtaHref] = useState("/login?mode=sign-up");
+  const [installMethod, setInstallMethod] = useState<"pipx" | "uv">("pipx");
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +61,9 @@ function HomePage() {
     };
   }, []);
 
+  const installCommand =
+    installMethod === "pipx" ? "pipx install ite-agent" : "uv tool install ite-agent";
+
   return (
     <main className="hero-shell">
       <section className="hero-stage">
@@ -79,8 +83,32 @@ function HomePage() {
                 Plan, execute, and stay in control.
               </p>
               <div className="hero-command-card" aria-label="Install iTE">
-                <span className="hero-command-label">Install</span>
-                <code>pipx install ite-agent</code>
+                <div className="hero-command-header">
+                  <span className="hero-command-label">Install</span>
+                  <div className="hero-command-switch" aria-label="Choose install method" role="tablist">
+                    <button
+                      aria-selected={installMethod === "pipx"}
+                      className="hero-command-toggle"
+                      data-active={installMethod === "pipx"}
+                      onClick={() => setInstallMethod("pipx")}
+                      role="tab"
+                      type="button"
+                    >
+                      pipx
+                    </button>
+                    <button
+                      aria-selected={installMethod === "uv"}
+                      className="hero-command-toggle"
+                      data-active={installMethod === "uv"}
+                      onClick={() => setInstallMethod("uv")}
+                      role="tab"
+                      type="button"
+                    >
+                      uv
+                    </button>
+                  </div>
+                </div>
+                <code>{installCommand}</code>
               </div>
               <div className="hero-actions">
                 <Link className="button" data-magnetic data-ripple to={ctaHref}>
