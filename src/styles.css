@@ -1875,10 +1875,34 @@ code {
 
 .docs-hero-block h2 {
     margin: 0;
-    max-width: 14ch;
+    max-width: none;
     font-size: clamp(2rem, 3.2vw, 2.8rem);
     line-height: 1.05;
     letter-spacing: -0.05em;
+    position: relative;
+}
+
+.docs-hero-block h2[data-scramble] {
+    display: inline-block;
+    position: relative;
+}
+
+.docs-hero-block h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 1px;
+    background: var(--white);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.docs-hero-block h2:hover::before {
+    transform: scaleX(1);
+    transform-origin: left;
 }
 
 .docs-summary {
@@ -1944,6 +1968,24 @@ code {
 
 .docs-section p {
     margin: 0;
+}
+
+.docs-footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+.docs-footer a {
+    color: var(--text-soft);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.docs-footer a:hover {
+    color: var(--text);
 }
 
 .docs-code-header {

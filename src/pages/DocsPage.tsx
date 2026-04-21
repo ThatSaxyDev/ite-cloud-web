@@ -1257,6 +1257,20 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`}
             </section>
           </article>
         </div>
+
+        <footer className="docs-footer">
+          <p>
+            © {new Date().getFullYear()} iTE. Built by{" "}
+            <a
+              href="https://kiishi.space"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Kishi David
+            </a>
+            .
+          </p>
+        </footer>
       </section>
     </main>
   );
