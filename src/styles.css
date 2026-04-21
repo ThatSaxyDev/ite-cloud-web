@@ -368,6 +368,7 @@ button {
 
 .hero-stage {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
@@ -566,6 +567,16 @@ button {
     font-size: 0.96rem;
 }
 
+.hero-mobile-agent-viz {
+    display: none;
+}
+
+.hero-desktop-agent-viz {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
 .hero-command-switch {
     display: inline-flex;
     align-items: center;
@@ -653,11 +664,113 @@ button {
 
 @media (max-width: 1023px) {
     .hero-stage {
-        align-items: flex-start;
+        align-items: center;
+        padding-top: clamp(84px, 14vh, 116px);
+        padding-bottom: 24px;
     }
 
     .hero-layout {
         width: 100%;
+        max-width: 20.5rem;
+        gap: 24px;
+        justify-items: center;
+    }
+
+    .hero-copy {
+        width: 100%;
+        padding-left: 0;
+        gap: 18px;
+        justify-items: center;
+    }
+
+    .hero-brand-block {
+        justify-items: center;
+        gap: 12px;
+    }
+
+    .hero-brand-image {
+        width: min(100%, 8.75rem);
+    }
+
+    .hero-body {
+        justify-items: center;
+        text-align: center;
+        gap: 16px;
+        width: 100%;
+    }
+
+    .hero-body h1 {
+        font-size: clamp(2.7rem, 13vw, 4rem);
+        max-width: 7ch;
+    }
+
+    .hero-summary {
+        max-width: 16rem;
+        font-size: 0.98rem;
+        line-height: 1.6;
+    }
+
+    .hero-command-card {
+        width: 100%;
+        padding: 14px 14px 12px;
+        gap: 12px;
+    }
+
+    .hero-command-card code {
+        display: block;
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 0.88rem;
+        text-align: left;
+        white-space: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .hero-command-card code::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hero-command-header {
+        gap: 10px;
+    }
+
+    .hero-command-toggle {
+        padding: 4px 8px;
+        font-size: 9px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .hero-mobile-agent-viz {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hero-desktop-agent-viz {
+        display: none;
+    }
+
+    .hero-mobile-agent-viz .agent-viz {
+        max-width: 100%;
+        height: 210px;
+        margin: 2px auto 0;
+    }
+
+    .hero-floating-footer {
+        position: static;
+        transform: none;
+        align-self: center;
+        margin: 20px auto 0;
+        max-width: calc(100% - 24px);
+        padding: 8px 12px;
+        white-space: normal;
+        text-align: center;
     }
 }
 
@@ -3748,7 +3861,10 @@ code {
 
 @media (max-width: 1023px) {
     .agent-viz {
-        display: none;
+        display: flex;
+        max-width: min(100%, 26rem);
+        height: 240px;
+        margin: 0 auto;
     }
 }
 

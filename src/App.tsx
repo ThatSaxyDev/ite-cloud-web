@@ -82,6 +82,9 @@ function HomePage() {
               <p className="hero-summary">
                 Plan, execute, and stay in control.
               </p>
+              <div className="hero-mobile-agent-viz">
+                <AgentVisualization />
+              </div>
               <div className="hero-command-card" aria-label="Install iTE">
                 <div className="hero-command-header">
                   <span className="hero-command-label">Install</span>
@@ -130,7 +133,9 @@ function HomePage() {
               </div>
             </div>
           </div>
-          <AgentVisualization />
+          <div className="hero-desktop-agent-viz">
+            <AgentVisualization />
+          </div>
         </div>
 
         <footer className="hero-floating-footer">
