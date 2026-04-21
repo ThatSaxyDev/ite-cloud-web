@@ -367,11 +367,12 @@ button {
 }
 
 .hero-stage {
-    display: grid;
-    grid-template-rows: 1fr auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-height: 100vh;
     padding-top: clamp(52px, 8vh, 92px);
-    padding-bottom: clamp(28px, 4vw, 40px);
+    padding-bottom: clamp(88px, 12vh, 128px);
     position: relative;
 }
 
@@ -459,9 +460,10 @@ button {
     gap: clamp(48px, 6vw, 88px);
     align-items: center;
     justify-items: stretch;
+    width: min(100%, 1400px);
     min-height: 0;
-    padding-top: clamp(16px, 3vh, 28px);
-    padding-bottom: clamp(56px, 10vh, 112px);
+    padding-top: 0;
+    padding-bottom: 0;
     animation: rise-in 700ms ease both;
 }
 
@@ -478,6 +480,7 @@ button {
     align-content: center;
     gap: 32px;
     min-height: 100%;
+    align-self: center;
     justify-self: stretch;
     width: min(100%, 560px);
     padding-left: clamp(20px, 3vw, 40px);
@@ -486,8 +489,8 @@ button {
 .hero-brand-block {
     display: grid;
     gap: 16px;
-    max-width: 24rem;
-    justify-items: center;
+    max-width: none;
+    justify-items: start;
 }
 
 .hero-brand-image {
@@ -580,11 +583,13 @@ button {
 }
 
 .hero-floating-footer {
-    justify-self: center;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-top: auto;
+    position: absolute;
+    left: 50%;
+    bottom: clamp(20px, 3vw, 28px);
+    transform: translateX(-50%);
     padding: 14px 22px;
     background: rgba(6, 10, 16, 0.72);
     backdrop-filter: blur(14px);
@@ -592,6 +597,7 @@ button {
     color: var(--text-dim);
     font-size: 0.88rem;
     text-align: center;
+    white-space: nowrap;
 }
 
 .hero-floating-footer p {
@@ -606,6 +612,16 @@ button {
 
 .hero-floating-footer a:hover {
     color: var(--text);
+}
+
+@media (max-width: 1023px) {
+    .hero-stage {
+        align-items: flex-start;
+    }
+
+    .hero-layout {
+        width: 100%;
+    }
 }
 
 .auth-mode-switch {
