@@ -195,15 +195,6 @@ export function DocsPage() {
               <div className="docs-sidebar-links">
                 <a
                   className="docs-sidebar-link"
-                  href="https://github.com/ThatSaxyDev/ite"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <strong>GitHub</strong>
-                  <span>Source code, releases, and repo issues.</span>
-                </a>
-                <a
-                  className="docs-sidebar-link"
                   href="https://pypi.org/project/ite-agent/"
                   rel="noreferrer"
                   target="_blank"
@@ -219,19 +210,24 @@ export function DocsPage() {
             {/* Intro Section */}
             <section className="docs-hero-block" id="intro">
               <p className="sessions-kicker">Intro</p>
-              <h1>Get started with iTE.</h1>
+              <h2>Get started with iTE.</h2>
               <p className="docs-summary">
-                <strong>iTE</strong> (Interactive Terminal Environment) is an AI
-                coding agent for your terminal. Connect your model service and
-                start coding.
+                <strong>iTE</strong> is an AI coding agent for your terminal.
               </p>
-              <p className="docs-summary">
+              <div className="docs-image-container">
+                <img
+                  alt="iTE terminal interface"
+                  className="docs-image"
+                  src="/docs-image.png"
+                />
+              </div>
+              {/*<p className="docs-summary">
                 iTE runs as a chat interface in your terminal. You prompt, it
                 responds, and together you build software. It can read files,
                 run commands, search code, and edit files—safely, with your
                 approval.
-              </p>
-              <div className="docs-inline-actions">
+              </p>*/}
+              {/*<div className="docs-inline-actions">
                 <Link
                   className="button"
                   data-magnetic
@@ -244,13 +240,13 @@ export function DocsPage() {
                 <a
                   className="button secondary"
                   data-magnetic
-                  href="https://github.com/ThatSaxyDev/ite"
+                  href="https://pypi.org/project/ite-agent/"
                   rel="noreferrer"
                   target="_blank"
                 >
-                  <span className="button-text">View repo</span>
+                  <span className="button-text">View PyPI</span>
                 </a>
-              </div>
+              </div>*/}
             </section>
 
             {/* Prerequisites Section */}
