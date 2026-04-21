@@ -1275,21 +1275,6 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`}
               </div>
             </section>
           </article>
-
-          <aside className="docs-outline" aria-label="On this page">
-            <span className="docs-sidebar-label">On this page</span>
-            <div className="docs-outline-links">
-              {PAGE_OUTLINE.map((item) => (
-                <a
-                  className="docs-outline-link"
-                  href={`#${item.id}`}
-                  key={item.id}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          </aside>
         </div>
       </section>
     </main>
