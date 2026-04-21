@@ -117,20 +117,32 @@ export function LoginPage() {
     }
   }
 
-  function buildGithubSignInUrl() {
-    const callbackURL = `${window.location.origin}${redirectTo}`;
-    const errorCallbackURL = `${window.location.origin}/login?redirect=${encodeURIComponent(redirectTo)}&mode=${mode}`;
-    const query = new URLSearchParams({
-      provider: "github",
-      callbackURL,
-      errorCallbackURL
-    });
+  async function handleGithubSignIn() {
+    setGithubPending(true);
+    setError(null);
 
-    if (mode === "sign-up") {
-      query.set("requestSignUp", "true");
+    try {
+      const callbackURL = `${window.location.origin}${redirectTo}`;
+      const errorCallbackURL = `${window.location.origin}/login?redirect=${encodeURIComponent(redirectTo)}&mode=${mode}`;
+      const query = new URLSearchParams({
+        provider: "github",
+        callbackURL,
+        errorCallbackURL
+      });
+
+      if (mode === "sign-up") {
+        query.set("requestSignUp", "true");
+      }
+
+      window.location.assign(`${config.apiUrl}/api/auth/sign-in/social?${query.toString()}`);
+    } catch (caught) {
+      setError(
+        typeof caught === "object" && caught && "message" in caught
+          ? String((caught as { message?: string }).message)
+          : "GitHub sign-in failed."
+      );
+      setGithubPending(false);
     }
-
-    return `${config.apiUrl}/api/auth/sign-in/social?${query.toString()}`;
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -181,8 +193,6 @@ export function LoginPage() {
       setFormPending(false);
     }
   }
-
-  const githubSignInUrl = buildGithubSignInUrl();
 
   async function handleResendVerification() {
     setFormPending(true);
@@ -316,20 +326,9 @@ export function LoginPage() {
           ) : (
             <form className="form-surface" onSubmit={handleSubmit}>
               <>
-                <a
-                  className={`button secondary ${githubPending || formPending ? "is-disabled" : ""}`}
-                  data-magnetic
-                  href={githubPending || formPending ? undefined : githubSignInUrl}
-                  onClick={() => {
-                    if (githubPending || formPending) {
-                      return;
-                    }
-                    setGithubPending(true);
-                    setError(null);
-                  }}
-                >
+                <button className="button secondary" data-magnetic disabled={githubPending || formPending} onClick={() => void handleGithubSignIn()} type="button">
                   {githubPending ? "Connecting GitHub..." : "Continue with GitHub"}
-                </a>
+                </button>
                 <div className="auth-divider" aria-hidden="true">
                   <span />
                   <em>or</em>
