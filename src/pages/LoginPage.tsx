@@ -56,7 +56,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const redirectTo = params.get("redirect") || "/account/sessions";
+  const redirectTo = params.get("redirect") || "/account/settings";
   const [mode, setMode] = useState<"sign-in" | "sign-up" | "verify-email">(params.get("mode") === "sign-up" ? "sign-up" : "sign-in");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
