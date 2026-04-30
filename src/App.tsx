@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 
 import { AmbientTriangles } from "@/components/AmbientTriangles";
@@ -7,7 +7,6 @@ import { AccountLayout } from "@/components/AccountLayout";
 import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { StartupPreloader } from "@/components/StartupPreloader";
-import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import {
   hasKnownUser,
@@ -21,21 +20,88 @@ import { LoginPage } from "@/pages/LoginPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 
 const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
+const INSTALL_COMMANDS = {
+  pipx: "pipx install ite-agent",
+  uv: "uv tool install ite-agent"
+} as const;
+const INSTALL_REEL_DURATION_MS = 420;
+const INSTALL_REEL_CHARSET = " abcdefghijklmnopqrstuvwxyz0123456789-./".split("");
 
-type EntitlementState = {
-  planKey: string;
-  bundledInference: boolean;
-  proAccess: boolean;
-  updatedAt: string | null;
+type InstallReelSlot = {
+  chars: string[];
+  delay: number;
+  duration: number;
+  direction: "up" | "down";
 };
+
+function normalizeInstallReelChar(char: string) {
+  const normalized = char.toLowerCase();
+  return INSTALL_REEL_CHARSET.includes(normalized) ? normalized : " ";
+}
+
+function getInstallReelCharAt(index: number) {
+  const size = INSTALL_REEL_CHARSET.length;
+  return INSTALL_REEL_CHARSET[((index % size) + size) % size];
+}
+
+function buildInstallWheelPath(fromChar: string, toChar: string, index: number) {
+  if (fromChar === toChar) {
+    return {
+      chars: [toChar],
+      direction: "up" as const
+    };
+  }
+
+  const fromIndex = INSTALL_REEL_CHARSET.indexOf(normalizeInstallReelChar(fromChar));
+  const toIndex = INSTALL_REEL_CHARSET.indexOf(normalizeInstallReelChar(toChar));
+  const seed = index * 17 + fromIndex * 7 + toIndex * 13;
+  const direction = seed % 2 === 0 ? "up" as const : "down" as const;
+  const size = INSTALL_REEL_CHARSET.length;
+  const distance =
+    direction === "up"
+      ? (toIndex - fromIndex + size) % size
+      : (fromIndex - toIndex + size) % size;
+  const steps = Math.max(2, distance + 1);
+  const chars = Array.from({ length: steps }, (_, stepIndex) => {
+    if (stepIndex === 0) {
+      return fromChar;
+    }
+    if (stepIndex === steps - 1) {
+      return toChar;
+    }
+
+    const nextIndex = direction === "up" ? fromIndex + stepIndex : fromIndex - stepIndex;
+    return getInstallReelCharAt(nextIndex);
+  });
+
+  return { chars, direction };
+}
+
+function buildInstallReelSlots(from: string, to: string): InstallReelSlot[] {
+  const length = Math.max(from.length, to.length);
+
+  return Array.from({ length }, (_, index) => {
+    const fromChar = from[index] ?? " ";
+    const toChar = to[index] ?? " ";
+    const wheel = buildInstallWheelPath(fromChar, toChar, index);
+
+    return {
+      chars: wheel.chars,
+      direction: wheel.direction,
+      delay: (index * 11) % 46,
+      duration: 180 + (wheel.chars.length - 1) * 14
+    };
+  });
+}
 
 function HomePage() {
   const [ctaLabel, setCtaLabel] = useState("Get started");
   const [ctaHref, setCtaHref] = useState("/login?mode=sign-up");
   const [installMethod, setInstallMethod] = useState<"pipx" | "uv">("pipx");
-  const [entitlements, setEntitlements] = useState<EntitlementState | null>(null);
-  const [entitlementPending, setEntitlementPending] = useState(false);
-  const [entitlementError, setEntitlementError] = useState<string | null>(null);
+  const [installCopied, setInstallCopied] = useState(false);
+  const [installTransition, setInstallTransition] = useState<{
+    slots: InstallReelSlot[];
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,22 +118,6 @@ function HomePage() {
         markKnownUser();
         setCtaLabel("Continue");
         setCtaHref("/account/settings");
-        try {
-          const me = await api.me();
-          if (!cancelled) {
-            setEntitlements(me.entitlements ?? null);
-            setEntitlementError(null);
-          }
-        } catch (error) {
-          if (!cancelled) {
-            setEntitlements(null);
-            setEntitlementError(
-              typeof error === "object" && error && "error" in error
-                ? String((error as { error?: { message?: string } }).error?.message || "Could not load bundled access.")
-                : "Could not load bundled access."
-            );
-          }
-        }
         return;
       }
 
@@ -88,26 +138,63 @@ function HomePage() {
     };
   }, []);
 
-  const installCommand =
-    installMethod === "pipx" ? "pipx install ite-agent" : "uv tool install ite-agent";
-  const entitlementLoaded = ctaHref !== "/account/settings" || entitlements !== null || entitlementError !== null;
+  useEffect(() => {
+    if (!installTransition) {
+      return;
+    }
 
-  async function handleBundledToggle(nextEnabled: boolean) {
+    const timeoutId = window.setTimeout(() => {
+      setInstallTransition(null);
+    }, INSTALL_REEL_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [installTransition]);
+
+  const installCommand = INSTALL_COMMANDS[installMethod];
+
+  function handleInstallMethodChange(nextMethod: "pipx" | "uv") {
+    if (nextMethod === installMethod) {
+      return;
+    }
+
+    const nextCommand = INSTALL_COMMANDS[nextMethod];
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!prefersReducedMotion) {
+      setInstallTransition({
+        slots: buildInstallReelSlots(installCommand, nextCommand)
+      });
+    } else {
+      setInstallTransition(null);
+    }
+
+    setInstallMethod(nextMethod);
+  }
+
+  async function handleCopyInstallCommand() {
     try {
-      setEntitlementPending(true);
-      setEntitlementError(null);
-      const payload = await api.toggleBundledAccess(nextEnabled);
-      setEntitlements(payload.entitlements);
-    } catch (error) {
-      setEntitlementError(
-        typeof error === "object" && error && "error" in error
-          ? String((error as { error?: { message?: string } }).error?.message || "Could not update bundled access.")
-          : "Could not update bundled access."
-      );
-    } finally {
-      setEntitlementPending(false);
+      await navigator.clipboard.writeText(installCommand);
+      setInstallCopied(true);
+      window.setTimeout(() => {
+        setInstallCopied(false);
+      }, 1400);
+    } catch {
+      setInstallCopied(false);
     }
   }
+
+  const reelSlots =
+    installTransition?.slots ??
+    installCommand.split("").map((char) => ({
+      chars: [char],
+      direction: "up" as const,
+      delay: 0,
+      duration: 0
+    }));
 
   return (
     <main className="hero-shell">
@@ -138,7 +225,7 @@ function HomePage() {
                       aria-selected={installMethod === "pipx"}
                       className="hero-command-toggle"
                       data-active={installMethod === "pipx"}
-                      onClick={() => setInstallMethod("pipx")}
+                      onClick={() => handleInstallMethodChange("pipx")}
                       role="tab"
                       type="button"
                     >
@@ -148,7 +235,7 @@ function HomePage() {
                       aria-selected={installMethod === "uv"}
                       className="hero-command-toggle"
                       data-active={installMethod === "uv"}
-                      onClick={() => setInstallMethod("uv")}
+                      onClick={() => handleInstallMethodChange("uv")}
                       role="tab"
                       type="button"
                     >
@@ -156,58 +243,56 @@ function HomePage() {
                     </button>
                   </div>
                 </div>
-                <code>{installCommand}</code>
-              </div>
-              {ctaHref === "/account/settings" ? (
-                <div className="hero-command-card hero-bundled-card" aria-label="Bundled testing access">
-                  <div className="hero-command-header hero-bundled-header">
-                    <span className="hero-command-label">Start Here</span>
+                <div className="hero-command-line">
+                  <code aria-live="polite" className="hero-command-code">
+                    <span className="sr-only">{installCommand}</span>
                     <span
-                      className="hero-bundled-status"
-                      data-active={entitlements?.bundledInference ? "true" : "false"}
+                      aria-hidden="true"
+                      className="hero-command-reels"
+                      data-animating={installTransition ? "true" : "false"}
                     >
-                      {!entitlementLoaded ? "Loading" : entitlements?.bundledInference ? "Bundled on" : "Bundled off"}
+                      {reelSlots.map((slot, index) => (
+                        <span className="hero-command-slot" key={`${index}-${slot.chars.join("")}`}>
+                          <span
+                            className="hero-command-slot-track"
+                            data-animating={installTransition ? "true" : "false"}
+                            style={{
+                              "--slot-count": String(slot.chars.length),
+                              "--slot-start":
+                                installTransition && slot.direction === "down"
+                                  ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
+                                  : "0%",
+                              "--slot-end":
+                                installTransition && slot.direction === "up"
+                                  ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
+                                  : "0%",
+                              animationDelay: `${slot.delay}ms`,
+                              animationDuration: `${slot.duration}ms`,
+                              transform:
+                                installTransition && slot.direction === "down"
+                                  ? `translateY(calc(-100% * ${(slot.chars.length - 1) / slot.chars.length}))`
+                                  : "translateY(0)"
+                            } as CSSProperties}
+                          >
+                            {slot.chars.map((char, charIndex) => (
+                              <span className="hero-command-slot-char" key={`${index}-${charIndex}-${char}`}>
+                                {char}
+                              </span>
+                            ))}
+                          </span>
+                        </span>
+                      ))}
                     </span>
-                  </div>
-                  <div className="hero-bundled-copy">
-                    <strong>Bundled testing access</strong>
-                    <p>
-                      Toggle your hosted bundled entitlement here while validating cloud flows.
-                    </p>
-                  </div>
-                  <div className="hero-bundled-actions">
-                    <button
-                      className="button secondary"
-                      disabled={!entitlementLoaded || entitlementPending || !entitlements?.bundledInference}
-                      onClick={() => void handleBundledToggle(false)}
-                      type="button"
-                    >
-                      <span className="button-text">
-                        {entitlementPending && entitlements?.bundledInference ? "Updating..." : "Disable"}
-                      </span>
-                      <span className="button-border" />
-                    </button>
-                    <button
-                      className="button"
-                      data-ripple
-                      disabled={!entitlementLoaded || entitlementPending || Boolean(entitlements?.bundledInference)}
-                      onClick={() => void handleBundledToggle(true)}
-                      type="button"
-                    >
-                      <span className="button-text">
-                        {entitlementPending && !entitlements?.bundledInference ? "Updating..." : "Enable"}
-                      </span>
-                      <span className="button-shine" />
-                    </button>
-                  </div>
-                  {entitlementError ? <p className="hero-bundled-feedback error">{entitlementError}</p> : null}
-                  {!entitlementError && entitlements ? (
-                    <p className="hero-bundled-feedback muted">
-                      Plan: {entitlements.planKey}. Updated {entitlements.updatedAt ? new Date(entitlements.updatedAt).toLocaleString() : "just now"}.
-                    </p>
-                  ) : null}
+                  </code>
+                  <button
+                    className="hero-command-copy"
+                    onClick={() => void handleCopyInstallCommand()}
+                    type="button"
+                  >
+                    {installCopied ? "Copied" : "Copy"}
+                  </button>
                 </div>
-              ) : null}
+              </div>
               <div className="hero-actions">
                 <Link className="button" data-magnetic data-ripple to={ctaHref}>
                   <span className="button-text" data-scramble>
