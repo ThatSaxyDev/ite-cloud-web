@@ -1984,16 +1984,29 @@ code {
 .onboarding-chip,
 .onboarding-step-eyebrow {
     display: inline-flex;
-    width: fit-content;
     align-items: center;
-    min-height: 28px;
-    padding: 0 11px;
-    border: 1px solid var(--line);
     color: var(--text-dim);
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+}
+
+.onboarding-chip {
+    align-self: start;
+    justify-self: start;
+    min-height: 0;
+    padding: 7px 11px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    line-height: 1;
+}
+
+.onboarding-step-eyebrow {
+    width: fit-content;
+    min-height: 28px;
+    padding: 0 11px;
+    border: 1px solid var(--line);
 }
 
 .onboarding-summary {
