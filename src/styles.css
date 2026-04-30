@@ -2702,6 +2702,7 @@ code {
 
 .usage-chart-bar-track {
     width: 100%;
+    height: 140px;
     min-height: 140px;
     display: flex;
     align-items: end;
@@ -2711,9 +2712,11 @@ code {
 
 .usage-chart-bar-fill {
     display: block;
+    flex: 0 0 auto;
     width: 100%;
     min-height: 6px;
     background: rgba(244, 241, 234, 0.88);
+    transition: height 180ms ease;
 }
 
 .analytics-model-list {
