@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
+import { api } from "@/lib/api";
 
 const QUICKSTART_COMMANDS = [
   {
@@ -32,8 +34,47 @@ const NEXT_STEPS = [
   }
 ] as const;
 
+type EntitlementState = {
+  planKey: string;
+  bundledInference: boolean;
+  proAccess: boolean;
+  updatedAt: string | null;
+};
+
 export function SettingsPage() {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
+  const [entitlements, setEntitlements] = useState<EntitlementState | null>(null);
+  const [entitlementPending, setEntitlementPending] = useState(false);
+  const [entitlementError, setEntitlementError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEntitlements() {
+      try {
+        const me = await api.me();
+        if (!cancelled) {
+          setEntitlements(me.entitlements ?? null);
+          setEntitlementError(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setEntitlements(null);
+          setEntitlementError(
+            typeof error === "object" && error && "error" in error
+              ? String((error as { error?: { message?: string } }).error?.message || "Could not load bundled access.")
+              : "Could not load bundled access."
+          );
+        }
+      }
+    }
+
+    void loadEntitlements();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleCopy(command: string) {
     try {
@@ -46,6 +87,25 @@ export function SettingsPage() {
       setCopiedCommand(null);
     }
   }
+
+  async function handleBundledToggle(nextEnabled: boolean) {
+    try {
+      setEntitlementPending(true);
+      setEntitlementError(null);
+      const payload = await api.toggleBundledAccess(nextEnabled);
+      setEntitlements(payload.entitlements);
+    } catch (error) {
+      setEntitlementError(
+        typeof error === "object" && error && "error" in error
+          ? String((error as { error?: { message?: string } }).error?.message || "Could not update bundled access.")
+          : "Could not update bundled access."
+      );
+    } finally {
+      setEntitlementPending(false);
+    }
+  }
+
+  const entitlementLoaded = entitlements !== null || entitlementError !== null;
 
   return (
     <section className="account-panel account-panel-onboarding">
@@ -83,6 +143,51 @@ export function SettingsPage() {
               <p className="muted">{item.caption}</p>
             </article>
           ))}
+          <article className="onboarding-command-card onboarding-entitlement-card">
+            <div className="onboarding-command-topline">
+              <span>Bundled testing access</span>
+              <span
+                className="onboarding-entitlement-status"
+                data-active={entitlements?.bundledInference ? "true" : "false"}
+              >
+                {!entitlementLoaded ? "Loading" : entitlements?.bundledInference ? "Bundled on" : "Bundled off"}
+              </span>
+            </div>
+            <p className="muted">
+              Toggle your hosted bundled entitlement here while validating cloud-mode flows.
+            </p>
+            <div className="onboarding-entitlement-actions">
+              <button
+                className="button secondary"
+                disabled={!entitlementLoaded || entitlementPending || !entitlements?.bundledInference}
+                onClick={() => void handleBundledToggle(false)}
+                type="button"
+              >
+                <span className="button-text">
+                  {entitlementPending && entitlements?.bundledInference ? "Updating..." : "Disable"}
+                </span>
+                <span className="button-border" />
+              </button>
+              <button
+                className="button"
+                data-ripple
+                disabled={!entitlementLoaded || entitlementPending || Boolean(entitlements?.bundledInference)}
+                onClick={() => void handleBundledToggle(true)}
+                type="button"
+              >
+                <span className="button-text">
+                  {entitlementPending && !entitlements?.bundledInference ? "Updating..." : "Enable"}
+                </span>
+                <span className="button-shine" />
+              </button>
+            </div>
+            {entitlementError ? <p className="onboarding-entitlement-feedback error">{entitlementError}</p> : null}
+            {!entitlementError && entitlements ? (
+              <p className="onboarding-entitlement-feedback muted">
+                Plan: {entitlements.planKey}. Updated {entitlements.updatedAt ? new Date(entitlements.updatedAt).toLocaleString() : "just now"}.
+              </p>
+            ) : null}
+          </article>
         </div>
       </section>
 
