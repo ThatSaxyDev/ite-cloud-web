@@ -120,7 +120,7 @@ export function SettingsPage() {
         <div className="onboarding-hero-copy">
           <span className="onboarding-chip">Start here</span>
           <p className="onboarding-summary">
-            Sign in to use bundled access, or run <code>/setup</code> if you want local or BYOK models.
+            When you're ready, head back to your terminal and run <code>/setup</code>.
           </p>
         </div>
 
