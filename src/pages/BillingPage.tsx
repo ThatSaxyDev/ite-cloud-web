@@ -21,14 +21,31 @@ type BillingState = {
   };
 };
 
-type UsageState = {
-  usage: {
-    fiveHour: { usedUsdCents: number; eventCount: number };
-    sevenDay: { usedUsdCents: number; eventCount: number };
+type AnalyticsPayload = {
+  totals: {
+    todayUsdCents: number;
+    sevenDayUsdCents: number;
+    thirtyDayUsdCents: number;
+    allTimeUsdCents: number;
+    allTimeRequestCount: number;
+    currentPeriodUsdCents: number;
+    currentPeriodRequestCount: number;
   };
-  quotas: {
-    fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
-    sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+  daily: Array<{
+    date: string;
+    label: string;
+    usdCents: number;
+    requestCount: number;
+  }>;
+  byModel: Array<{
+    modelKey: string;
+    usdCents: number;
+    requestCount: number;
+    sharePercent: number;
+  }>;
+  currentPeriod: {
+    start: string | null;
+    end: string | null;
   };
 };
 
@@ -87,20 +104,89 @@ function formatPlanName(planKey: string | null | undefined) {
     .join(" ");
 }
 
+function formatUsd(cents: number) {
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(cents / 100);
+}
+
+function formatNgn(cents: number) {
+  const usd = cents / 100;
+  const ngn = usd * 1397.98;
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0
+  }).format(ngn);
+}
+
+function formatPeriod(start: string | null, end: string | null) {
+  if (!start || !end) {
+    return "Current billing period";
+  }
+
+  const startText = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric"
+  }).format(new Date(start));
+  const endText = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric"
+  }).format(new Date(end));
+  return `${startText} to ${endText}`;
+}
+
+function modelLabel(modelKey: string) {
+  switch (modelKey) {
+    case "kimi-k2.5":
+    case "moonshotai/kimi-k2.5":
+      return "Kimi K2.5";
+    case "kimi-k2.6":
+    case "moonshotai/kimi-k2.6":
+      return "Kimi K2.6";
+    case "minimax-m2.5":
+    case "minimax/minimax-m2.5":
+      return "MiniMax M2.5";
+    case "minimax-m2.5-free":
+    case "minimax/minimax-m2.5:free":
+      return "MiniMax M2.5 (free)";
+    case "minimax-m2.7":
+    case "minimax/minimax-m2.7":
+      return "MiniMax M2.7";
+    case "glm-5":
+    case "z-ai/glm-5":
+      return "GLM-5";
+    case "glm-5.1":
+    case "z-ai/glm-5.1":
+      return "GLM-5.1";
+    case "nemotron-3-nano-omni-30b-a3b-reasoning-free":
+    case "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free":
+      return "Nemotron 3 Nano Omni (free)";
+    default:
+      return modelKey;
+  }
+}
+
 export function BillingPage() {
   const [billing, setBilling] = useState<BillingState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checkoutPending, setCheckoutPending] = useState(false);
   const [syncPending, setSyncPending] = useState(false);
   const [portalPending, setPortalPending] = useState(false);
-  const [usage, setUsage] = useState<UsageState | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsPayload | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       try {
-        const [billingPayload, usagePayload] = await Promise.all([api.billingMe(), api.billingUsage()]);
+        const [billingPayload, activityPayload] = await Promise.all([
+          api.billingMe(),
+          api.activity()
+        ]);
         if (cancelled) {
           return;
         }
@@ -108,10 +194,7 @@ export function BillingPage() {
           subscription: billingPayload.subscription,
           entitlements: billingPayload.entitlements
         });
-        setUsage({
-          usage: usagePayload.usage,
-          quotas: usagePayload.quotas
-        });
+        setAnalytics(activityPayload.analytics);
         setError(null);
       } catch (caught) {
         if (cancelled) {
@@ -135,6 +218,12 @@ export function BillingPage() {
       }
     }
 
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void load();
+      }
+    }, 20000);
+
     void load();
 
     window.addEventListener("focus", handleWindowFocus);
@@ -142,6 +231,7 @@ export function BillingPage() {
 
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
       window.removeEventListener("focus", handleWindowFocus);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -171,11 +261,8 @@ export function BillingPage() {
         subscription: payload.subscription,
         entitlements: payload.entitlements
       });
-      const usagePayload = await api.billingUsage();
-      setUsage({
-        usage: usagePayload.usage,
-        quotas: usagePayload.quotas
-      });
+      const activityPayload = await api.activity();
+      setAnalytics(activityPayload.analytics);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "error" in caught
@@ -204,9 +291,10 @@ export function BillingPage() {
   }
 
   const paid = Boolean(billing?.entitlements.proAccess);
+  const maxDailyCents = Math.max(...(analytics?.daily.map((point) => point.usdCents) ?? [0]), 1);
 
   return (
-    <section className="account-panel">
+    <section className="account-panel account-panel-wide">
       <header className="account-panel-header">
         <div>
           <p className="sessions-kicker">Billing</p>
@@ -273,44 +361,92 @@ export function BillingPage() {
 
         <article className="detail-card">
           <strong>Usage</strong>
-          <div className="usage-limit-list">
-            <div className="usage-limit-row">
-              <div className="usage-limit-copy">
-                <strong>5h</strong>
-                <span>
-                  Resets {formatResetLabel(usage?.quotas.fiveHour.nextResetAt ?? null, "time")}
+          <p className="muted">
+            Rolling 5-hour and 7-day bundled limits now live in the Usage section.
+          </p>
+          <a className="button secondary" data-magnetic href="/account/usage">
+            <span className="button-text" data-scramble>Open usage</span>
+            <span className="button-border" />
+          </a>
+        </article>
+
+        {analytics ? (
+          <>
+            <div className="analytics-summary-grid">
+              <article className="detail-card analytics-summary-card">
+                <span className="analytics-summary-label">Today</span>
+                <strong>{formatUsd(analytics.totals.todayUsdCents)}</strong>
+                <span className="analytics-summary-meta">{formatNgn(analytics.totals.todayUsdCents)}</span>
+              </article>
+              <article className="detail-card analytics-summary-card">
+                <span className="analytics-summary-label">7 days</span>
+                <strong>{formatUsd(analytics.totals.sevenDayUsdCents)}</strong>
+                <span className="analytics-summary-meta">{formatNgn(analytics.totals.sevenDayUsdCents)}</span>
+              </article>
+              <article className="detail-card analytics-summary-card">
+                <span className="analytics-summary-label">Billing period</span>
+                <strong>{formatUsd(analytics.totals.currentPeriodUsdCents)}</strong>
+                <span className="analytics-summary-meta">{formatPeriod(analytics.currentPeriod.start, analytics.currentPeriod.end)}</span>
+              </article>
+              <article className="detail-card analytics-summary-card">
+                <span className="analytics-summary-label">All time</span>
+                <strong>{formatUsd(analytics.totals.allTimeUsdCents)}</strong>
+                <span className="analytics-summary-meta">
+                  {formatNgn(analytics.totals.allTimeUsdCents)} · {analytics.totals.allTimeRequestCount} requests
                 </span>
-              </div>
-              <div className="usage-limit-stats">
-                <strong>{formatPercentRemaining(usage?.quotas.fiveHour.usedUsdCents ?? 0, usage?.quotas.fiveHour.capUsdCents ?? 0)}</strong>
-              </div>
-              <div className="usage-progress" aria-hidden="true">
-                <span
-                  className="usage-progress-fill"
-                  style={{ width: `${progressWidth(usage?.quotas.fiveHour.usedUsdCents ?? 0, usage?.quotas.fiveHour.capUsdCents ?? 0)}%` }}
-                />
-              </div>
+              </article>
             </div>
 
-            <div className="usage-limit-row">
-              <div className="usage-limit-copy">
-                <strong>Weekly</strong>
-                <span>
-                  Resets {formatResetLabel(usage?.quotas.sevenDay.nextResetAt ?? null, "dateTime")}
-                </span>
+            <article className="detail-card">
+              <div className="analytics-panel-header">
+                <strong>Last 14 days</strong>
+                <span className="muted">Bundled spend by day</span>
               </div>
-              <div className="usage-limit-stats">
-                <strong>{formatPercentRemaining(usage?.quotas.sevenDay.usedUsdCents ?? 0, usage?.quotas.sevenDay.capUsdCents ?? 0)}</strong>
+              <div className="usage-chart">
+                {analytics.daily.map((point) => (
+                  <div className="usage-chart-day" key={point.date}>
+                    <div className="usage-chart-value">{point.usdCents > 0 ? formatUsd(point.usdCents) : " "}</div>
+                    <div className="usage-chart-bar-track">
+                      <span
+                        className="usage-chart-bar-fill"
+                        style={{ height: `${Math.max(6, (point.usdCents / maxDailyCents) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="usage-chart-label">{point.label}</span>
+                  </div>
+                ))}
               </div>
-              <div className="usage-progress" aria-hidden="true">
-                <span
-                  className="usage-progress-fill"
-                  style={{ width: `${progressWidth(usage?.quotas.sevenDay.usedUsdCents ?? 0, usage?.quotas.sevenDay.capUsdCents ?? 0)}%` }}
-                />
+            </article>
+
+            <article className="detail-card">
+              <div className="analytics-panel-header">
+                <strong>Model breakdown</strong>
+                <span className="muted">Where bundled spend is going</span>
               </div>
-            </div>
-          </div>
-        </article>
+              {analytics.byModel.length ? (
+                <div className="analytics-model-list">
+                  {analytics.byModel.map((model) => (
+                    <div className="analytics-model-row" key={model.modelKey}>
+                      <div className="analytics-model-copy">
+                        <strong>{modelLabel(model.modelKey)}</strong>
+                        <span className="muted">{model.requestCount} requests</span>
+                      </div>
+                      <div className="analytics-model-stats">
+                        <strong>{formatUsd(model.usdCents)}</strong>
+                        <span className="muted">{formatNgn(model.usdCents)} · {model.sharePercent}%</span>
+                      </div>
+                      <div className="analytics-model-share">
+                        <span className="analytics-model-share-fill" style={{ width: `${Math.max(4, model.sharePercent)}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="muted">No bundled usage yet.</p>
+              )}
+            </article>
+          </>
+        ) : null}
       </div>
     </section>
   );

@@ -2,102 +2,58 @@ import { useEffect, useState } from "react";
 
 import { api } from "@/lib/api";
 
-type AnalyticsPayload = {
-  totals: {
-    todayUsdCents: number;
-    sevenDayUsdCents: number;
-    thirtyDayUsdCents: number;
-    allTimeUsdCents: number;
-    allTimeRequestCount: number;
-    currentPeriodUsdCents: number;
-    currentPeriodRequestCount: number;
+type UsageState = {
+  usage: {
+    fiveHour: { usedUsdCents: number; eventCount: number };
+    sevenDay: { usedUsdCents: number; eventCount: number };
   };
-  daily: Array<{
-    date: string;
-    label: string;
-    usdCents: number;
-    requestCount: number;
-  }>;
-  byModel: Array<{
-    modelKey: string;
-    usdCents: number;
-    requestCount: number;
-    sharePercent: number;
-  }>;
-  currentPeriod: {
-    start: string | null;
-    end: string | null;
+  quotas: {
+    fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+    sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+  };
+  entitlements: {
+    planKey: string;
+    bundledInference: boolean;
+    proAccess: boolean;
+    updatedAt: string | null;
   };
 };
 
-function formatUsd(cents: number) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(cents / 100);
+function normalizeMeridiem(value: string) {
+  return value.replace(/\s?(AM|PM)$/i, (match) => match.trim().toLowerCase());
 }
 
-function formatNgn(cents: number) {
-  const usd = cents / 100;
-  const ngn = usd * 1397.98;
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "NGN",
-    maximumFractionDigits: 0
-  }).format(ngn);
-}
-
-function formatPeriod(start: string | null, end: string | null) {
-  if (!start || !end) {
-    return "Current billing period";
+function formatResetLabel(value: string | null, variant: "time" | "dateTime") {
+  if (!value) {
+    return "No recent usage";
   }
 
-  const startText = new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric"
-  }).format(new Date(start));
-  const endText = new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric"
-  }).format(new Date(end));
-  return `${startText} to ${endText}`;
+  const formatted = new Intl.DateTimeFormat(
+    undefined,
+    variant === "time"
+      ? { hour: "numeric", minute: "2-digit" }
+      : { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }
+  ).format(new Date(value));
+
+  return normalizeMeridiem(formatted);
 }
 
-function modelLabel(modelKey: string) {
-  switch (modelKey) {
-    case "kimi-k2.5":
-    case "moonshotai/kimi-k2.5":
-      return "Kimi K2.5";
-    case "kimi-k2.6":
-    case "moonshotai/kimi-k2.6":
-      return "Kimi K2.6";
-    case "minimax-m2.5":
-    case "minimax/minimax-m2.5":
-      return "MiniMax M2.5";
-    case "minimax-m2.5-free":
-    case "minimax/minimax-m2.5:free":
-      return "MiniMax M2.5 (free)";
-    case "minimax-m2.7":
-    case "minimax/minimax-m2.7":
-      return "MiniMax M2.7";
-    case "glm-5":
-    case "z-ai/glm-5":
-      return "GLM-5";
-    case "glm-5.1":
-    case "z-ai/glm-5.1":
-      return "GLM-5.1";
-    case "nemotron-3-nano-omni-30b-a3b-reasoning-free":
-    case "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free":
-      return "Nemotron 3 Nano Omni (free)";
-    default:
-      return modelKey;
+function formatPercentRemaining(used: number, cap: number) {
+  if (cap <= 0) {
+    return "0% remaining";
   }
+  return `${Math.max(0, Math.round(((cap - used) / cap) * 100))}% remaining`;
+}
+
+function progressWidth(used: number, cap: number) {
+  if (cap <= 0) {
+    return 0;
+  }
+  return Math.min(100, Math.max(0, (used / cap) * 100));
 }
 
 export function ActivityPage() {
-  const [analytics, setAnalytics] = useState<AnalyticsPayload | null>(null);
+  const [usage, setUsage] = useState<UsageState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -105,11 +61,15 @@ export function ActivityPage() {
 
     async function load() {
       try {
-        const payload = await api.activity();
+        const payload = await api.billingUsage();
         if (cancelled) {
           return;
         }
-        setAnalytics(payload.analytics);
+        setUsage({
+          usage: payload.usage,
+          quotas: payload.quotas,
+          entitlements: payload.entitlements
+        });
         setError(null);
       } catch (caught) {
         if (cancelled) {
@@ -117,106 +77,103 @@ export function ActivityPage() {
         }
         setError(
           typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not load usage.")
-            : "Could not load usage."
+            ? String((caught as { error?: { message?: string } }).error?.message || "Could not load usage windows.")
+            : "Could not load usage windows."
         );
       }
     }
 
+    function handleWindowFocus() {
+      void load();
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void load();
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void load();
+      }
+    }, 20000);
+
     void load();
+
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
-  const maxDailyCents = Math.max(...(analytics?.daily.map((point) => point.usdCents) ?? [0]), 1);
-
   return (
-    <section className="account-panel account-panel-wide">
+    <section className="account-panel">
       <header className="account-panel-header">
         <div>
           <p className="sessions-kicker">Usage</p>
-          <h2>Spend and activity</h2>
+          <h2>Rolling usage windows</h2>
         </div>
       </header>
 
       {error ? <p className="error">{error}</p> : null}
 
-      {analytics ? (
+      {usage ? (
         <div className="detail-stack">
-          <div className="analytics-summary-grid">
-            <article className="detail-card analytics-summary-card">
-              <span className="analytics-summary-label">Today</span>
-              <strong>{formatUsd(analytics.totals.todayUsdCents)}</strong>
-              <span className="analytics-summary-meta">{formatNgn(analytics.totals.todayUsdCents)}</span>
-            </article>
-            <article className="detail-card analytics-summary-card">
-              <span className="analytics-summary-label">7 days</span>
-              <strong>{formatUsd(analytics.totals.sevenDayUsdCents)}</strong>
-              <span className="analytics-summary-meta">{formatNgn(analytics.totals.sevenDayUsdCents)}</span>
-            </article>
-            <article className="detail-card analytics-summary-card">
-              <span className="analytics-summary-label">Billing period</span>
-              <strong>{formatUsd(analytics.totals.currentPeriodUsdCents)}</strong>
-              <span className="analytics-summary-meta">{formatPeriod(analytics.currentPeriod.start, analytics.currentPeriod.end)}</span>
-            </article>
-            <article className="detail-card analytics-summary-card">
-              <span className="analytics-summary-label">All time</span>
-              <strong>{formatUsd(analytics.totals.allTimeUsdCents)}</strong>
-              <span className="analytics-summary-meta">
-                {formatNgn(analytics.totals.allTimeUsdCents)} · {analytics.totals.allTimeRequestCount} requests
-              </span>
-            </article>
-          </div>
-
           <article className="detail-card">
-            <div className="analytics-panel-header">
-              <strong>Last 14 days</strong>
-              <span className="muted">Bundled spend by day</span>
-            </div>
-            <div className="usage-chart">
-              {analytics.daily.map((point) => (
-                <div className="usage-chart-day" key={point.date}>
-                  <div className="usage-chart-value">{point.usdCents > 0 ? formatUsd(point.usdCents) : " "}</div>
-                  <div className="usage-chart-bar-track">
-                    <span
-                      className="usage-chart-bar-fill"
-                      style={{ height: `${Math.max(6, (point.usdCents / maxDailyCents) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="usage-chart-label">{point.label}</span>
+            <strong>Usage windows</strong>
+            <div className="usage-limit-list">
+              <div className="usage-limit-row">
+                <div className="usage-limit-copy">
+                  <strong>5h</strong>
+                  <span>
+                    Resets {formatResetLabel(usage.quotas.fiveHour.nextResetAt, "time")}
+                  </span>
                 </div>
-              ))}
+                <div className="usage-limit-stats">
+                  <strong>{formatPercentRemaining(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}</strong>
+                  <span>{usage.usage.fiveHour.eventCount} requests</span>
+                </div>
+                <div className="usage-progress" aria-hidden="true">
+                  <span
+                    className="usage-progress-fill"
+                    style={{ width: `${progressWidth(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="usage-limit-row">
+                <div className="usage-limit-copy">
+                  <strong>Weekly</strong>
+                  <span>
+                    Resets {formatResetLabel(usage.quotas.sevenDay.nextResetAt, "dateTime")}
+                  </span>
+                </div>
+                <div className="usage-limit-stats">
+                  <strong>{formatPercentRemaining(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}</strong>
+                  <span>{usage.usage.sevenDay.eventCount} requests</span>
+                </div>
+                <div className="usage-progress" aria-hidden="true">
+                  <span
+                    className="usage-progress-fill"
+                    style={{ width: `${progressWidth(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}%` }}
+                  />
+                </div>
+              </div>
             </div>
           </article>
 
           <article className="detail-card">
-            <div className="analytics-panel-header">
-              <strong>Model breakdown</strong>
-              <span className="muted">Where bundled spend is going</span>
-            </div>
-            {analytics.byModel.length ? (
-              <div className="analytics-model-list">
-                {analytics.byModel.map((model) => (
-                  <div className="analytics-model-row" key={model.modelKey}>
-                    <div className="analytics-model-copy">
-                      <strong>{modelLabel(model.modelKey)}</strong>
-                      <span className="muted">{model.requestCount} requests</span>
-                    </div>
-                    <div className="analytics-model-stats">
-                      <strong>{formatUsd(model.usdCents)}</strong>
-                      <span className="muted">{formatNgn(model.usdCents)} · {model.sharePercent}%</span>
-                    </div>
-                    <div className="analytics-model-share">
-                      <span className="analytics-model-share-fill" style={{ width: `${Math.max(4, model.sharePercent)}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="muted">No bundled usage yet.</p>
-            )}
+            <strong>What this tracks</strong>
+            <p className="muted">
+              Usage windows track your bundled access against the rolling 5-hour and 7-day limits. Spend history,
+              model breakdown, and daily activity live in Billing.
+            </p>
           </article>
         </div>
       ) : null}
