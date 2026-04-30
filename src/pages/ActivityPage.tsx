@@ -43,7 +43,18 @@ function formatPercentRemaining(used: number, cap: number) {
   if (cap <= 0) {
     return "0% remaining";
   }
-  return `${Math.max(0, Math.round(((cap - used) / cap) * 100))}% remaining`;
+  const remainingPercent = Math.max(0, ((cap - used) / cap) * 100);
+
+  if (used <= 0) {
+    return "100% remaining";
+  }
+
+  if (remainingPercent >= 99.95) {
+    return "99.9% remaining";
+  }
+
+  const rounded = Math.max(0, Math.round(remainingPercent * 10) / 10);
+  return `${rounded.toFixed(1)}% remaining`;
 }
 
 function progressWidth(used: number, cap: number) {
