@@ -76,6 +76,9 @@ function modelLabel(modelKey: string) {
     case "minimax-m2.5":
     case "minimax/minimax-m2.5":
       return "MiniMax M2.5";
+    case "minimax-m2.5-free":
+    case "minimax/minimax-m2.5:free":
+      return "MiniMax M2.5 (free)";
     case "minimax-m2.7":
     case "minimax/minimax-m2.7":
       return "MiniMax M2.7";
@@ -85,6 +88,9 @@ function modelLabel(modelKey: string) {
     case "glm-5.1":
     case "z-ai/glm-5.1":
       return "GLM-5.1";
+    case "nemotron-3-nano-omni-30b-a3b-reasoning-free":
+    case "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free":
+      return "Nemotron 3 Nano Omni (free)";
     default:
       return modelKey;
   }
