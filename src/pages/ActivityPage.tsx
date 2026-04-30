@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { api } from "@/lib/api";
 
@@ -117,7 +118,7 @@ export function ActivityPage() {
       <header className="account-panel-header">
         <div>
           <p className="sessions-kicker">Usage</p>
-          <h2>Rolling usage windows</h2>
+          <h2>Usage</h2>
         </div>
       </header>
 
@@ -126,7 +127,10 @@ export function ActivityPage() {
       {usage ? (
         <div className="detail-stack">
           <article className="detail-card">
-            <strong>Usage windows</strong>
+            <strong>Usage</strong>
+            <p className="muted">
+              Bundled usage is measured across rolling 5-hour and 7-day windows.
+            </p>
             <div className="usage-limit-list">
               <div className="usage-limit-row">
                 <div className="usage-limit-copy">
@@ -169,11 +173,16 @@ export function ActivityPage() {
           </article>
 
           <article className="detail-card">
-            <strong>What this tracks</strong>
+            <strong>Need more headroom?</strong>
             <p className="muted">
-              Usage windows track your bundled access against the rolling 5-hour and 7-day limits. Spend history,
-              model breakdown, and daily activity live in Billing.
+              Upgrade when you need higher bundled limits and managed cloud access.
             </p>
+            <div className="detail-card-actions">
+              <Link className="button secondary" data-magnetic to="/account/billing">
+                <span className="button-text" data-scramble>Open billing</span>
+                <span className="button-border" />
+              </Link>
+            </div>
           </article>
         </div>
       ) : null}

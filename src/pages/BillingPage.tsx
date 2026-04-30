@@ -359,17 +359,6 @@ export function BillingPage() {
           </dl>
         </article>
 
-        <article className="detail-card">
-          <strong>Usage</strong>
-          <p className="muted">
-            Rolling 5-hour and 7-day bundled limits now live in the Usage section.
-          </p>
-          <a className="button secondary" data-magnetic href="/account/usage">
-            <span className="button-text" data-scramble>Open usage</span>
-            <span className="button-border" />
-          </a>
-        </article>
-
         {analytics ? (
           <>
             <div className="analytics-summary-grid">
