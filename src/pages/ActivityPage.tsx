@@ -68,16 +68,22 @@ function formatPeriod(start: string | null, end: string | null) {
 function modelLabel(modelKey: string) {
   switch (modelKey) {
     case "kimi-k2.5":
+    case "moonshotai/kimi-k2.5":
       return "Kimi K2.5";
     case "kimi-k2.6":
+    case "moonshotai/kimi-k2.6":
       return "Kimi K2.6";
     case "minimax-m2.5":
+    case "minimax/minimax-m2.5":
       return "MiniMax M2.5";
     case "minimax-m2.7":
+    case "minimax/minimax-m2.7":
       return "MiniMax M2.7";
     case "glm-5":
+    case "z-ai/glm-5":
       return "GLM-5";
     case "glm-5.1":
+    case "z-ai/glm-5.1":
       return "GLM-5.1";
     default:
       return modelKey;
