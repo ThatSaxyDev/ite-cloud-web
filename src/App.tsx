@@ -7,6 +7,7 @@ import { AccountLayout } from "@/components/AccountLayout";
 import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { StartupPreloader } from "@/components/StartupPreloader";
+import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import {
   hasKnownUser,
@@ -21,10 +22,20 @@ import { SettingsPage } from "@/pages/SettingsPage";
 
 const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
 
+type EntitlementState = {
+  planKey: string;
+  bundledInference: boolean;
+  proAccess: boolean;
+  updatedAt: string | null;
+};
+
 function HomePage() {
   const [ctaLabel, setCtaLabel] = useState("Get started");
   const [ctaHref, setCtaHref] = useState("/login?mode=sign-up");
   const [installMethod, setInstallMethod] = useState<"pipx" | "uv">("pipx");
+  const [entitlements, setEntitlements] = useState<EntitlementState | null>(null);
+  const [entitlementPending, setEntitlementPending] = useState(false);
+  const [entitlementError, setEntitlementError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +52,22 @@ function HomePage() {
         markKnownUser();
         setCtaLabel("Continue");
         setCtaHref("/account/settings");
+        try {
+          const me = await api.me();
+          if (!cancelled) {
+            setEntitlements(me.entitlements ?? null);
+            setEntitlementError(null);
+          }
+        } catch (error) {
+          if (!cancelled) {
+            setEntitlements(null);
+            setEntitlementError(
+              typeof error === "object" && error && "error" in error
+                ? String((error as { error?: { message?: string } }).error?.message || "Could not load bundled access.")
+                : "Could not load bundled access."
+            );
+          }
+        }
         return;
       }
 
@@ -63,6 +90,24 @@ function HomePage() {
 
   const installCommand =
     installMethod === "pipx" ? "pipx install ite-agent" : "uv tool install ite-agent";
+  const entitlementLoaded = ctaHref !== "/account/settings" || entitlements !== null || entitlementError !== null;
+
+  async function handleBundledToggle(nextEnabled: boolean) {
+    try {
+      setEntitlementPending(true);
+      setEntitlementError(null);
+      const payload = await api.toggleBundledAccess(nextEnabled);
+      setEntitlements(payload.entitlements);
+    } catch (error) {
+      setEntitlementError(
+        typeof error === "object" && error && "error" in error
+          ? String((error as { error?: { message?: string } }).error?.message || "Could not update bundled access.")
+          : "Could not update bundled access."
+      );
+    } finally {
+      setEntitlementPending(false);
+    }
+  }
 
   return (
     <main className="hero-shell">
@@ -113,6 +158,56 @@ function HomePage() {
                 </div>
                 <code>{installCommand}</code>
               </div>
+              {ctaHref === "/account/settings" ? (
+                <div className="hero-command-card hero-bundled-card" aria-label="Bundled testing access">
+                  <div className="hero-command-header hero-bundled-header">
+                    <span className="hero-command-label">Start Here</span>
+                    <span
+                      className="hero-bundled-status"
+                      data-active={entitlements?.bundledInference ? "true" : "false"}
+                    >
+                      {!entitlementLoaded ? "Loading" : entitlements?.bundledInference ? "Bundled on" : "Bundled off"}
+                    </span>
+                  </div>
+                  <div className="hero-bundled-copy">
+                    <strong>Bundled testing access</strong>
+                    <p>
+                      Toggle your hosted bundled entitlement here while validating cloud flows.
+                    </p>
+                  </div>
+                  <div className="hero-bundled-actions">
+                    <button
+                      className="button secondary"
+                      disabled={!entitlementLoaded || entitlementPending || !entitlements?.bundledInference}
+                      onClick={() => void handleBundledToggle(false)}
+                      type="button"
+                    >
+                      <span className="button-text">
+                        {entitlementPending && entitlements?.bundledInference ? "Updating..." : "Disable"}
+                      </span>
+                      <span className="button-border" />
+                    </button>
+                    <button
+                      className="button"
+                      data-ripple
+                      disabled={!entitlementLoaded || entitlementPending || Boolean(entitlements?.bundledInference)}
+                      onClick={() => void handleBundledToggle(true)}
+                      type="button"
+                    >
+                      <span className="button-text">
+                        {entitlementPending && !entitlements?.bundledInference ? "Updating..." : "Enable"}
+                      </span>
+                      <span className="button-shine" />
+                    </button>
+                  </div>
+                  {entitlementError ? <p className="hero-bundled-feedback error">{entitlementError}</p> : null}
+                  {!entitlementError && entitlements ? (
+                    <p className="hero-bundled-feedback muted">
+                      Plan: {entitlements.planKey}. Updated {entitlements.updatedAt ? new Date(entitlements.updatedAt).toLocaleString() : "just now"}.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="hero-actions">
                 <Link className="button" data-magnetic data-ripple to={ctaHref}>
                   <span className="button-text" data-scramble>

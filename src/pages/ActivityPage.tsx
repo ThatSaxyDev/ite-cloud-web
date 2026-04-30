@@ -69,6 +69,10 @@ function modelLabel(modelKey: string) {
   switch (modelKey) {
     case "kimi-k2.5":
       return "Kimi K2.5";
+    case "kimi-k2.6":
+      return "Kimi K2.6";
+    case "minimax-m2.5":
+      return "MiniMax M2.5";
     case "minimax-m2.7":
       return "MiniMax M2.7";
     case "glm-5":

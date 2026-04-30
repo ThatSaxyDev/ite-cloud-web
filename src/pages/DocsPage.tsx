@@ -469,11 +469,12 @@ export function DocsPage() {
               />
 
               <div className="docs-note docs-note-featured">
-                <strong>iTE Cloud (Coming Soon)</strong>
+                <strong>iTE Cloud Bundled Access</strong>
                 <p>
-                  Bundled model access is on the roadmap. iTE Cloud will offer a
-                  curated selection of high-quality models, managed directly
-                  within the platform. No external API keys required.
+                  Pro accounts can use bundled models through iTE Cloud today.
+                  iTE manages the bundled provider path for you, while Ollama,
+                  OpenRouter BYOK, and other compatible BYOK providers remain
+                  available alongside bundled access.
                 </p>
               </div>
             </section>
