@@ -238,8 +238,8 @@ export function BillingPage() {
             <strong>{paid ? "Pro is active" : "Upgrade when you are ready"}</strong>
             <p className="muted">
               {paid
-                ? "Bundled models are available in iTE. Usage is measured by bundled model cost within rolling usage windows."
-                : "Free includes local models and your own keys. Pro unlocks bundled access and higher limits."}
+                ? "Bundled models are live in iTE Cloud. You can keep using local or BYOK providers alongside bundled access, and usage is measured within rolling spend windows."
+                : "Free includes local models and your own keys. Pro adds managed bundled access while keeping BYOK and local providers available."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
               <p className="plan-meta">Renews {formatTimestamp(billing.subscription.currentPeriodEnd)}</p>

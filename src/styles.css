@@ -567,6 +567,63 @@ button {
     font-size: 0.96rem;
 }
 
+.hero-bundled-card {
+    gap: 14px;
+}
+
+.hero-bundled-header {
+    align-items: flex-start;
+}
+
+.hero-bundled-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.hero-bundled-status[data-active="true"] {
+    color: var(--text);
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hero-bundled-copy {
+    display: grid;
+    gap: 6px;
+}
+
+.hero-bundled-copy strong {
+    font-size: 0.98rem;
+}
+
+.hero-bundled-copy p,
+.hero-bundled-feedback {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+.hero-bundled-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.hero-bundled-actions .button {
+    min-width: 124px;
+}
+
+.hero-bundled-feedback.error {
+    color: #ffb8b8;
+}
+
 .hero-mobile-agent-viz {
     display: none;
 }
@@ -770,6 +827,14 @@ button {
 
     .hero-command-card + .hero-actions {
         margin-top: 12px;
+    }
+
+    .hero-bundled-actions {
+        flex-direction: column-reverse;
+    }
+
+    .hero-bundled-actions .button {
+        width: 100%;
     }
 
     .hero-actions .button {

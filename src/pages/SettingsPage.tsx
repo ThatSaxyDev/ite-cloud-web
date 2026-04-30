@@ -10,7 +10,7 @@ const QUICKSTART_COMMANDS = [
   {
     label: "Run setup",
     command: "/setup",
-    caption: "Choose Ollama, OpenRouter, or another compatible provider, then enter the matching credentials."
+    caption: "Optional for local or BYOK access: connect Ollama, OpenRouter, or another compatible provider."
   }
 ] as const;
 
@@ -22,13 +22,13 @@ const NEXT_STEPS = [
   },
   {
     eyebrow: "Step 2",
-    title: "Choose a provider",
-    body: "Set up Ollama on this computer, connect OpenRouter with your own key, or use another OpenAI-compatible API."
+    title: "Choose bundled or BYOK",
+    body: "Pro accounts can use bundled models after sign-in. You can also run /setup for Ollama, OpenRouter, or another OpenAI-compatible provider."
   },
   {
     eyebrow: "Step 3",
-    title: "Run a real prompt",
-    body: "As soon as setup works, you can use iTE normally."
+    title: "Start working",
+    body: "Pick the model path that fits the task, then use iTE normally."
   }
 ] as const;
 
@@ -60,7 +60,7 @@ export function SettingsPage() {
         <div className="onboarding-hero-copy">
           <span className="onboarding-chip">Start here</span>
           <p className="onboarding-summary">
-            Sign in, run <code>/setup</code>, and choose how iTE should reach your model.
+            Sign in to use bundled access, or run <code>/setup</code> if you want local or BYOK models.
           </p>
         </div>
 
