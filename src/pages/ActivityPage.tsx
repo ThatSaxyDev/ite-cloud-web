@@ -127,7 +127,6 @@ export function ActivityPage() {
       {usage ? (
         <div className="detail-stack">
           <article className="detail-card">
-            <strong>Usage</strong>
             <p className="muted">
               Bundled usage is measured across rolling 5-hour and 7-day windows.
             </p>
