@@ -14,6 +14,8 @@ import {
   markKnownUser,
 } from "@/lib/browser-state";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
+import { ActivityPage } from "@/pages/ActivityPage";
+import { BillingPage } from "@/pages/BillingPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
 import { DocsPage } from "@/pages/DocsPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -369,15 +371,10 @@ export function App() {
         <Route path="/auth/cli" element={<CliAuthPage />} />
         <Route path="/account" element={<AccountLayout />}>
           <Route index element={<Navigate to="/account/settings" replace />} />
-          <Route
-            path="billing"
-            element={<Navigate to="/account/settings" replace />}
-          />
+          <Route path="billing" element={<BillingPage />} />
           <Route path="sessions" element={<AccountSessionsPage />} />
-          <Route
-            path="activity"
-            element={<Navigate to="/account/settings" replace />}
-          />
+          <Route path="usage" element={<ActivityPage />} />
+          <Route path="activity" element={<Navigate to="/account/usage" replace />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
