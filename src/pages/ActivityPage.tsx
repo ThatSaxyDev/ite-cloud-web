@@ -128,7 +128,7 @@ export function ActivityPage() {
     <section className="account-panel">
       <header className="account-panel-header">
         <div>
-          <p className="sessions-kicker">Usage</p>
+          <p className="sessions-kicker">Rolling usage window</p>
           <h2>Usage</h2>
         </div>
       </header>
