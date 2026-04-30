@@ -12,7 +12,7 @@ type BrowserUser = {
 };
 
 type NavIconProps = {
-  kind: "settings" | "docs" | "collapse";
+  kind: "settings" | "docs" | "collapse" | "usage" | "billing" | "sessions";
 };
 
 function NavIcon({ kind }: NavIconProps) {
@@ -33,6 +33,32 @@ function NavIcon({ kind }: NavIconProps) {
           <path d="M8.5 12.5h6" />
         </svg>
       );
+    case "usage":
+      return (
+        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
+          <path d="M5 18.5h14" />
+          <path d="M7.5 15.5v-4" />
+          <path d="M12 15.5v-8" />
+          <path d="M16.5 15.5V10" />
+        </svg>
+      );
+    case "billing":
+      return (
+        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
+          <path d="M4.5 7.5h15" />
+          <path d="M6 5.5h12a1.5 1.5 0 0 1 1.5 1.5v10A1.5 1.5 0 0 1 18 18.5H6A1.5 1.5 0 0 1 4.5 17V7A1.5 1.5 0 0 1 6 5.5Z" />
+          <path d="M15.5 13h2" />
+        </svg>
+      );
+    case "sessions":
+      return (
+        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
+          <path d="M7 18.5h10" />
+          <path d="M8 5.5h8a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 16 16.5H8A1.5 1.5 0 0 1 6.5 15V7A1.5 1.5 0 0 1 8 5.5Z" />
+          <path d="M11 8.5h2" />
+          <path d="M10 12h4" />
+        </svg>
+      );
     case "collapse":
       return (
         <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
@@ -47,6 +73,7 @@ export function AccountLayout() {
   const location = useLocation();
   const [user, setUser] = useState<BrowserUser | null>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [settingsExpanded, setSettingsExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +106,13 @@ export function AccountLayout() {
     setCollapsed((current) => !current);
   }
 
+  const settingsSectionActive =
+    location.pathname.startsWith("/account/usage")
+    || location.pathname.startsWith("/account/billing")
+    || location.pathname.startsWith("/account/sessions");
+
+  const settingsOpen = !collapsed && (settingsExpanded || settingsSectionActive);
+
   const initial = (user?.name || user?.email || "I").slice(0, 1).toUpperCase();
 
   return (
@@ -108,6 +142,44 @@ export function AccountLayout() {
             <span className="account-nav-icon"><NavIcon kind="settings" /></span>
             <span className="account-nav-label">Start here</span>
           </NavLink>
+          <div
+            className={`account-nav-group ${settingsOpen ? "is-open" : ""}`}
+            onMouseEnter={() => setSettingsExpanded(true)}
+            onMouseLeave={() => setSettingsExpanded(false)}
+          >
+            <button
+              aria-expanded={settingsOpen}
+              className={`account-nav-link account-nav-link-button ${settingsSectionActive ? "is-active" : ""}`}
+              onClick={() => setSettingsExpanded((current) => !current)}
+              type="button"
+            >
+              <span className="account-nav-icon"><NavIcon kind="settings" /></span>
+              <span className="account-nav-label">Settings</span>
+            </button>
+            <div className="account-nav-submenu">
+              <NavLink
+                className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                to="/account/usage"
+              >
+                <span className="account-nav-icon"><NavIcon kind="usage" /></span>
+                <span className="account-nav-label">Usage</span>
+              </NavLink>
+              <NavLink
+                className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                to="/account/billing"
+              >
+                <span className="account-nav-icon"><NavIcon kind="billing" /></span>
+                <span className="account-nav-label">Billing</span>
+              </NavLink>
+              <NavLink
+                className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                to="/account/sessions"
+              >
+                <span className="account-nav-icon"><NavIcon kind="sessions" /></span>
+                <span className="account-nav-label">Sessions</span>
+              </NavLink>
+            </div>
+          </div>
           <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/docs">
             <span className="account-nav-icon"><NavIcon kind="docs" /></span>
             <span className="account-nav-label">Docs</span>
