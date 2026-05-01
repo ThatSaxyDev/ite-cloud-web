@@ -159,13 +159,12 @@ export function AccountLayout() {
       <aside className={`account-sidebar ${collapsed ? "is-collapsed" : ""}`}>
         <div className="account-sidebar-top">
           <div className="account-sidebar-head">
-            <Link className="auth-brand account-brand" data-magnetic to="/" onClick={closeMobileNav}>
+            <Link className="auth-brand account-brand" to="/" onClick={closeMobileNav}>
               <GlitchImageLogo className="overlay-header-brand-image" />
             </Link>
             <button
               aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
               className="account-rail-toggle"
-              data-magnetic
               onClick={toggleCollapsed}
               type="button"
             >

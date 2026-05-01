@@ -1568,10 +1568,7 @@ code {
     align-self: start;
     height: 100vh;
     min-height: 100vh;
-    transition:
-        width 220ms ease,
-        padding 220ms ease,
-        background 220ms ease;
+    transition: background 120ms ease;
     overflow: hidden;
     min-width: 0;
 }
@@ -1669,7 +1666,6 @@ code {
 
 .account-toggle-icon {
     display: inline-flex;
-    transition: transform 220ms ease;
 }
 
 .account-toggle-icon.is-collapsed {
@@ -1745,10 +1741,6 @@ code {
     white-space: nowrap;
     opacity: 1;
     transform: translateX(0);
-    transition:
-        opacity 180ms ease,
-        transform 180ms ease,
-        max-width 180ms ease;
     max-width: 120px;
     overflow: hidden;
 }
@@ -1818,7 +1810,7 @@ code {
     opacity: 0;
     max-width: 0;
     pointer-events: none;
-    transform: translateX(-6px);
+    transform: none;
 }
 
 .account-sidebar.is-collapsed .account-nav-submenu {
@@ -1863,11 +1855,13 @@ code {
 }
 
 .account-sidebar.is-collapsed .account-sidebar-bottom {
-    display: none;
+    display: grid;
+    justify-items: center;
 }
 
 .account-sidebar.is-collapsed .account-user-block {
     justify-content: center;
+    width: 100%;
 }
 
 .account-user-block {
