@@ -1579,6 +1579,7 @@ code {
 .account-sidebar.is-collapsed {
     width: 84px;
     padding-inline: 12px;
+    overflow: visible;
 }
 
 .account-sidebar-top,
@@ -1654,9 +1655,10 @@ code {
 
 .account-rail-toggle {
     justify-content: center;
-    width: 44px;
+    width: 40px;
+    min-height: 40px;
     padding: 0;
-    flex: 0 0 44px;
+    flex: 0 0 40px;
 }
 
 .account-rail-toggle:hover {
@@ -1676,7 +1678,7 @@ code {
 
 .account-nav {
     display: grid;
-    gap: 6px;
+    gap: 4px;
     align-content: start;
     min-width: 0;
     flex: 0 0 auto;
@@ -1684,7 +1686,7 @@ code {
 
 .account-nav-group {
     display: grid;
-    gap: 6px;
+    gap: 4px;
 }
 
 .account-nav-link {
@@ -1692,6 +1694,7 @@ code {
     align-items: center;
     gap: 12px;
     width: 100%;
+    min-height: 52px;
     min-width: 0;
     padding: 10px 12px;
     border: 1px solid transparent;
@@ -1724,6 +1727,7 @@ code {
     align-items: center;
     justify-content: center;
     flex: 0 0 20px;
+    line-height: 1;
 }
 
 .account-nav-icon-svg {
@@ -1773,6 +1777,7 @@ code {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-height: 44px;
     min-width: 0;
     padding: 9px 12px 9px 14px;
     border-left: 1px solid transparent;
@@ -1796,19 +1801,65 @@ code {
 
 .account-sidebar.is-collapsed .account-nav-link {
     justify-content: center;
+    gap: 0;
+    min-height: 58px;
     padding-inline: 0;
 }
 
 .account-sidebar.is-collapsed .account-nav-group {
-    display: none;
+    position: relative;
+    display: grid;
+    gap: 0;
 }
 
 .account-sidebar.is-collapsed .account-nav-label,
 .account-sidebar.is-collapsed .account-user-meta {
+    display: none;
     opacity: 0;
     max-width: 0;
     pointer-events: none;
     transform: translateX(-6px);
+}
+
+.account-sidebar.is-collapsed .account-nav-submenu {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    z-index: 5;
+    width: 168px;
+    max-height: none;
+    padding: 8px;
+    border: 1px solid var(--line);
+    background: rgba(5, 5, 5, 0.98);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-6px);
+    visibility: hidden;
+}
+
+.account-sidebar.is-collapsed .account-nav-group:hover .account-nav-submenu,
+.account-sidebar.is-collapsed .account-nav-group:focus-within .account-nav-submenu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    visibility: visible;
+}
+
+.account-sidebar.is-collapsed .account-nav-submenu .account-nav-label {
+    display: inline-block;
+    max-width: 104px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+}
+
+.account-sidebar.is-collapsed .account-nav-submenu .account-nav-sublink {
+    justify-content: flex-start;
+    gap: 10px;
+    min-height: 42px;
+    padding: 0 10px;
+    border-left: 0;
 }
 
 .account-sidebar.is-collapsed .account-sidebar-bottom {
@@ -3824,10 +3875,15 @@ code {
     .account-sidebar.is-collapsed .account-nav-label,
     .account-sidebar.is-collapsed .account-user-meta,
     .account-sidebar.is-collapsed .account-rail-toggle {
+        display: initial;
         opacity: 1;
         max-width: none;
         pointer-events: auto;
         transform: none;
+    }
+
+    .account-sidebar.is-collapsed .account-user-meta {
+        display: grid;
     }
 
     .account-sidebar.is-collapsed .account-nav-link {
@@ -3942,11 +3998,18 @@ code {
 
     .account-nav-submenu {
         display: contents;
+        position: static;
+        width: auto;
         max-height: none;
         opacity: 1;
         padding-left: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        pointer-events: auto;
         overflow: visible;
         transform: none;
+        visibility: visible;
     }
 
     .account-nav-link,

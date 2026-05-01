@@ -13,11 +13,19 @@ type BrowserUser = {
 };
 
 type NavIconProps = {
-  kind: "settings" | "docs" | "collapse" | "usage" | "billing" | "sessions";
+  kind: "start" | "settings" | "docs" | "collapse" | "usage" | "billing" | "sessions";
 };
 
 function NavIcon({ kind }: NavIconProps) {
   switch (kind) {
+    case "start":
+      return (
+        <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
+          <path d="m4.5 11.5l7.5-6l7.5 6" />
+          <path d="M7 10.5v8h10v-8" />
+          <path d="M10 18.5v-5h4v5" />
+        </svg>
+      );
     case "settings":
       return (
         <svg aria-hidden="true" className="account-nav-icon-svg" viewBox="0 0 24 24">
@@ -112,6 +120,7 @@ export function AccountLayout() {
   }, [location.pathname, location.search, navigate]);
 
   function toggleCollapsed() {
+    setSettingsExpanded(false);
     setCollapsed((current) => !current);
   }
 
@@ -185,17 +194,22 @@ export function AccountLayout() {
 
         <div className="account-sidebar-panel" id="account-mobile-nav">
           <nav className="account-nav" aria-label="Account sections">
-            <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/settings" onClick={closeMobileNav}>
-              <span className="account-nav-icon"><NavIcon kind="settings" /></span>
+            <NavLink aria-label="Start here" className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/settings" onClick={closeMobileNav}>
+              <span className="account-nav-icon"><NavIcon kind="start" /></span>
               <span className="account-nav-label">Start here</span>
             </NavLink>
             <div
               className={`account-nav-group ${settingsOpen ? "is-open" : ""}`}
-              onMouseEnter={() => setSettingsExpanded(true)}
+              onMouseEnter={() => {
+                if (!collapsed) {
+                  setSettingsExpanded(true);
+                }
+              }}
               onMouseLeave={() => setSettingsExpanded(false)}
             >
               <button
                 aria-expanded={settingsOpen}
+                aria-label="Settings"
                 className={`account-nav-link account-nav-link-button ${settingsSectionActive ? "is-active" : ""}`}
                 onClick={() => setSettingsExpanded((current) => !current)}
                 type="button"
@@ -206,6 +220,7 @@ export function AccountLayout() {
               <div className="account-nav-submenu">
                 <NavLink
                   className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                  aria-label="Usage"
                   to="/account/usage"
                   onClick={closeMobileNav}
                 >
@@ -214,6 +229,7 @@ export function AccountLayout() {
                 </NavLink>
                 <NavLink
                   className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                  aria-label="Billing"
                   to="/account/billing"
                   onClick={closeMobileNav}
                 >
@@ -222,6 +238,7 @@ export function AccountLayout() {
                 </NavLink>
                 <NavLink
                   className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                  aria-label="Sessions"
                   to="/account/sessions"
                   onClick={closeMobileNav}
                 >
@@ -230,7 +247,7 @@ export function AccountLayout() {
                 </NavLink>
               </div>
             </div>
-            <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/docs" onClick={closeMobileNav}>
+            <NavLink aria-label="Docs" className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/docs" onClick={closeMobileNav}>
               <span className="account-nav-icon"><NavIcon kind="docs" /></span>
               <span className="account-nav-label">Docs</span>
             </NavLink>
