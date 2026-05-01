@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { markKnownUser } from "@/lib/browser-state";
+import { getDevAuthUser } from "@/lib/dev-auth";
 
 type SessionItem = {
   id: string;
@@ -26,6 +27,12 @@ export function AccountSessionsPage() {
 
   useEffect(() => {
     async function load() {
+      if (getDevAuthUser()) {
+        markKnownUser();
+        setSessions([]);
+        return;
+      }
+
       const session = await authClient.getSession();
       if (!session.data?.session) {
         navigate("/login?redirect=/account/sessions");
@@ -54,6 +61,11 @@ export function AccountSessionsPage() {
   }
 
   async function handleBrowserLogout() {
+    if (getDevAuthUser()) {
+      navigate("/account/settings");
+      return;
+    }
+
     await authClient.signOut();
     navigate("/login");
   }

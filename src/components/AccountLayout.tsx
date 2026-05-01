@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
 import { markKnownUser } from "@/lib/browser-state";
+import { getDevAuthUser } from "@/lib/dev-auth";
 
 type BrowserUser = {
   email?: string;
@@ -74,11 +75,19 @@ export function AccountLayout() {
   const [user, setUser] = useState<BrowserUser | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
+      const devUser = getDevAuthUser();
+      if (devUser) {
+        markKnownUser();
+        setUser(devUser);
+        return;
+      }
+
       const session = await authClient.getSession();
       if (!session.data?.session) {
         navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`);
@@ -106,6 +115,27 @@ export function AccountLayout() {
     setCollapsed((current) => !current);
   }
 
+  function closeMobileNav() {
+    setMobileNavOpen(false);
+  }
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [mobileNavOpen]);
+
   const settingsSectionActive =
     location.pathname.startsWith("/account/usage")
     || location.pathname.startsWith("/account/billing")
@@ -116,11 +146,11 @@ export function AccountLayout() {
   const initial = (user?.name || user?.email || "I").slice(0, 1).toUpperCase();
 
   return (
-    <main className="account-shell">
+    <main className="account-shell" data-mobile-nav-open={mobileNavOpen}>
       <aside className={`account-sidebar ${collapsed ? "is-collapsed" : ""}`}>
         <div className="account-sidebar-top">
           <div className="account-sidebar-head">
-            <Link className="auth-brand account-brand" data-magnetic to="/">
+            <Link className="auth-brand account-brand" data-magnetic to="/" onClick={closeMobileNav}>
               <GlitchImageLogo className="overlay-header-brand-image" />
             </Link>
             <button
@@ -134,72 +164,93 @@ export function AccountLayout() {
                 <NavIcon kind="collapse" />
               </span>
             </button>
+            <button
+              aria-controls="account-mobile-nav"
+              aria-expanded={mobileNavOpen}
+              className="account-mobile-menu-button"
+              onClick={() => setMobileNavOpen((current) => !current)}
+              type="button"
+            >
+              {mobileNavOpen ? "Close" : "Menu"}
+            </button>
           </div>
         </div>
 
-        <nav className="account-nav" aria-label="Account sections">
-          <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/settings">
-            <span className="account-nav-icon"><NavIcon kind="settings" /></span>
-            <span className="account-nav-label">Start here</span>
-          </NavLink>
-          <div
-            className={`account-nav-group ${settingsOpen ? "is-open" : ""}`}
-            onMouseEnter={() => setSettingsExpanded(true)}
-            onMouseLeave={() => setSettingsExpanded(false)}
-          >
-            <button
-              aria-expanded={settingsOpen}
-              className={`account-nav-link account-nav-link-button ${settingsSectionActive ? "is-active" : ""}`}
-              onClick={() => setSettingsExpanded((current) => !current)}
-              type="button"
-            >
-              <span className="account-nav-icon"><NavIcon kind="settings" /></span>
-              <span className="account-nav-label">Settings</span>
-            </button>
-            <div className="account-nav-submenu">
-              <NavLink
-                className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
-                to="/account/usage"
-              >
-                <span className="account-nav-icon"><NavIcon kind="usage" /></span>
-                <span className="account-nav-label">Usage</span>
-              </NavLink>
-              <NavLink
-                className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
-                to="/account/billing"
-              >
-                <span className="account-nav-icon"><NavIcon kind="billing" /></span>
-                <span className="account-nav-label">Billing</span>
-              </NavLink>
-              <NavLink
-                className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
-                to="/account/sessions"
-              >
-                <span className="account-nav-icon"><NavIcon kind="sessions" /></span>
-                <span className="account-nav-label">Sessions</span>
-              </NavLink>
-            </div>
-          </div>
-          <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/docs">
-            <span className="account-nav-icon"><NavIcon kind="docs" /></span>
-            <span className="account-nav-label">Docs</span>
-          </NavLink>
-        </nav>
+        <button
+          aria-label="Close account navigation"
+          className="account-mobile-nav-scrim"
+          onClick={closeMobileNav}
+          type="button"
+        />
 
-        <div className="account-sidebar-bottom">
-          <div className="account-user-block">
-            <span className="account-user-avatar">
-              {user?.image ? <img alt={user.name || user.email || "iTE user"} className="account-user-avatar-image" src={user.image} /> : initial}
-            </span>
-            <div className="account-user-meta">
-              <strong>{user?.name || "iTE User"}</strong>
-              <span>{user?.email || "Signed in"}</span>
+        <div className="account-sidebar-panel" id="account-mobile-nav">
+          <nav className="account-nav" aria-label="Account sections">
+            <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/account/settings" onClick={closeMobileNav}>
+              <span className="account-nav-icon"><NavIcon kind="settings" /></span>
+              <span className="account-nav-label">Start here</span>
+            </NavLink>
+            <div
+              className={`account-nav-group ${settingsOpen ? "is-open" : ""}`}
+              onMouseEnter={() => setSettingsExpanded(true)}
+              onMouseLeave={() => setSettingsExpanded(false)}
+            >
+              <button
+                aria-expanded={settingsOpen}
+                className={`account-nav-link account-nav-link-button ${settingsSectionActive ? "is-active" : ""}`}
+                onClick={() => setSettingsExpanded((current) => !current)}
+                type="button"
+              >
+                <span className="account-nav-icon"><NavIcon kind="settings" /></span>
+                <span className="account-nav-label">Settings</span>
+              </button>
+              <div className="account-nav-submenu">
+                <NavLink
+                  className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                  to="/account/usage"
+                  onClick={closeMobileNav}
+                >
+                  <span className="account-nav-icon"><NavIcon kind="usage" /></span>
+                  <span className="account-nav-label">Usage</span>
+                </NavLink>
+                <NavLink
+                  className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                  to="/account/billing"
+                  onClick={closeMobileNav}
+                >
+                  <span className="account-nav-icon"><NavIcon kind="billing" /></span>
+                  <span className="account-nav-label">Billing</span>
+                </NavLink>
+                <NavLink
+                  className={({ isActive }) => `account-nav-sublink ${isActive ? "is-active" : ""}`}
+                  to="/account/sessions"
+                  onClick={closeMobileNav}
+                >
+                  <span className="account-nav-icon"><NavIcon kind="sessions" /></span>
+                  <span className="account-nav-label">Sessions</span>
+                </NavLink>
+              </div>
+            </div>
+            <NavLink className={({ isActive }) => `account-nav-link ${isActive ? "is-active" : ""}`} to="/docs" onClick={closeMobileNav}>
+              <span className="account-nav-icon"><NavIcon kind="docs" /></span>
+              <span className="account-nav-label">Docs</span>
+            </NavLink>
+          </nav>
+
+          <div className="account-sidebar-bottom">
+            <div className="account-user-block">
+              <span className="account-user-avatar">
+                {user?.image ? <img alt={user.name || user.email || "iTE user"} className="account-user-avatar-image" src={user.image} /> : initial}
+              </span>
+              <div className="account-user-meta">
+                <strong>{user?.name || "iTE User"}</strong>
+                <span>{user?.email || "Signed in"}</span>
+              </div>
             </div>
           </div>
         </div>
       </aside>
 
-      <section className="account-content">
+      <section className="account-content" onClick={mobileNavOpen ? closeMobileNav : undefined}>
         <Outlet />
       </section>
     </main>

@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
 import { markKnownUser } from "@/lib/browser-state";
+import { getDevAuthUser } from "@/lib/dev-auth";
 import { config } from "@/lib/config";
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -70,6 +71,12 @@ export function LoginPage() {
 
   useEffect(() => {
     async function resumeIfAlreadySignedIn() {
+      if (getDevAuthUser()) {
+        markKnownUser();
+        navigate(redirectTo, { replace: true });
+        return;
+      }
+
       const session = await authClient.getSession();
       if (!session.data?.session) {
         return;

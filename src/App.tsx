@@ -13,6 +13,7 @@ import {
   markBrowserSeen,
   markKnownUser,
 } from "@/lib/browser-state";
+import { getDevAuthUser } from "@/lib/dev-auth";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
 import { ActivityPage } from "@/pages/ActivityPage";
 import { BillingPage } from "@/pages/BillingPage";
@@ -111,6 +112,13 @@ function HomePage() {
     markBrowserSeen();
 
     async function resolveCta() {
+      if (getDevAuthUser()) {
+        markKnownUser();
+        setCtaLabel("Continue");
+        setCtaHref("/account/settings");
+        return;
+      }
+
       const session = await authClient.getSession();
       if (cancelled) {
         return;

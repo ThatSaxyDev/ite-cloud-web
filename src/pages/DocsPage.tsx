@@ -193,6 +193,7 @@ export function DocsPage() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
   const headerRef = useRef<HTMLElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -245,6 +246,28 @@ export function DocsPage() {
     };
   }, [mobileNavOpen]);
 
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+      if (drawerRef.current?.contains(target) || headerRef.current?.contains(target)) {
+        return;
+      }
+      closeMobileNav();
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+    };
+  }, [mobileNavOpen]);
+
   return (
     <main className="docs-shell">
       {/* Persistent Mobile Header */}
@@ -278,6 +301,7 @@ export function DocsPage() {
         />
       )}
       <aside
+        ref={drawerRef}
         className="docs-mobile-drawer"
         data-open={mobileNavOpen}
         aria-label="Documentation sections"
@@ -305,7 +329,7 @@ export function DocsPage() {
         </div>
       </aside>
 
-      <section className="docs-stage">
+      <section className="docs-stage" onClick={mobileNavOpen ? closeMobileNav : undefined}>
         {/* Desktop Header */}
         <header className="docs-header">
           <div className="docs-header-left">
