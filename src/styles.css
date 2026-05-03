@@ -381,6 +381,7 @@ button {
 .hero-stage {
     --hero-stage-pad-top: clamp(52px, 8vh, 92px);
     --hero-demo-peek: clamp(112px, 18vw, 214px);
+    --hero-content-lift: clamp(48px, 7vh, 86px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -398,6 +399,7 @@ button {
     width: 100%;
     min-height: calc(100vh - var(--hero-stage-pad-top));
     min-height: calc(100svh - var(--hero-stage-pad-top));
+    padding-bottom: var(--hero-content-lift);
 }
 
 .docs-stage {
@@ -593,6 +595,7 @@ button {
     display: flex;
     width: 100%;
     justify-content: center;
+    transform: translateX(clamp(28px, 4vw, 72px));
 }
 
 .hero-command-switch {
@@ -801,6 +804,7 @@ button {
     .hero-stage {
         --hero-stage-pad-top: clamp(84px, 14vh, 116px);
         --hero-demo-peek: clamp(64px, 18vw, 140px);
+        --hero-content-lift: clamp(28px, 6vh, 56px);
         align-items: center;
         padding-bottom: 24px;
     }
@@ -3467,6 +3471,7 @@ code {
     .hero-stage {
         --hero-stage-pad-top: 20px;
         --hero-demo-peek: clamp(56px, 18vw, 88px);
+        --hero-content-lift: 0px;
         padding-top: 20px;
         padding-bottom: 24px;
     }
