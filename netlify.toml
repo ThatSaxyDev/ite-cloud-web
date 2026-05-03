@@ -1,13 +1,14 @@
 [build]
-  command = "npm run build"
-  publish = "dist"
+command = "rm -rf node_modules package-lock.json && npm install && npm run build"
+publish = "dist"
 
 [[headers]]
-  for = "/demo.mp4"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+for = "/demo.mp4"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/*"
+to = "/index.html"
+status = 200
