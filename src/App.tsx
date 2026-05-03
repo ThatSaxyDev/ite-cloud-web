@@ -257,6 +257,17 @@ function HomePage() {
           </div>
         </div>
 
+        <section className="hero-demo-section">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="hero-demo-video"
+            src="/demo.mp4"
+          />
+        </section>
+
         <footer className="hero-floating-footer">
           <p>
             © {new Date().getFullYear()} iTE. Built by{" "}
