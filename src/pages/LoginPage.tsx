@@ -77,7 +77,7 @@ export function LoginPage() {
 
       if (getDevAuthUser()) {
         markKnownUser();
-        navigate(redirectTo, { replace: true });
+        window.location.assign(redirectTo);
         return;
       }
 
@@ -86,7 +86,7 @@ export function LoginPage() {
         return;
       }
       markKnownUser();
-      navigate(redirectTo, { replace: true });
+      window.location.assign(redirectTo);
     }
 
     void resumeIfAlreadySignedIn();
@@ -193,7 +193,7 @@ export function LoginPage() {
         throw result.error;
       }
       markKnownUser();
-      navigate(redirectTo);
+      window.location.assign(redirectTo);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught
@@ -254,7 +254,7 @@ export function LoginPage() {
       }
 
       markKnownUser();
-      navigate(redirectTo);
+      window.location.assign(redirectTo);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught
