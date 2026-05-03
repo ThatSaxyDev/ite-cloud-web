@@ -381,7 +381,7 @@ button {
 .hero-stage {
     --hero-stage-pad-top: clamp(52px, 8vh, 92px);
     --hero-demo-peek: clamp(112px, 18vw, 214px);
-    --hero-content-lift: clamp(48px, 7vh, 86px);
+    --hero-content-lift: clamp(60px, 8vh, 104px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -595,7 +595,7 @@ button {
     display: flex;
     width: 100%;
     justify-content: center;
-    transform: translateX(clamp(28px, 4vw, 72px));
+    transform: translateX(clamp(56px, 6vw, 112px));
 }
 
 .hero-command-switch {
@@ -2295,6 +2295,20 @@ code {
 .onboarding-command-code {
     flex: 1;
     min-width: 0;
+}
+
+.onboarding-demo-panel {
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.onboarding-demo-video {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1516 / 1080;
 }
 
 .onboarding-copy-button {

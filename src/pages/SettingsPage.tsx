@@ -176,6 +176,17 @@ export function SettingsPage() {
         </div>
       </section>
 
+      <section className="onboarding-demo-panel" aria-label="iTE demo video">
+        <video
+          autoPlay
+          className="onboarding-demo-video"
+          loop
+          muted
+          playsInline
+          src="/demo.mp4"
+        />
+      </section>
+
       <section className="onboarding-hero">
         <div className="onboarding-hero-copy">
           <span className="onboarding-chip">Terminal first</span>
