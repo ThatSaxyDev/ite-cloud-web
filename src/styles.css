@@ -379,14 +379,25 @@ button {
 }
 
 .hero-stage {
+    --hero-stage-pad-top: clamp(52px, 8vh, 92px);
+    --hero-demo-peek: clamp(112px, 18vw, 214px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
     min-height: 100vh;
-    padding-top: clamp(52px, 8vh, 92px);
+    padding-top: var(--hero-stage-pad-top);
     padding-bottom: 0;
     position: relative;
+}
+
+.hero-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: calc(100vh - var(--hero-stage-pad-top));
+    min-height: calc(100svh - var(--hero-stage-pad-top));
 }
 
 .docs-stage {
@@ -720,16 +731,17 @@ button {
     max-width: 1200px;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
     position: relative;
     z-index: 1;
-    margin-top: 40px;
+    margin-top: calc(var(--hero-demo-peek) * -1);
 }
 
 .hero-demo-video {
+    display: block;
     width: 100%;
     max-width: 1200px;
     height: auto;
+    aspect-ratio: 1516 / 1080;
     border-radius: 8px;
     box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
 }
@@ -787,8 +799,9 @@ button {
 
 @media (max-width: 1023px) {
     .hero-stage {
+        --hero-stage-pad-top: clamp(84px, 14vh, 116px);
+        --hero-demo-peek: clamp(64px, 18vw, 140px);
         align-items: center;
-        padding-top: clamp(84px, 14vh, 116px);
         padding-bottom: 24px;
     }
 
@@ -3452,6 +3465,8 @@ code {
     }
 
     .hero-stage {
+        --hero-stage-pad-top: 20px;
+        --hero-demo-peek: clamp(56px, 18vw, 88px);
         padding-top: 20px;
         padding-bottom: 24px;
     }

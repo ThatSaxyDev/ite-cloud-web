@@ -138,122 +138,124 @@ function HomePage() {
   return (
     <main className="hero-shell">
       <section className="hero-stage">
-        <div className="hero-layout">
-          <div className="hero-copy">
-            <div
-              className="hero-brand-block"
-              data-magnetic
-              data-magnetic-strength="0.14"
-              data-magnetic-ease="0.1"
-            >
-              <GlitchImageLogo className="hero-brand-image" />
-            </div>
-            <div className="hero-body">
-              <h1>The AI agent for real work.</h1>
-              <p className="hero-summary">
-                Plan, execute, and stay in control.
-              </p>
-              <div className="hero-mobile-agent-viz">
-                <AgentVisualization />
+        <div className="hero-centered">
+          <div className="hero-layout">
+            <div className="hero-copy">
+              <div
+                className="hero-brand-block"
+                data-magnetic
+                data-magnetic-strength="0.14"
+                data-magnetic-ease="0.1"
+              >
+                <GlitchImageLogo className="hero-brand-image" />
               </div>
-              <div className="hero-command-card" aria-label="Install iTE">
-                <div className="hero-command-header">
-                  <span className="hero-command-label">Install</span>
-                  <div className="hero-command-switch" aria-label="Choose install method" role="tablist">
+              <div className="hero-body">
+                <h1>The AI agent for real work.</h1>
+                <p className="hero-summary">
+                  Plan, execute, and stay in control.
+                </p>
+                <div className="hero-mobile-agent-viz">
+                  <AgentVisualization />
+                </div>
+                <div className="hero-command-card" aria-label="Install iTE">
+                  <div className="hero-command-header">
+                    <span className="hero-command-label">Install</span>
+                    <div className="hero-command-switch" aria-label="Choose install method" role="tablist">
+                      <button
+                        aria-selected={installMethod === "pipx"}
+                        className="hero-command-toggle"
+                        data-active={installMethod === "pipx"}
+                        onClick={() => handleInstallMethodChange("pipx")}
+                        role="tab"
+                        type="button"
+                      >
+                        pipx
+                      </button>
+                      <button
+                        aria-selected={installMethod === "uv"}
+                        className="hero-command-toggle"
+                        data-active={installMethod === "uv"}
+                        onClick={() => handleInstallMethodChange("uv")}
+                        role="tab"
+                        type="button"
+                      >
+                        uv
+                      </button>
+                    </div>
+                  </div>
+                  <div className="hero-command-line">
+                    <code aria-live="polite" className="hero-command-code">
+                      <span className="sr-only">{installCommand}</span>
+                      <span
+                        aria-hidden="true"
+                        className="hero-command-reels"
+                        data-animating={installTransition ? "true" : "false"}
+                      >
+                        {reelSlots.map((slot, index) => (
+                          <span className="hero-command-slot" key={`${index}-${slot.chars.join("")}`}>
+                            <span
+                              className="hero-command-slot-track"
+                              data-animating={installTransition ? "true" : "false"}
+                              style={{
+                                "--slot-count": String(slot.chars.length),
+                                "--slot-start":
+                                  installTransition && slot.direction === "down"
+                                    ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
+                                    : "0%",
+                                "--slot-end":
+                                  installTransition && slot.direction === "up"
+                                    ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
+                                    : "0%",
+                                animationDelay: `${slot.delay}ms`,
+                                animationDuration: `${slot.duration}ms`,
+                                transform:
+                                  installTransition && slot.direction === "down"
+                                    ? `translateY(calc(-100% * ${(slot.chars.length - 1) / slot.chars.length}))`
+                                    : "translateY(0)"
+                              } as CSSProperties}
+                            >
+                              {slot.chars.map((char, charIndex) => (
+                                <span className="hero-command-slot-char" key={`${index}-${charIndex}-${char}`}>
+                                  {char}
+                                </span>
+                              ))}
+                            </span>
+                          </span>
+                        ))}
+                      </span>
+                    </code>
                     <button
-                      aria-selected={installMethod === "pipx"}
-                      className="hero-command-toggle"
-                      data-active={installMethod === "pipx"}
-                      onClick={() => handleInstallMethodChange("pipx")}
-                      role="tab"
+                      className="hero-command-copy"
+                      onClick={() => void handleCopyInstallCommand()}
                       type="button"
                     >
-                      pipx
-                    </button>
-                    <button
-                      aria-selected={installMethod === "uv"}
-                      className="hero-command-toggle"
-                      data-active={installMethod === "uv"}
-                      onClick={() => handleInstallMethodChange("uv")}
-                      role="tab"
-                      type="button"
-                    >
-                      uv
+                      {installCopied ? "Copied" : "Copy"}
                     </button>
                   </div>
                 </div>
-                <div className="hero-command-line">
-                  <code aria-live="polite" className="hero-command-code">
-                    <span className="sr-only">{installCommand}</span>
-                    <span
-                      aria-hidden="true"
-                      className="hero-command-reels"
-                      data-animating={installTransition ? "true" : "false"}
-                    >
-                      {reelSlots.map((slot, index) => (
-                        <span className="hero-command-slot" key={`${index}-${slot.chars.join("")}`}>
-                          <span
-                            className="hero-command-slot-track"
-                            data-animating={installTransition ? "true" : "false"}
-                            style={{
-                              "--slot-count": String(slot.chars.length),
-                              "--slot-start":
-                                installTransition && slot.direction === "down"
-                                  ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
-                                  : "0%",
-                              "--slot-end":
-                                installTransition && slot.direction === "up"
-                                  ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
-                                  : "0%",
-                              animationDelay: `${slot.delay}ms`,
-                              animationDuration: `${slot.duration}ms`,
-                              transform:
-                                installTransition && slot.direction === "down"
-                                  ? `translateY(calc(-100% * ${(slot.chars.length - 1) / slot.chars.length}))`
-                                  : "translateY(0)"
-                            } as CSSProperties}
-                          >
-                            {slot.chars.map((char, charIndex) => (
-                              <span className="hero-command-slot-char" key={`${index}-${charIndex}-${char}`}>
-                                {char}
-                              </span>
-                            ))}
-                          </span>
-                        </span>
-                      ))}
+                <div className="hero-actions">
+                  <Link className="button" data-magnetic data-ripple to={ctaHref}>
+                    <span className="button-text" data-scramble>
+                      {ctaLabel}
                     </span>
-                  </code>
-                  <button
-                    className="hero-command-copy"
-                    onClick={() => void handleCopyInstallCommand()}
-                    type="button"
-                  >
-                    {installCopied ? "Copied" : "Copy"}
-                  </button>
+                    <span className="button-shine" />
+                  </Link>
+                  {ctaHref === "/login?mode=sign-up" ? (
+                    <Link
+                      className="interactive-link hero-sign-in-link"
+                      data-magnetic
+                      data-scramble
+                      to="/login?mode=sign-in"
+                    >
+                      Sign in
+                    </Link>
+                  ) : null}
                 </div>
               </div>
-              <div className="hero-actions">
-                <Link className="button" data-magnetic data-ripple to={ctaHref}>
-                  <span className="button-text" data-scramble>
-                    {ctaLabel}
-                  </span>
-                  <span className="button-shine" />
-                </Link>
-                {ctaHref === "/login?mode=sign-up" ? (
-                  <Link
-                    className="interactive-link hero-sign-in-link"
-                    data-magnetic
-                    data-scramble
-                    to="/login?mode=sign-in"
-                  >
-                    Sign in
-                  </Link>
-                ) : null}
-              </div>
             </div>
-          </div>
-          <div className="hero-desktop-agent-viz">
-            <AgentVisualization />
+            <div className="hero-desktop-agent-viz">
+              <AgentVisualization />
+            </div>
           </div>
         </div>
 
