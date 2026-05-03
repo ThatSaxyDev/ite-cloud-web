@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 interface StreamItem {
   id: string;
@@ -101,7 +102,7 @@ export function AgentVisualization() {
   };
 
   return (
-    <div ref={containerRef} className="agent-viz" aria-hidden="true">
+    <div ref={containerRef} className="agent-viz">
       <div className="agent-viz-ambient" />
       
       <div className="agent-viz-content">
@@ -196,6 +197,9 @@ export function AgentVisualization() {
 
         <div className="agent-viz-footer">
           <span className="agent-viz-prompt">❯</span>
+          <Link className="agent-viz-docs-link" to="/docs">
+            /docs
+          </Link>
           <span className="agent-viz-cursor" />
         </div>
       </div>

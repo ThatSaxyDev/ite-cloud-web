@@ -2300,6 +2300,7 @@ code {
 .onboarding-demo-panel {
     width: 100%;
     overflow: hidden;
+    padding: 6px;
     border: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.018);
 }
@@ -2309,6 +2310,8 @@ code {
     width: 100%;
     height: auto;
     aspect-ratio: 1516 / 1080;
+    transform: scale(1.08);
+    transform-origin: center;
 }
 
 .onboarding-copy-button {
@@ -2714,12 +2717,12 @@ code {
 
 .docs-image-container {
     margin-top: 20px;
-    padding: 16px;
+    padding: 3px;
     border: 1.5px solid rgba(255, 255, 255, 0.06);
     background: rgba(255, 255, 255, 0.015);
     border-radius: 12px;
     overflow: hidden;
-    max-width: 740px;
+    max-width: 900px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -4620,6 +4623,30 @@ code {
     font-size: 12px;
     color: var(--agent-green);
     opacity: 0.7;
+}
+
+.agent-viz-docs-link {
+    color: var(--text-soft);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.62;
+    transition:
+        color var(--motion-fast),
+        opacity var(--motion-fast);
+}
+
+.agent-viz-docs-link:hover,
+.agent-viz-docs-link:focus-visible {
+    color: var(--agent-green);
+    opacity: 1;
+}
+
+.agent-viz-docs-link:focus-visible {
+    outline: 1px solid rgba(184, 232, 200, 0.5);
+    outline-offset: 3px;
 }
 
 .agent-viz-cursor {

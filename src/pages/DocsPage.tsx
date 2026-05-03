@@ -358,10 +358,13 @@ export function DocsPage() {
                 <strong>iTE</strong> is an AI coding agent for your terminal.
               </p>
               <div className="docs-image-container">
-                <img
-                  alt="iTE terminal interface"
+                <video
+                  autoPlay
                   className="docs-image"
-                  src="/docs-image.png"
+                  loop
+                  muted
+                  playsInline
+                  src="/demo.mp4"
                 />
               </div>
             </section>
