@@ -15,7 +15,8 @@
     "react-router-dom": "^7.4.1"
   },
   "overrides": {
-    "zod": "4.4.1"
+    "zod": "4.4.1",
+    "nanoid": "3.3.11"
   },
   "devDependencies": {
     "@types/react": "^19.0.10",
