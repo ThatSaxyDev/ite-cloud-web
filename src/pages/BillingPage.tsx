@@ -52,7 +52,7 @@ type AnalyticsPayload = {
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
@@ -69,7 +69,7 @@ function formatResetLabel(value: string | null, variant: "time" | "dateTime") {
     undefined,
     variant === "time"
       ? { hour: "numeric", minute: "2-digit" }
-      : { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }
+      : { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" },
   ).format(new Date(value));
 
   return normalizeMeridiem(formatted);
@@ -109,7 +109,7 @@ function formatUsd(cents: number) {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   }).format(cents / 100);
 }
 
@@ -119,7 +119,7 @@ function formatNgn(cents: number) {
   return new Intl.NumberFormat(undefined, {
     style: "currency",
     currency: "NGN",
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(ngn);
 }
 
@@ -130,11 +130,11 @@ function formatPeriod(start: string | null, end: string | null) {
 
   const startText = new Intl.DateTimeFormat(undefined, {
     month: "short",
-    day: "numeric"
+    day: "numeric",
   }).format(new Date(start));
   const endText = new Intl.DateTimeFormat(undefined, {
     month: "short",
-    day: "numeric"
+    day: "numeric",
   }).format(new Date(end));
   return `${startText} to ${endText}`;
 }
@@ -185,14 +185,14 @@ export function BillingPage() {
       try {
         const [billingPayload, activityPayload] = await Promise.all([
           api.billingMe(),
-          api.activity()
+          api.activity(),
         ]);
         if (cancelled) {
           return;
         }
         setBilling({
           subscription: billingPayload.subscription,
-          entitlements: billingPayload.entitlements
+          entitlements: billingPayload.entitlements,
         });
         setAnalytics(activityPayload.analytics);
         setError(null);
@@ -202,8 +202,11 @@ export function BillingPage() {
         }
         setError(
           typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not load billing.")
-            : "Could not load billing."
+            ? String(
+                (caught as { error?: { message?: string } }).error?.message ||
+                  "Could not load billing.",
+              )
+            : "Could not load billing.",
         );
       }
     }
@@ -245,8 +248,11 @@ export function BillingPage() {
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "error" in caught
-          ? String((caught as { error?: { message?: string } }).error?.message || "Could not start checkout.")
-          : "Could not start checkout."
+          ? String(
+              (caught as { error?: { message?: string } }).error?.message ||
+                "Could not start checkout.",
+            )
+          : "Could not start checkout.",
       );
       setCheckoutPending(false);
     }
@@ -259,15 +265,18 @@ export function BillingPage() {
       const payload = await api.syncBilling();
       setBilling({
         subscription: payload.subscription,
-        entitlements: payload.entitlements
+        entitlements: payload.entitlements,
       });
       const activityPayload = await api.activity();
       setAnalytics(activityPayload.analytics);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "error" in caught
-          ? String((caught as { error?: { message?: string } }).error?.message || "Could not refresh billing.")
-          : "Could not refresh billing."
+          ? String(
+              (caught as { error?: { message?: string } }).error?.message ||
+                "Could not refresh billing.",
+            )
+          : "Could not refresh billing.",
       );
     } finally {
       setSyncPending(false);
@@ -283,15 +292,21 @@ export function BillingPage() {
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "error" in caught
-          ? String((caught as { error?: { message?: string } }).error?.message || "Could not open billing.")
-          : "Could not open billing."
+          ? String(
+              (caught as { error?: { message?: string } }).error?.message ||
+                "Could not open billing.",
+            )
+          : "Could not open billing.",
       );
       setPortalPending(false);
     }
   }
 
   const paid = Boolean(billing?.entitlements.proAccess);
-  const maxDailyCents = Math.max(...(analytics?.daily.map((point) => point.usdCents) ?? [0]), 1);
+  const maxDailyCents = Math.max(
+    ...(analytics?.daily.map((point) => point.usdCents) ?? [0]),
+    1,
+  );
 
   return (
     <section className="account-panel account-panel-wide">
@@ -302,16 +317,28 @@ export function BillingPage() {
         </div>
         <div className="detail-card-actions">
           {paid ? (
-            <button className="button secondary" data-magnetic disabled={portalPending} onClick={() => void handleManageBilling()} type="button">
+            <button
+              className="button secondary"
+              data-magnetic
+              disabled={portalPending}
+              onClick={() => void handleManageBilling()}
+              type="button"
+            >
               <span className="button-text" data-scramble>
                 {portalPending ? "Opening..." : "Manage subscription"}
               </span>
               <span className="button-border" />
             </button>
           ) : null}
-          <button className="button secondary" data-magnetic disabled={syncPending} onClick={() => void handleSync()} type="button">
+          <button
+            className="button secondary"
+            data-magnetic
+            disabled={syncPending}
+            onClick={() => void handleSync()}
+            type="button"
+          >
             <span className="button-text" data-scramble>
-              {syncPending ? "Refreshing..." : "Refresh usage"}
+              {syncPending ? "Refreshing..." : "Refresh usag"}
             </span>
             <span className="button-border" />
           </button>
@@ -323,19 +350,30 @@ export function BillingPage() {
       <div className="detail-stack">
         <article className="detail-card detail-card-featured">
           <div className="detail-card-copy">
-            <strong>{paid ? "Pro is active" : "Upgrade when you are ready"}</strong>
+            <strong>
+              {paid ? "Pro is active" : "Upgrade when you are ready"}
+            </strong>
             <p className="muted">
               {paid
                 ? "Bundled models are live in iTE Cloud. You can keep using local or BYOK providers alongside bundled access, and usage is measured within rolling spend windows."
                 : "Free includes local models and your own keys. Pro adds managed bundled access while keeping BYOK and local providers available."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
-              <p className="plan-meta">Renews {formatTimestamp(billing.subscription.currentPeriodEnd)}</p>
+              <p className="plan-meta">
+                Renews {formatTimestamp(billing.subscription.currentPeriodEnd)}
+              </p>
             ) : null}
           </div>
           {!paid ? (
             <div className="detail-card-actions">
-              <button className="button" data-magnetic data-ripple disabled={checkoutPending} onClick={() => void handleUpgrade()} type="button">
+              <button
+                className="button"
+                data-magnetic
+                data-ripple
+                disabled={checkoutPending}
+                onClick={() => void handleUpgrade()}
+                type="button"
+              >
                 <span className="button-text" data-scramble>
                   {checkoutPending ? "Opening checkout..." : "Upgrade to Pro"}
                 </span>
@@ -365,23 +403,35 @@ export function BillingPage() {
               <article className="detail-card analytics-summary-card">
                 <span className="analytics-summary-label">Today</span>
                 <strong>{formatUsd(analytics.totals.todayUsdCents)}</strong>
-                <span className="analytics-summary-meta">{formatNgn(analytics.totals.todayUsdCents)}</span>
+                <span className="analytics-summary-meta">
+                  {formatNgn(analytics.totals.todayUsdCents)}
+                </span>
               </article>
               <article className="detail-card analytics-summary-card">
                 <span className="analytics-summary-label">7 days</span>
                 <strong>{formatUsd(analytics.totals.sevenDayUsdCents)}</strong>
-                <span className="analytics-summary-meta">{formatNgn(analytics.totals.sevenDayUsdCents)}</span>
+                <span className="analytics-summary-meta">
+                  {formatNgn(analytics.totals.sevenDayUsdCents)}
+                </span>
               </article>
               <article className="detail-card analytics-summary-card">
                 <span className="analytics-summary-label">Billing period</span>
-                <strong>{formatUsd(analytics.totals.currentPeriodUsdCents)}</strong>
-                <span className="analytics-summary-meta">{formatPeriod(analytics.currentPeriod.start, analytics.currentPeriod.end)}</span>
+                <strong>
+                  {formatUsd(analytics.totals.currentPeriodUsdCents)}
+                </strong>
+                <span className="analytics-summary-meta">
+                  {formatPeriod(
+                    analytics.currentPeriod.start,
+                    analytics.currentPeriod.end,
+                  )}
+                </span>
               </article>
               <article className="detail-card analytics-summary-card">
                 <span className="analytics-summary-label">All time</span>
                 <strong>{formatUsd(analytics.totals.allTimeUsdCents)}</strong>
                 <span className="analytics-summary-meta">
-                  {formatNgn(analytics.totals.allTimeUsdCents)} · {analytics.totals.allTimeRequestCount} requests
+                  {formatNgn(analytics.totals.allTimeUsdCents)} ·{" "}
+                  {analytics.totals.allTimeRequestCount} requests
                 </span>
               </article>
             </div>
@@ -394,11 +444,15 @@ export function BillingPage() {
               <div className="usage-chart">
                 {analytics.daily.map((point) => (
                   <div className="usage-chart-day" key={point.date}>
-                    <div className="usage-chart-value">{point.usdCents > 0 ? formatUsd(point.usdCents) : " "}</div>
+                    <div className="usage-chart-value">
+                      {point.usdCents > 0 ? formatUsd(point.usdCents) : " "}
+                    </div>
                     <div className="usage-chart-bar-track">
                       <span
                         className="usage-chart-bar-fill"
-                        style={{ height: `${Math.max(6, (point.usdCents / maxDailyCents) * 100)}%` }}
+                        style={{
+                          height: `${Math.max(6, (point.usdCents / maxDailyCents) * 100)}%`,
+                        }}
                       />
                     </div>
                     <span className="usage-chart-label">{point.label}</span>
@@ -418,14 +472,23 @@ export function BillingPage() {
                     <div className="analytics-model-row" key={model.modelKey}>
                       <div className="analytics-model-copy">
                         <strong>{modelLabel(model.modelKey)}</strong>
-                        <span className="muted">{model.requestCount} requests</span>
+                        <span className="muted">
+                          {model.requestCount} requests
+                        </span>
                       </div>
                       <div className="analytics-model-stats">
                         <strong>{formatUsd(model.usdCents)}</strong>
-                        <span className="muted">{formatNgn(model.usdCents)} · {model.sharePercent}%</span>
+                        <span className="muted">
+                          {formatNgn(model.usdCents)} · {model.sharePercent}%
+                        </span>
                       </div>
                       <div className="analytics-model-share">
-                        <span className="analytics-model-share-fill" style={{ width: `${Math.max(4, model.sharePercent)}%` }} />
+                        <span
+                          className="analytics-model-share-fill"
+                          style={{
+                            width: `${Math.max(4, model.sharePercent)}%`,
+                          }}
+                        />
                       </div>
                     </div>
                   ))}
