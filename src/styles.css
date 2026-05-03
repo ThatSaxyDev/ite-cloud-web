@@ -1132,6 +1132,7 @@ button {
     cursor: pointer;
     overflow: hidden;
     position: relative;
+    touch-action: manipulation;
     transition:
         transform var(--motion-fast),
         background-color var(--motion-fast),
@@ -1140,9 +1141,11 @@ button {
         box-shadow 0.3s ease;
 }
 
-.button:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+@media (hover: hover) {
+    .button:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+    }
 }
 
 .button.secondary {
@@ -1152,10 +1155,12 @@ button {
     box-shadow: none;
 }
 
-.button.secondary:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--line-strong);
-    box-shadow: none;
+@media (hover: hover) {
+    .button.secondary:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--line-strong);
+        box-shadow: none;
+    }
 }
 
 .button:disabled {
@@ -1186,8 +1191,10 @@ button {
     transition: left 0.5s ease;
 }
 
-.button:hover .button-shine {
-    left: 100%;
+@media (hover: hover) {
+    .button:hover .button-shine {
+        left: 100%;
+    }
 }
 
 .button-border {
@@ -1198,8 +1205,10 @@ button {
     transition: border-color 0.3s ease;
 }
 
-.button.secondary:hover .button-border {
-    border-color: var(--line-strong);
+@media (hover: hover) {
+    .button.secondary:hover .button-border {
+        border-color: var(--line-strong);
+    }
 }
 
 [data-ripple] {
