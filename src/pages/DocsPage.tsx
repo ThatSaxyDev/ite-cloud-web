@@ -256,7 +256,10 @@ export function DocsPage() {
       if (!(target instanceof Node)) {
         return;
       }
-      if (drawerRef.current?.contains(target) || headerRef.current?.contains(target)) {
+      if (
+        drawerRef.current?.contains(target) ||
+        headerRef.current?.contains(target)
+      ) {
         return;
       }
       closeMobileNav();
@@ -329,7 +332,10 @@ export function DocsPage() {
         </div>
       </aside>
 
-      <section className="docs-stage" onClick={mobileNavOpen ? closeMobileNav : undefined}>
+      <section
+        className="docs-stage"
+        onClick={mobileNavOpen ? closeMobileNav : undefined}
+      >
         {/* Desktop Header */}
         <header className="docs-header">
           <div className="docs-header-left">
@@ -393,8 +399,7 @@ export function DocsPage() {
               <div className="docs-note">
                 <strong>Supported terminals</strong>
                 <p>
-                  <strong>macOS:</strong> Terminal.app, iTerm2, Ghostty, Kitty,
-                  Alacritty, WezTerm
+                  <strong>macOS:</strong> Terminal.app, Warp, iTerm2, Ghostty
                   <br />
                   <strong>Windows:</strong> Windows Terminal, PowerShell, CMD
                 </p>
