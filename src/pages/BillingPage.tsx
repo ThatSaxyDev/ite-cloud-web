@@ -338,7 +338,7 @@ export function BillingPage() {
             type="button"
           >
             <span className="button-text" data-scramble>
-              {syncPending ? "Refreshing..." : "Refresh usag"}
+              {syncPending ? "Refreshing..." : "Refresh usage"}
             </span>
             <span className="button-border" />
           </button>
