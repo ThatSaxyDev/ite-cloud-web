@@ -67,7 +67,7 @@ export function AccountSessionsPage() {
     }
 
     await authClient.signOut();
-    navigate("/login");
+    navigate("/login?signedOut=1", { replace: true });
   }
 
   return (

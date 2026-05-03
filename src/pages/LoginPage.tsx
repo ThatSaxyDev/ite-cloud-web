@@ -71,6 +71,10 @@ export function LoginPage() {
 
   useEffect(() => {
     async function resumeIfAlreadySignedIn() {
+      if (params.get("signedOut") === "1") {
+        return;
+      }
+
       if (getDevAuthUser()) {
         markKnownUser();
         navigate(redirectTo, { replace: true });
