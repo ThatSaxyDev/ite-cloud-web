@@ -249,13 +249,14 @@ export function PricingPage() {
             className="button pricing-cta"
             data-magnetic
             data-ripple
-            disabled={authState.kind === "loading" || checkoutPending || !plan}
+            disabled={true}
             onClick={() => void startCheckout()}
             type="button"
           >
             <span className="button-text" data-scramble>
               {ctaLabel}
             </span>
+            <span className="coming-soon-tag">Coming soon</span>
             <span className="button-shine" />
           </button>
 
