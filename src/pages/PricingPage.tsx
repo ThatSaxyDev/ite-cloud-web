@@ -155,7 +155,7 @@ export function PricingPage() {
     void startCheckout();
   }, [authState.kind, checkoutIntent, checkoutPending]);
 
-  const ctaLabel = "Coming soon";
+  const ctaLabel = "Start free trial";
 
   return (
     <main className="pricing-page">
