@@ -2268,20 +2268,26 @@ code {
 
 .pricing-cta {
     width: 100%;
+}
+
+.pricing-cta-wrapper {
     position: relative;
+    display: inline-block;
+    width: 100%;
 }
 
 .coming-soon-tag {
     position: absolute;
-    top: -10px;
-    right: -10px;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
     background: var(--color-accent, #ff6b35);
     color: white;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 4px 8px;
+    padding: 6px 12px;
     border-radius: 4px;
     z-index: 1;
 }

@@ -155,14 +155,7 @@ export function PricingPage() {
     void startCheckout();
   }, [authState.kind, checkoutIntent, checkoutPending]);
 
-  const ctaLabel =
-    authState.kind === "loading"
-      ? "Checking account..."
-      : authState.kind === "pro"
-        ? "Manage iTE Pro"
-        : checkoutPending
-          ? "Opening checkout..."
-          : "Start first month free";
+  const ctaLabel = "Coming soon";
 
   return (
     <main className="pricing-page">
@@ -245,20 +238,22 @@ export function PricingPage() {
 
           {error ? <p className="error">{error}</p> : null}
 
-          <button
-            className="button pricing-cta"
-            data-magnetic
-            data-ripple
-            disabled={true}
-            onClick={() => void startCheckout()}
-            type="button"
-          >
-            <span className="button-text" data-scramble>
-              {ctaLabel}
-            </span>
+          <div className="pricing-cta-wrapper">
+            <button
+              className="button pricing-cta"
+              data-magnetic
+              data-ripple
+              disabled={true}
+              onClick={() => void startCheckout()}
+              type="button"
+            >
+              <span className="button-text" data-scramble>
+                {ctaLabel}
+              </span>
+              <span className="button-shine" />
+            </button>
             <span className="coming-soon-tag">Coming soon</span>
-            <span className="button-shine" />
-          </button>
+          </div>
 
           {authState.kind === "signed-out" ? (
             <p className="pricing-note">
