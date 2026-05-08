@@ -95,13 +95,40 @@ function formatPlanName(planKey: string | null | undefined) {
   }
 
   if (planKey === "ite_pro_monthly") {
-    return "iTE Pro Monthly";
+    return "iTE Pro";
   }
 
   return planKey
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatSubscriptionStatus(status: string | null | undefined) {
+  switch (status) {
+    case "trialing":
+      return "Trial active";
+    case "active":
+      return "Active";
+    case "past_due":
+      return "Past due";
+    case "canceled":
+      return "Canceled";
+    case "unpaid":
+      return "Unpaid";
+    default:
+      return "Free";
+  }
+}
+
+function formatSubscriptionPeriodLabel(status: string | null | undefined) {
+  if (status === "trialing") {
+    return "Trial ends";
+  }
+  if (status === "active") {
+    return "Renews";
+  }
+  return "Current period ends";
 }
 
 function formatUsd(cents: number) {
@@ -303,6 +330,7 @@ export function BillingPage() {
   }
 
   const paid = Boolean(billing?.entitlements.proAccess);
+  const subscriptionStatus = billing?.subscription?.status ?? null;
   const maxDailyCents = Math.max(
     ...(analytics?.daily.map((point) => point.usdCents) ?? [0]),
     1,
@@ -351,16 +379,22 @@ export function BillingPage() {
         <article className="detail-card detail-card-featured">
           <div className="detail-card-copy">
             <strong>
-              {paid ? "Pro is active" : "Upgrade when you are ready"}
+              {paid
+                ? subscriptionStatus === "trialing"
+                  ? "iTE Pro trial is active"
+                  : "iTE Pro is active"
+                : "Start iTE Pro when you are ready"}
             </strong>
             <p className="muted">
               {paid
-                ? "Bundled models are live in iTE Cloud. You can keep using local or BYOK providers alongside bundled access, and usage is measured within rolling spend windows."
-                : "Free includes local models and your own keys. Pro adds managed bundled access while keeping BYOK and local providers available."}
+                ? "Bundled models are live in iTE Cloud inside rolling usage windows. Local models and BYOK providers remain available alongside iTE Pro."
+                : "Free includes local models and your own keys. iTE Pro adds managed bundled access with the first month free, then $8/month."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
               <p className="plan-meta">
-                Renews {formatTimestamp(billing.subscription.currentPeriodEnd)}
+                {formatSubscriptionPeriodLabel(subscriptionStatus)}{" "}
+                {formatTimestamp(billing.subscription.currentPeriodEnd)}
+                {subscriptionStatus === "trialing" ? " · $8/month after trial" : ""}
               </p>
             ) : null}
           </div>
@@ -375,7 +409,7 @@ export function BillingPage() {
                 type="button"
               >
                 <span className="button-text" data-scramble>
-                  {checkoutPending ? "Opening checkout..." : "Upgrade to Pro"}
+                  {checkoutPending ? "Opening checkout..." : "Start first month free"}
                 </span>
                 <span className="button-shine" />
               </button>
@@ -388,11 +422,15 @@ export function BillingPage() {
           <dl className="meta-list">
             <div>
               <dt>Status</dt>
-              <dd>{billing?.subscription?.status ?? "Free"}</dd>
+              <dd>{formatSubscriptionStatus(subscriptionStatus)}</dd>
             </div>
             <div>
               <dt>Plan</dt>
               <dd>{formatPlanName(billing?.entitlements.planKey)}</dd>
+            </div>
+            <div>
+              <dt>Price</dt>
+              <dd>{paid ? "$8/month after trial" : "First month free, then $8/month"}</dd>
             </div>
           </dl>
         </article>

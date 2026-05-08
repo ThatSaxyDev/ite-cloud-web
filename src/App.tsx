@@ -28,6 +28,7 @@ import { BillingPage } from "@/pages/BillingPage";
 import { CliAuthPage } from "@/pages/CliAuthPage";
 import { DocsPage } from "@/pages/DocsPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { PricingPage } from "@/pages/PricingPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 
 const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
@@ -259,6 +260,10 @@ function HomePage() {
           </div>
         </div>
 
+        <Link className="hero-pricing-link interactive-link" data-magnetic data-scramble to="/pricing">
+          Pricing
+        </Link>
+
         <section className="hero-demo-section">
           <video
             autoPlay
@@ -317,6 +322,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/docs" element={<DocsPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/cli" element={<CliAuthPage />} />
         <Route path="/account" element={<AccountLayout />}>

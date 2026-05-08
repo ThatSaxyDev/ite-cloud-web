@@ -35,6 +35,33 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  pricingCatalog() {
+    return apiRequest<{
+      ok: true;
+      plans: Array<{
+        planKey: "ite_pro_monthly";
+        displayName: string;
+        provider: "polar";
+        billingConfigured: boolean;
+        trial: {
+          interval: "month";
+          intervalCount: number;
+          label: string;
+        };
+        recurringPrice: {
+          amount: number;
+          currency: "USD";
+          interval: "month";
+          label: string;
+        };
+        usageLimits: {
+          fiveHour: { capUsdCents: number; label: string };
+          sevenDay: { capUsdCents: number; label: string };
+        };
+        includes: string[];
+      }>;
+    }>("/pricing/catalog");
+  },
   inspectCliRequest(token: string) {
     const query = new URLSearchParams({ token });
     return apiRequest<{
@@ -62,10 +89,13 @@ export const api = {
       body: JSON.stringify({ sessionId })
     });
   },
-  createCheckout(planKey: "ite_pro_monthly" = "ite_pro_monthly") {
+  createCheckout(
+    planKey: "ite_pro_monthly" = "ite_pro_monthly",
+    urls?: { successUrl?: string; returnUrl?: string },
+  ) {
     return apiRequest<{ ok: true; checkoutId: string; checkoutUrl: string }>("/billing/checkout", {
       method: "POST",
-      body: JSON.stringify({ planKey })
+      body: JSON.stringify({ planKey, ...(urls ?? {}) })
     });
   },
   billingMe() {
