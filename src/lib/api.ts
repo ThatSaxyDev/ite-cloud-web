@@ -57,7 +57,16 @@ export const api = {
         usageLimits: {
           fiveHour: { capUsdCents: number; label: string };
           sevenDay: { capUsdCents: number; label: string };
+          thirtyDay: { capUsdCents: number; label: string };
         };
+        usageSummary: string;
+        requestEstimates: Array<{
+          model: string;
+          label: string;
+          requestsPerFiveHour: number | null;
+          requestsPerWeek: number | null;
+          requestsPerMonth: number | null;
+        }>;
         includes: string[];
       }>;
     }>("/pricing/catalog");
@@ -169,10 +178,12 @@ export const api = {
       usage: {
         fiveHour: { usedUsdCents: number; eventCount: number };
         sevenDay: { usedUsdCents: number; eventCount: number };
+        thirtyDay: { usedUsdCents: number; eventCount: number };
       };
       quotas: {
         fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
         sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+        thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
       };
     }>("/usage/summary");
   },

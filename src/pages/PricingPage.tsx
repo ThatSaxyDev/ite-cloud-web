@@ -15,13 +15,13 @@ type AuthState =
   | { kind: "free" }
   | { kind: "pro"; status: string | null };
 
-function formatLimit(cents: number) {
+function formatRequestCount(value: number | null) {
+  if (value === null) {
+    return "Included";
+  }
   return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export function PricingPage() {
@@ -185,8 +185,9 @@ export function PricingPage() {
           <p className="sessions-kicker">Pricing</p>
           <h1>iTE Pro</h1>
           <p>
-            First month free, then $8/month for managed bundled models inside
-            rolling usage windows. Local models and BYOK providers stay yours.
+            First month free, then $8/month for reliable access to bundled
+            coding models. Usage is fair-use based, and local models and BYOK
+            providers stay yours.
           </p>
         </div>
 
@@ -209,7 +210,7 @@ export function PricingPage() {
             <strong>Included</strong>
             <ul>
               {(plan?.includes ?? [
-                "Bundled cloud models within rolling usage windows",
+                "Bundled cloud models within 5-hour, weekly, and monthly fair-use windows",
                 "Local models remain available",
                 "Bring your own provider keys remain available",
                 "Cancel anytime",
@@ -219,18 +220,26 @@ export function PricingPage() {
             </ul>
           </div>
 
-          <div className="pricing-limits">
-            <div>
-              <span>5-hour window</span>
-              <strong>
-                {plan ? formatLimit(plan.usageLimits.fiveHour.capUsdCents) : "$0.20"}
-              </strong>
+          <div className="pricing-estimates">
+            <div className="pricing-estimates-head">
+              <strong>Estimated requests</strong>
+              <p>{plan?.usageSummary ?? "Request counts vary by model."}</p>
             </div>
-            <div>
-              <span>7-day window</span>
-              <strong>
-                {plan ? formatLimit(plan.usageLimits.sevenDay.capUsdCents) : "$0.90"}
-              </strong>
+            <div className="pricing-estimate-table">
+              <div className="pricing-estimate-row pricing-estimate-row-head">
+                <span>Model</span>
+                <span>5h</span>
+                <span>Week</span>
+                <span>Month</span>
+              </div>
+              {(plan?.requestEstimates ?? []).map((estimate) => (
+                <div className="pricing-estimate-row" key={estimate.model}>
+                  <span>{estimate.label}</span>
+                  <strong>{formatRequestCount(estimate.requestsPerFiveHour)}</strong>
+                  <strong>{formatRequestCount(estimate.requestsPerWeek)}</strong>
+                  <strong>{formatRequestCount(estimate.requestsPerMonth)}</strong>
+                </div>
+              ))}
             </div>
           </div>
 

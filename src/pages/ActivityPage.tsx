@@ -7,10 +7,12 @@ type UsageState = {
   usage: {
     fiveHour: { usedUsdCents: number; eventCount: number };
     sevenDay: { usedUsdCents: number; eventCount: number };
+    thirtyDay: { usedUsdCents: number; eventCount: number };
   };
   quotas: {
     fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
     sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+    thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
   };
   entitlements: {
     planKey: string;
@@ -139,7 +141,7 @@ export function ActivityPage() {
         <div className="detail-stack">
           <article className="detail-card">
             <p className="muted">
-              Bundled usage is measured across rolling 5-hour and 7-day windows.
+              Bundled usage is measured across rolling 5-hour, weekly, and monthly windows.
             </p>
             <div className="usage-limit-list">
               <div className="usage-limit-row">
@@ -176,6 +178,25 @@ export function ActivityPage() {
                   <span
                     className="usage-progress-fill"
                     style={{ width: `${progressWidth(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="usage-limit-row">
+                <div className="usage-limit-copy">
+                  <strong>Monthly</strong>
+                  <span>
+                    Resets {formatResetLabel(usage.quotas.thirtyDay.nextResetAt, "dateTime")}
+                  </span>
+                </div>
+                <div className="usage-limit-stats">
+                  <strong>{formatPercentRemaining(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}</strong>
+                  <span>{usage.usage.thirtyDay.eventCount} requests</span>
+                </div>
+                <div className="usage-progress" aria-hidden="true">
+                  <span
+                    className="usage-progress-fill"
+                    style={{ width: `${progressWidth(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}%` }}
                   />
                 </div>
               </div>
