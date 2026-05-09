@@ -3792,6 +3792,8 @@ code {
 
     .pricing-stage {
         width: 100%;
+        grid-template-columns: 1fr;
+        gap: 24px;
         padding-top: 106px;
         padding-bottom: 36px;
     }
