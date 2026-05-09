@@ -9,11 +9,12 @@
     "preview": "vite preview --host 127.0.0.1 --port 3000"
   },
   "dependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.60.3",
     "better-auth": "1.6.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.1",
-    "rollup": "^4.40.1"
+    "rollup": "4.60.3"
   },
   "overrides": {
     "zod": "4.4.1",
