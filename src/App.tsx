@@ -20,7 +20,7 @@ import {
   INSTALL_COMMANDS,
   INSTALL_REEL_DURATION_MS,
   type InstallMethod,
-  type InstallReelSlot
+  type InstallReelSlot,
 } from "@/lib/install-command";
 import { AccountSessionsPage } from "@/pages/AccountSessionsPage";
 import { ActivityPage } from "@/pages/ActivityPage";
@@ -111,7 +111,7 @@ function HomePage() {
 
     if (!prefersReducedMotion) {
       setInstallTransition({
-        slots: buildInstallReelSlots(installCommand, nextCommand)
+        slots: buildInstallReelSlots(installCommand, nextCommand),
       });
     } else {
       setInstallTransition(null);
@@ -133,8 +133,7 @@ function HomePage() {
   }
 
   const reelSlots =
-    installTransition?.slots ??
-    buildStaticInstallReelSlots(installCommand);
+    installTransition?.slots ?? buildStaticInstallReelSlots(installCommand);
 
   return (
     <main className="hero-shell">
@@ -161,7 +160,11 @@ function HomePage() {
                 <div className="hero-command-card" aria-label="Install iTE">
                   <div className="hero-command-header">
                     <span className="hero-command-label">Install</span>
-                    <div className="hero-command-switch" aria-label="Choose install method" role="tablist">
+                    <div
+                      className="hero-command-switch"
+                      aria-label="Choose install method"
+                      role="tablist"
+                    >
                       <button
                         aria-selected={installMethod === "pipx"}
                         className="hero-command-toggle"
@@ -193,30 +196,42 @@ function HomePage() {
                         data-animating={installTransition ? "true" : "false"}
                       >
                         {reelSlots.map((slot, index) => (
-                          <span className="hero-command-slot" key={`${index}-${slot.chars.join("")}`}>
+                          <span
+                            className="hero-command-slot"
+                            key={`${index}-${slot.chars.join("")}`}
+                          >
                             <span
                               className="hero-command-slot-track"
-                              data-animating={installTransition ? "true" : "false"}
-                              style={{
-                                "--slot-count": String(slot.chars.length),
-                                "--slot-start":
-                                  installTransition && slot.direction === "down"
-                                    ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
-                                    : "0%",
-                                "--slot-end":
-                                  installTransition && slot.direction === "up"
-                                    ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
-                                    : "0%",
-                                animationDelay: `${slot.delay}ms`,
-                                animationDuration: `${slot.duration}ms`,
-                                transform:
-                                  installTransition && slot.direction === "down"
-                                    ? `translateY(calc(-100% * ${(slot.chars.length - 1) / slot.chars.length}))`
-                                    : "translateY(0)"
-                              } as CSSProperties}
+                              data-animating={
+                                installTransition ? "true" : "false"
+                              }
+                              style={
+                                {
+                                  "--slot-count": String(slot.chars.length),
+                                  "--slot-start":
+                                    installTransition &&
+                                    slot.direction === "down"
+                                      ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
+                                      : "0%",
+                                  "--slot-end":
+                                    installTransition && slot.direction === "up"
+                                      ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
+                                      : "0%",
+                                  animationDelay: `${slot.delay}ms`,
+                                  animationDuration: `${slot.duration}ms`,
+                                  transform:
+                                    installTransition &&
+                                    slot.direction === "down"
+                                      ? `translateY(calc(-100% * ${(slot.chars.length - 1) / slot.chars.length}))`
+                                      : "translateY(0)",
+                                } as CSSProperties
+                              }
                             >
                               {slot.chars.map((char, charIndex) => (
-                                <span className="hero-command-slot-char" key={`${index}-${charIndex}-${char}`}>
+                                <span
+                                  className="hero-command-slot-char"
+                                  key={`${index}-${charIndex}-${char}`}
+                                >
                                   {char}
                                 </span>
                               ))}
@@ -235,7 +250,12 @@ function HomePage() {
                   </div>
                 </div>
                 <div className="hero-actions">
-                  <Link className="button" data-magnetic data-ripple to={ctaHref}>
+                  <Link
+                    className="button"
+                    data-magnetic
+                    data-ripple
+                    to={ctaHref}
+                  >
                     <span className="button-text" data-scramble>
                       {ctaLabel}
                     </span>
@@ -260,7 +280,12 @@ function HomePage() {
           </div>
         </div>
 
-        <Link className="hero-pricing-link interactive-link" data-magnetic data-scramble to="/pricing">
+        <Link
+          className="hero-pricing-link interactive-link"
+          data-magnetic
+          data-scramble
+          to="/pricing"
+        >
           Pricing
         </Link>
 
@@ -271,7 +296,7 @@ function HomePage() {
             muted
             playsInline
             className="hero-demo-video"
-            src="/demo.mp4"
+            src="/demoo.mp4"
           />
         </section>
 
@@ -330,7 +355,10 @@ export function App() {
           <Route path="billing" element={<BillingPage />} />
           <Route path="sessions" element={<AccountSessionsPage />} />
           <Route path="usage" element={<ActivityPage />} />
-          <Route path="activity" element={<Navigate to="/account/usage" replace />} />
+          <Route
+            path="activity"
+            element={<Navigate to="/account/usage" replace />}
+          />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
