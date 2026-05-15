@@ -12,7 +12,7 @@ type PricingPlan = Awaited<ReturnType<typeof api.pricingCatalog>>["plans"][numbe
 type AuthState =
   | { kind: "loading" }
   | { kind: "signed-out" }
-  | { kind: "free" }
+  | { kind: "free"; trialAvailable: boolean }
   | { kind: "pro"; status: string | null };
 
 function formatRequestCount(value: number | null) {
@@ -34,7 +34,7 @@ export function PricingPage() {
 
   const checkoutIntent = new URLSearchParams(location.search).get("checkout");
   const loginRedirect = useMemo(
-    () => `/pricing?checkout=ite_pro_monthly`,
+    () => `/pricing?checkout=ite_pro_trial`,
     [],
   );
 
@@ -67,7 +67,7 @@ export function PricingPage() {
     async function resolveAuth() {
       if (getDevAuthUser()) {
         markKnownUser();
-        setAuthState({ kind: "free" });
+        setAuthState({ kind: "free", trialAvailable: true });
         return;
       }
 
@@ -95,10 +95,10 @@ export function PricingPage() {
           });
           return;
         }
-        setAuthState({ kind: "free" });
+        setAuthState({ kind: "free", trialAvailable: billing.trial.available });
       } catch {
         if (!cancelled) {
-          setAuthState({ kind: "free" });
+          setAuthState({ kind: "free", trialAvailable: true });
         }
       }
     }
@@ -129,7 +129,22 @@ export function PricingPage() {
       setCheckoutPending(true);
       setError(null);
       const origin = window.location.origin;
-      const payload = await api.createCheckout(plan.planKey, {
+      const rawRequestedPlan =
+        checkoutIntent === "ite_pro_monthly" || checkoutIntent === "ite_pro_trial"
+          ? checkoutIntent
+          : null;
+      const requestedPlan =
+        rawRequestedPlan === "ite_pro_trial" &&
+        authState.kind === "free" &&
+        !authState.trialAvailable
+          ? null
+          : rawRequestedPlan;
+      const planKey =
+        requestedPlan ??
+        (authState.kind === "free" && authState.trialAvailable
+          ? plan.trialOffer.planKey
+          : plan.planKey);
+      const payload = await api.createCheckout(planKey, {
         successUrl: `${origin}/account/billing?checkout=success`,
         returnUrl: `${origin}/pricing`,
       });
@@ -148,14 +163,19 @@ export function PricingPage() {
   }
 
   useEffect(() => {
-    if (checkoutIntent !== "ite_pro_monthly" || authState.kind !== "free" || checkoutPending) {
+    if (
+      (checkoutIntent !== "ite_pro_monthly" && checkoutIntent !== "ite_pro_trial") ||
+      authState.kind !== "free" ||
+      checkoutPending
+    ) {
       return;
     }
 
     void startCheckout();
   }, [authState.kind, checkoutIntent, checkoutPending]);
 
-  const ctaLabel = "Start free trial";
+  const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
+  const ctaLabel = trialAvailable ? "Start free month" : "Buy 30 days";
 
   return (
     <main className="pricing-page">
@@ -178,9 +198,9 @@ export function PricingPage() {
           <p className="sessions-kicker">Pricing</p>
           <h1>iTE Pro</h1>
           <p>
-            First month free, then $8/month for reliable access to bundled
-            coding models. Usage is fair-use based, and local models and BYOK
-            providers stay yours.
+            Start with a free month, then use $8 renewable 30-day passes for
+            reliable access to bundled coding models. Usage is fair-use based,
+            and local models and BYOK providers stay yours.
           </p>
         </div>
 
@@ -188,12 +208,12 @@ export function PricingPage() {
           <div className="pricing-plan-top">
             <div>
               <span className="pricing-plan-name">{plan?.displayName ?? "iTE Pro"}</span>
-              <strong>{plan?.trial.label ?? "First month free"}</strong>
-              <p>Then {plan?.recurringPrice.label ?? "$8/month"}. Cancel anytime.</p>
+              <strong>{trialAvailable ? (plan?.trialOffer.label ?? "First month free") : (plan?.accessPass.label ?? "30 days of Pro access")}</strong>
+              <p>{plan?.recurringPrice.label ?? "$8/month"} after the free month. Renew when you need it.</p>
             </div>
             <div className="pricing-price">
-              <span>$0</span>
-              <em>month one</em>
+              <span>{trialAvailable ? "$0" : "$8"}</span>
+              <em>{trialAvailable ? "month one" : "per 30 days"}</em>
             </div>
           </div>
 
@@ -206,7 +226,7 @@ export function PricingPage() {
                 "Bundled cloud models within 5-hour, weekly, and monthly fair-use windows",
                 "Local models remain available",
                 "Bring your own provider keys remain available",
-                "Cancel anytime",
+                "Renew month to month",
               ]).map((item) => (
                 <li key={item}>{item}</li>
               ))}
@@ -243,16 +263,16 @@ export function PricingPage() {
               className="button pricing-cta"
               data-magnetic
               data-ripple
-              disabled={true}
+              disabled={checkoutPending || !plan?.billingConfigured}
               onClick={() => void startCheckout()}
               type="button"
             >
               <span className="button-text" data-scramble>
-                {ctaLabel}
+                {checkoutPending ? "Opening checkout..." : ctaLabel}
               </span>
               <span className="button-shine" />
             </button>
-            <span className="coming-soon-tag">Coming soon</span>
+            {!plan?.billingConfigured ? <span className="coming-soon-tag">Billing unavailable</span> : null}
           </div>
 
           {authState.kind === "signed-out" ? (

@@ -19,6 +19,11 @@ type BillingState = {
     proAccess: boolean;
     updatedAt: string | null;
   };
+  trial: {
+    startedAt: string | null;
+    usedAt: string | null;
+    available: boolean;
+  };
 };
 
 type AnalyticsPayload = {
@@ -97,6 +102,9 @@ function formatPlanName(planKey: string | null | undefined) {
   if (planKey === "ite_pro_monthly") {
     return "iTE Pro";
   }
+  if (planKey === "ite_pro_trial") {
+    return "iTE Pro trial";
+  }
 
   return planKey
     .split("_")
@@ -106,8 +114,6 @@ function formatPlanName(planKey: string | null | undefined) {
 
 function formatSubscriptionStatus(status: string | null | undefined) {
   switch (status) {
-    case "trialing":
-      return "Trial active";
     case "active":
       return "Active";
     case "past_due":
@@ -122,11 +128,8 @@ function formatSubscriptionStatus(status: string | null | undefined) {
 }
 
 function formatSubscriptionPeriodLabel(status: string | null | undefined) {
-  if (status === "trialing") {
-    return "Trial ends";
-  }
   if (status === "active") {
-    return "Renews";
+    return "Access through";
   }
   return "Current period ends";
 }
@@ -202,7 +205,6 @@ export function BillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [checkoutPending, setCheckoutPending] = useState(false);
   const [syncPending, setSyncPending] = useState(false);
-  const [portalPending, setPortalPending] = useState(false);
   const [analytics, setAnalytics] = useState<AnalyticsPayload | null>(null);
 
   useEffect(() => {
@@ -217,10 +219,11 @@ export function BillingPage() {
         if (cancelled) {
           return;
         }
-        setBilling({
-          subscription: billingPayload.subscription,
-          entitlements: billingPayload.entitlements,
-        });
+      setBilling({
+        subscription: billingPayload.subscription,
+        entitlements: billingPayload.entitlements,
+        trial: billingPayload.trial,
+      });
         setAnalytics(activityPayload.analytics);
         setError(null);
       } catch (caught) {
@@ -270,7 +273,9 @@ export function BillingPage() {
   async function handleUpgrade() {
     try {
       setCheckoutPending(true);
-      const payload = await api.createCheckout();
+      const payload = await api.createCheckout(
+        billing?.trial.available ? "ite_pro_trial" : "ite_pro_monthly",
+      );
       window.location.assign(payload.checkoutUrl);
     } catch (caught) {
       setError(
@@ -293,6 +298,7 @@ export function BillingPage() {
       setBilling({
         subscription: payload.subscription,
         entitlements: payload.entitlements,
+        trial: payload.trial,
       });
       const activityPayload = await api.activity();
       setAnalytics(activityPayload.analytics);
@@ -310,27 +316,10 @@ export function BillingPage() {
     }
   }
 
-  async function handleManageBilling() {
-    try {
-      setPortalPending(true);
-      setError(null);
-      const payload = await api.createBillingPortal();
-      window.location.assign(payload.customerPortalUrl);
-    } catch (caught) {
-      setError(
-        typeof caught === "object" && caught && "error" in caught
-          ? String(
-              (caught as { error?: { message?: string } }).error?.message ||
-                "Could not open billing.",
-            )
-          : "Could not open billing.",
-      );
-      setPortalPending(false);
-    }
-  }
-
   const paid = Boolean(billing?.entitlements.proAccess);
   const subscriptionStatus = billing?.subscription?.status ?? null;
+  const trialAvailable = Boolean(billing?.trial.available);
+  const trialActive = billing?.entitlements.planKey === "ite_pro_trial";
   const maxDailyCents = Math.max(
     ...(analytics?.daily.map((point) => point.usdCents) ?? [0]),
     1,
@@ -344,20 +333,6 @@ export function BillingPage() {
           <h2>{paid ? "iTE Pro" : "Free"}</h2>
         </div>
         <div className="detail-card-actions">
-          {paid ? (
-            <button
-              className="button secondary"
-              data-magnetic
-              disabled={portalPending}
-              onClick={() => void handleManageBilling()}
-              type="button"
-            >
-              <span className="button-text" data-scramble>
-                {portalPending ? "Opening..." : "Manage subscription"}
-              </span>
-              <span className="button-border" />
-            </button>
-          ) : null}
           <button
             className="button secondary"
             data-magnetic
@@ -380,21 +355,22 @@ export function BillingPage() {
           <div className="detail-card-copy">
             <strong>
               {paid
-                ? subscriptionStatus === "trialing"
-                  ? "iTE Pro trial is active"
+                ? trialActive
+                  ? "iTE Pro free month is active"
                   : "iTE Pro is active"
                 : "Start iTE Pro when you are ready"}
             </strong>
             <p className="muted">
               {paid
                 ? "Bundled models are live in iTE Cloud inside rolling usage windows. Local models and BYOK providers remain available alongside iTE Pro."
-                : "Free includes local models and your own keys. iTE Pro adds managed bundled access with the first month free, then $8/month."}
+                : trialAvailable
+                  ? "Free includes local models and your own keys. Start a Bachs-backed free month to try managed bundled access."
+                  : "Free includes local models and your own keys. iTE Pro adds managed bundled access in 30-day passes."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
               <p className="plan-meta">
                 {formatSubscriptionPeriodLabel(subscriptionStatus)}{" "}
                 {formatTimestamp(billing.subscription.currentPeriodEnd)}
-                {subscriptionStatus === "trialing" ? " · $8/month after trial" : ""}
               </p>
             ) : null}
           </div>
@@ -409,7 +385,11 @@ export function BillingPage() {
                 type="button"
               >
                 <span className="button-text" data-scramble>
-                  {checkoutPending ? "Opening checkout..." : "Start first month free"}
+                  {checkoutPending
+                    ? "Opening checkout..."
+                    : trialAvailable
+                      ? "Start free month"
+                      : "Buy 30 days of Pro"}
                 </span>
                 <span className="button-shine" />
               </button>
@@ -430,7 +410,15 @@ export function BillingPage() {
             </div>
             <div>
               <dt>Price</dt>
-              <dd>{paid ? "$8/month after trial" : "First month free, then $8/month"}</dd>
+              <dd>
+                {trialActive
+                  ? "First month free"
+                  : paid
+                    ? "$8/month"
+                    : trialAvailable
+                      ? "First month free, then $8 for 30 days"
+                      : "$8 for 30 days of Pro access"}
+              </dd>
             </div>
           </dl>
         </article>
