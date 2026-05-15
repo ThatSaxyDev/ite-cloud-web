@@ -41,9 +41,15 @@ export const api = {
       plans: Array<{
         planKey: "ite_pro_monthly";
         displayName: string;
-        provider: "polar";
+        provider: "bachs";
         billingConfigured: boolean;
-        trial: {
+        trialOffer: {
+          planKey: "ite_pro_trial";
+          interval: "month";
+          intervalCount: number;
+          label: string;
+        };
+        accessPass: {
           interval: "month";
           intervalCount: number;
           label: string;
@@ -99,7 +105,7 @@ export const api = {
     });
   },
   createCheckout(
-    planKey: "ite_pro_monthly" = "ite_pro_monthly",
+    planKey: "ite_pro_trial" | "ite_pro_monthly" = "ite_pro_trial",
     urls?: { successUrl?: string; returnUrl?: string },
   ) {
     return apiRequest<{ ok: true; checkoutId: string; checkoutUrl: string }>("/billing/checkout", {
@@ -125,6 +131,11 @@ export const api = {
         bundledInference: boolean;
         proAccess: boolean;
         updatedAt: string | null;
+      };
+      trial: {
+        startedAt: string | null;
+        usedAt: string | null;
+        available: boolean;
       };
     }>("/billing/me");
   },
@@ -161,6 +172,11 @@ export const api = {
         proAccess: boolean;
         updatedAt: string | null;
       };
+      trial: {
+        startedAt: string | null;
+        usedAt: string | null;
+        available: boolean;
+      };
     }>("/billing/sync", {
       method: "POST",
       body: JSON.stringify({})
@@ -186,12 +202,6 @@ export const api = {
         thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
       };
     }>("/usage/summary");
-  },
-  createBillingPortal() {
-    return apiRequest<{ ok: true; customerPortalUrl: string }>("/billing/portal", {
-      method: "POST",
-      body: JSON.stringify({})
-    });
   },
   activity() {
     return apiRequest<{
