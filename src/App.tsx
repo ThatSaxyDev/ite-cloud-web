@@ -296,7 +296,7 @@ function HomePage() {
             muted
             playsInline
             className="hero-demo-video"
-            src="/demoo.mp4"
+            src="/demo.mp4"
           />
         </section>
 

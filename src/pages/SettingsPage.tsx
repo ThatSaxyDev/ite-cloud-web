@@ -197,7 +197,7 @@ export function SettingsPage() {
           loop
           muted
           playsInline
-          src="/demoo.mp4"
+          src="/demo.mp4"
         />
       </section>
 
