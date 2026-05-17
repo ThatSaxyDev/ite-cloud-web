@@ -370,7 +370,7 @@ export function DocsPage() {
                   loop
                   muted
                   playsInline
-                  src="/demoo.mp4"
+                  src="/demo.mp4"
                 />
               </div>
             </section>
