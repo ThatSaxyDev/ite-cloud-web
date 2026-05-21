@@ -34,6 +34,14 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   }
 }
 
+export type Entitlements = {
+  planKey: string;
+  bundledInference: boolean;
+  remoteCompanion: boolean;
+  proAccess: boolean;
+  updatedAt: string | null;
+};
+
 export const api = {
   pricingCatalog() {
     return apiRequest<{
@@ -126,32 +134,13 @@ export const api = {
         canceledAt: string | null;
         endedAt: string | null;
       } | null;
-      entitlements: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
-      };
+      entitlements: Entitlements;
       trial: {
         startedAt: string | null;
         usedAt: string | null;
         available: boolean;
       };
     }>("/billing/me");
-  },
-  toggleBundledAccess(enabled: boolean) {
-    return apiRequest<{
-      ok: true;
-      entitlements: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
-      };
-    }>("/billing/bundled-access", {
-      method: "POST",
-      body: JSON.stringify({ enabled })
-    });
   },
   syncBilling() {
     return apiRequest<{
@@ -166,12 +155,7 @@ export const api = {
         canceledAt: string | null;
         endedAt: string | null;
       } | null;
-      entitlements: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
-      };
+      entitlements: Entitlements;
       trial: {
         startedAt: string | null;
         usedAt: string | null;
@@ -185,12 +169,7 @@ export const api = {
   billingUsage() {
     return apiRequest<{
       ok: true;
-      entitlements: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
-      };
+      entitlements: Entitlements;
       usage: {
         fiveHour: { usedUsdCents: number; eventCount: number };
         sevenDay: { usedUsdCents: number; eventCount: number };
@@ -249,12 +228,7 @@ export const api = {
       ok: true;
       actor: string;
       user: { id: string; email?: string; name?: string };
-      entitlements?: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
-      };
+      entitlements?: Entitlements;
     }>("/auth/me");
   }
 };
