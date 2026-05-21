@@ -175,7 +175,7 @@ export function PricingPage() {
   }, [authState.kind, checkoutIntent, checkoutPending]);
 
   const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
-  const ctaLabel = trialAvailable ? "Start free month" : "Buy 30 days";
+  const ctaLabel = trialAvailable ? "Start intro offer" : "Buy 30 days";
 
   return (
     <main className="pricing-page">
@@ -198,7 +198,7 @@ export function PricingPage() {
           <p className="sessions-kicker">Pricing</p>
           <h1>iTE Pro</h1>
           <p>
-            Start with a free month, then use $8 renewable 30-day passes for
+            Start with a first-month intro, then use $8 renewable 30-day passes for
             reliable access to bundled coding models. Usage is fair-use based,
             and local models and BYOK providers stay yours.
           </p>
@@ -208,12 +208,12 @@ export function PricingPage() {
           <div className="pricing-plan-top">
             <div>
               <span className="pricing-plan-name">{plan?.displayName ?? "iTE Pro"}</span>
-              <strong>{trialAvailable ? (plan?.trialOffer.label ?? "First month free") : (plan?.accessPass.label ?? "30 days of Pro access")}</strong>
-              <p>{plan?.recurringPrice.label ?? "$8/month"} after the free month. Renew when you need it.</p>
+              <strong>{trialAvailable ? (plan?.trialOffer.label ?? "First-month intro") : (plan?.accessPass.label ?? "30 days of Pro access")}</strong>
+              <p>{plan?.recurringPrice.label ?? "$8/month"} after the intro. Renew when you need it.</p>
             </div>
             <div className="pricing-price">
-              <span>{trialAvailable ? "$0" : "$8"}</span>
-              <em>{trialAvailable ? "month one" : "per 30 days"}</em>
+              <span>{trialAvailable ? "Intro" : "$8"}</span>
+              <em>{trialAvailable ? "first month" : "per 30 days"}</em>
             </div>
           </div>
 

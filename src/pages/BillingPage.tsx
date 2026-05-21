@@ -98,7 +98,7 @@ function formatPlanName(planKey: string | null | undefined) {
     return "iTE Pro";
   }
   if (planKey === "ite_pro_trial") {
-    return "iTE Pro trial";
+    return "iTE Pro intro";
   }
 
   return planKey
@@ -351,7 +351,7 @@ export function BillingPage() {
             <strong>
               {paid
                 ? trialActive
-                  ? "iTE Pro free month is active"
+                  ? "iTE Pro intro is active"
                   : "iTE Pro is active"
                 : "Start iTE Pro when you are ready"}
             </strong>
@@ -359,7 +359,7 @@ export function BillingPage() {
               {paid
                 ? "Bundled models are live in iTE Cloud inside rolling usage windows. Local models and BYOK providers remain available alongside iTE Pro."
                 : trialAvailable
-                  ? "Free includes local models and your own keys. Start a Bachs-backed free month to try managed bundled access."
+                  ? "Free includes local models and your own keys. Start the Bachs-backed first-month intro to try managed bundled access."
                   : "Free includes local models and your own keys. iTE Pro adds managed bundled access in 30-day passes."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
@@ -383,7 +383,7 @@ export function BillingPage() {
                   {checkoutPending
                     ? "Opening checkout..."
                     : trialAvailable
-                      ? "Start free month"
+                      ? "Start intro offer"
                       : "Buy 30 days of Pro"}
                 </span>
                 <span className="button-shine" />
@@ -407,11 +407,11 @@ export function BillingPage() {
               <dt>Price</dt>
               <dd>
                 {trialActive
-                  ? "First month free"
+                  ? "First-month intro"
                   : paid
                     ? "$8/month"
                     : trialAvailable
-                      ? "First month free, then $8 for 30 days"
+                      ? "First-month intro, then $8 for 30 days"
                       : "$8 for 30 days of Pro access"}
               </dd>
             </div>
