@@ -31,6 +31,7 @@ export function PricingPage() {
   const [authState, setAuthState] = useState<AuthState>({ kind: "loading" });
   const [checkoutPending, setCheckoutPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkoutNotice, setCheckoutNotice] = useState<string | null>(null);
 
   const checkoutIntent = new URLSearchParams(location.search).get("checkout");
   const loginRedirect = useMemo(
@@ -115,6 +116,17 @@ export function PricingPage() {
       return;
     }
 
+    if (!plan.billingConfigured || !plan.checkoutEnabled) {
+      setError(null);
+      setCheckoutNotice(
+        plan.checkoutUnavailableMessage ??
+          (plan.billingConfigured
+            ? "Checkout is not open yet. Please check back soon."
+            : "Billing is not configured yet. Please check back soon."),
+      );
+      return;
+    }
+
     if (authState.kind === "signed-out") {
       navigate(`/login?mode=sign-up&redirect=${encodeURIComponent(loginRedirect)}`);
       return;
@@ -128,6 +140,7 @@ export function PricingPage() {
     try {
       setCheckoutPending(true);
       setError(null);
+      setCheckoutNotice(null);
       const origin = window.location.origin;
       const rawRequestedPlan =
         checkoutIntent === "ite_pro_monthly" || checkoutIntent === "ite_pro_trial"
@@ -165,6 +178,7 @@ export function PricingPage() {
   useEffect(() => {
     if (
       (checkoutIntent !== "ite_pro_monthly" && checkoutIntent !== "ite_pro_trial") ||
+      !plan ||
       authState.kind !== "free" ||
       checkoutPending
     ) {
@@ -172,7 +186,7 @@ export function PricingPage() {
     }
 
     void startCheckout();
-  }, [authState.kind, checkoutIntent, checkoutPending]);
+  }, [authState.kind, checkoutIntent, checkoutPending, plan]);
 
   const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
   const ctaLabel = trialAvailable ? "Start intro offer" : "Buy 30 days";
@@ -256,6 +270,7 @@ export function PricingPage() {
             </div>
           </div>
 
+          {checkoutNotice ? <p className="pricing-notice">{checkoutNotice}</p> : null}
           {error ? <p className="error">{error}</p> : null}
 
           <div className="pricing-cta-wrapper">
@@ -263,7 +278,7 @@ export function PricingPage() {
               className="button pricing-cta"
               data-magnetic
               data-ripple
-              disabled={checkoutPending || !plan?.billingConfigured}
+              disabled={checkoutPending || !plan}
               onClick={() => void startCheckout()}
               type="button"
             >
@@ -272,7 +287,11 @@ export function PricingPage() {
               </span>
               <span className="button-shine" />
             </button>
-            {!plan?.billingConfigured ? <span className="coming-soon-tag">Billing unavailable</span> : null}
+            {plan && (!plan.billingConfigured || !plan.checkoutEnabled) ? (
+              <span className="coming-soon-tag">
+                {plan.billingConfigured ? "Checkout paused" : "Billing unavailable"}
+              </span>
+            ) : null}
           </div>
 
           {authState.kind === "signed-out" ? (

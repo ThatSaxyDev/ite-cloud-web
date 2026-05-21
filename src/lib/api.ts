@@ -51,6 +51,8 @@ export const api = {
         displayName: string;
         provider: "bachs";
         billingConfigured: boolean;
+        checkoutEnabled: boolean;
+        checkoutUnavailableMessage?: string;
         trialOffer: {
           planKey: "ite_pro_trial";
           interval: "month";
