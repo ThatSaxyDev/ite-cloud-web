@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { api } from "@/lib/api";
+import { api, type Entitlements } from "@/lib/api";
 
 type UsageState = {
   usage: {
@@ -14,12 +14,7 @@ type UsageState = {
     sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
     thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
   };
-  entitlements: {
-    planKey: string;
-    bundledInference: boolean;
-    proAccess: boolean;
-    updatedAt: string | null;
-  };
+  entitlements: Entitlements;
 };
 
 function normalizeMeridiem(value: string) {

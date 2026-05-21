@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { api } from "@/lib/api";
+import { api, type Entitlements } from "@/lib/api";
 
 type BillingState = {
   subscription: {
@@ -13,12 +13,7 @@ type BillingState = {
     canceledAt: string | null;
     endedAt: string | null;
   } | null;
-  entitlements: {
-    planKey: string;
-    bundledInference: boolean;
-    proAccess: boolean;
-    updatedAt: string | null;
-  };
+  entitlements: Entitlements;
   trial: {
     startedAt: string | null;
     usedAt: string | null;
