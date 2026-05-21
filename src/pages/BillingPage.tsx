@@ -268,6 +268,19 @@ export function BillingPage() {
   async function handleUpgrade() {
     try {
       setCheckoutPending(true);
+      setError(null);
+      const catalog = await api.pricingCatalog();
+      const plan = catalog.plans.find((item) => item.planKey === "ite_pro_monthly");
+      if (!plan?.billingConfigured || !plan.checkoutEnabled) {
+        setError(
+          plan?.checkoutUnavailableMessage ??
+            (plan?.billingConfigured
+              ? "Checkout is not open yet. Please check back soon."
+              : "Billing is not configured yet. Please check back soon."),
+        );
+        setCheckoutPending(false);
+        return;
+      }
       const payload = await api.createCheckout(
         billing?.trial.available ? "ite_pro_trial" : "ite_pro_monthly",
       );

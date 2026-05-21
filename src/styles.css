@@ -2270,6 +2270,16 @@ code {
     width: 100%;
 }
 
+.pricing-notice {
+    margin: 0;
+    border: 1px solid rgba(255, 166, 87, 0.45);
+    background: rgba(255, 166, 87, 0.08);
+    color: var(--text-soft);
+    padding: 12px 14px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
 .pricing-cta-wrapper {
     position: relative;
     display: inline-block;
