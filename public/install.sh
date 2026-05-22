@@ -20,19 +20,50 @@ ITE_BIN_DIR="${ITE_MANAGED_ROOT}/bin"
 ITE_EXECUTABLE="${ITE_BIN_DIR}/ite"
 
 # ── Terminal helpers ─────────────────────────────────────────
-BOLD=""; DIM=""; GREEN=""; YELLOW=""; RED=""; CYAN=""; RESET=""
+BOLD=""; DIM=""; GREEN=""; YELLOW=""; RED=""; CYAN=""; BLUE=""; MAGENTA=""; RESET=""
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
     BOLD="\033[1m"; DIM="\033[2m"
     GREEN="\033[32m"; YELLOW="\033[33m"
     RED="\033[31m"; CYAN="\033[36m"
+    BLUE="\033[34m"; MAGENTA="\033[35m"
     RESET="\033[0m"
 fi
 
-info()    { printf "${DIM}[iTE]${RESET} %s\n" "$*"; }
-success() { printf "${GREEN}[iTE]${RESET} %s\n" "$*"; }
-warn()    { printf "${YELLOW}[iTE]${RESET} %s\n" "$*" >&2; }
-error()   { printf "${RED}[iTE]${RESET} %s\n" "$*" >&2; }
-step()    { printf "${BOLD}→${RESET} %s\n" "$*" >&2; }
+info()    { printf "  ${DIM}%s${RESET}\n" "$*"; }
+success() { printf "  ${GREEN}✓${RESET} %s\n" "$*"; }
+warn()    { printf "  ${YELLOW}!${RESET} %s\n" "$*" >&2; }
+error()   { printf "  ${RED}✗${RESET} %s\n" "$*" >&2; }
+heading() { printf "  ${BOLD}${CYAN}%s${RESET}\n" "$*"; }
+
+# ── Spinner ──────────────────────────────────────────────────
+# Runs while a background PID is alive, shows a braille spinner.
+spinner() {
+    local pid="$1"
+    local msg="$2"
+    local frames="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏"
+    while kill -0 "$pid" 2>/dev/null; do
+        for f in $frames; do
+            printf "\r  ${BOLD}${CYAN}%s${RESET} ${DIM}%s${RESET}" "$f" "$msg" >&2
+            sleep 0.1
+        done
+    done
+    wait "$pid"
+    return $?
+}
+
+# ── ASCII Banner ─────────────────────────────────────────────
+show_banner() {
+    printf "${BOLD}${CYAN}"
+    printf "  ██╗ ████████╗ ███████╗\n"
+    printf "  ╚═╝ ╚══██╔══╝ ██╔════╝\n"
+    printf "  ██╗    ██║    █████╗  \n"
+    printf "  ██║    ██║    ██╔══╝  \n"
+    printf "  ██║    ██║    ███████╗\n"
+    printf "  ╚═╝    ╚═╝    ╚══════╝"
+    printf "${RESET}\n"
+    printf "\n"
+    printf "\n"
+}
 
 # ── OS / Arch detection ──────────────────────────────────────
 detect_target() {
@@ -77,15 +108,13 @@ check_deps() {
 
 # ── Fetch manifest ───────────────────────────────────────────
 fetch_manifest() {
-    step "Fetching iTE release manifest..."
-
     local manifest_json
     manifest_json=$(curl -fsSL --connect-timeout 10 --max-time 30 "$ITE_MANIFEST_URL" 2>/dev/null) || {
-        error "Could not reach release server: $ITE_MANIFEST_URL"
+        error "Could not reach release server"
+        error "URL: $ITE_MANIFEST_URL"
         error "Check your internet connection or try again later."
         exit 1
     }
-
     echo "$manifest_json"
 }
 
@@ -94,27 +123,25 @@ check_existing() {
     local target="$1"
     local version="$2"
 
-    # Check for managed install
     if [ -f "$ITE_EXECUTABLE" ]; then
         local installed_version
         installed_version=$("$ITE_EXECUTABLE" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
         if [ "$installed_version" = "$version" ]; then
-            success "iTE v${version} is already installed at ${ITE_EXECUTABLE}"
+            success "iTE v${version} is already installed"
+            info "Location: ${ITE_EXECUTABLE}"
             ensure_path
             exit 0
         elif [ -n "$installed_version" ]; then
-            info "Updating iTE from v${installed_version} to v${version}..."
+            info "Updating from v${installed_version} → v${version}"
         else
-            info "Repairing iTE install..."
+            info "Repairing install..."
         fi
     fi
 
-    # Check for pipx/uv installs (do not touch them)
     for alt in pipx uv; do
         if command -v "$alt" >/dev/null 2>&1; then
             if "$alt" list 2>/dev/null | grep -q "ite-agent"; then
-                info "Existing $alt install detected. This installer will not modify it."
-                info "Managed install will be at: $ITE_EXECUTABLE"
+                info "Existing ${alt} install detected — will not modify it"
             fi
         fi
     done
@@ -125,42 +152,52 @@ download_artifact() {
     local url="$1"
     local sha256_expected="$2"
     local archive_path="$3"
+    local label="$4"
 
-    step "Downloading iTE..."
+    printf "  ${DIM}Downloading${RESET} ${BOLD}${label}${RESET}\n" >&2
 
     curl -fsSL --connect-timeout 10 --max-time 300 \
-        --progress-bar \
         -o "$archive_path" \
-        "$url" || {
-        error "Download failed."
+        "$url" &
+    local curl_pid=$!
+
+    spinner "$curl_pid" "Downloading..."
+
+    local exit_code=$?
+    if [ "$exit_code" -ne 0 ]; then
+        printf "\r  ${RED}✗${RESET} ${DIM}Download failed${RESET}\n" >&2
         rm -f "$archive_path"
         exit 1
-    }
+    fi
+
+    local size
+    size=$(ls -lh "$archive_path" 2>/dev/null | awk '{print $5}')
+    printf "\r  ${GREEN}✓${RESET} ${DIM}Downloaded${RESET} ${size}\n" >&2
 
     if [ -n "$sha256_expected" ] && command -v shasum >/dev/null 2>&1; then
-        step "Verifying checksum..."
+        printf "  ${DIM}Verifying checksum...${RESET}" >&2
         local sha256_actual
         sha256_actual=$(shasum -a 256 "$archive_path" | awk '{print $1}')
         if [ "$sha256_actual" != "$sha256_expected" ]; then
-            error "Checksum verification failed!"
+            printf "\r  ${RED}✗${RESET} ${DIM}Checksum mismatch${RESET}\n" >&2
             error "Expected: $sha256_expected"
             error "Got:      $sha256_actual"
             rm -f "$archive_path"
             exit 1
         fi
+        printf "\r  ${GREEN}✓${RESET} ${DIM}Checksum verified${RESET}\n" >&2
     elif [ -n "$sha256_expected" ] && command -v sha256sum >/dev/null 2>&1; then
-        step "Verifying checksum..."
+        printf "  ${DIM}Verifying checksum...${RESET}" >&2
         local sha256_actual
         sha256_actual=$(sha256sum "$archive_path" | awk '{print $1}')
         if [ "$sha256_actual" != "$sha256_expected" ]; then
-            error "Checksum verification failed!"
+            printf "\r  ${RED}✗${RESET} ${DIM}Checksum mismatch${RESET}\n" >&2
             error "Expected: $sha256_expected"
             error "Got:      $sha256_actual"
             rm -f "$archive_path"
             exit 1
         fi
-    else
-        warn "Cannot verify checksum (shasum not found). Skipping verification."
+        printf "\r  ${GREEN}✓${RESET} ${DIM}Checksum verified${RESET}\n" >&2
     fi
 }
 
@@ -169,8 +206,6 @@ install_artifact() {
     local archive_path="$1"
     local archive_type="$2"
     local executable_name="$3"
-
-    step "Installing to ${ITE_BIN_DIR}..."
 
     mkdir -p "$ITE_BIN_DIR"
 
@@ -185,26 +220,22 @@ install_artifact() {
         exit 1
     fi
 
-    # Find the extracted directory (ite-{version}-{target}/)
     local extracted_dir
     extracted_dir=$(find "$tmp_extract" -maxdepth 1 -mindepth 1 -type d | head -1)
 
     if [ ! -d "$extracted_dir" ]; then
-        error "Archive extraction produced unexpected layout."
+        error "Archive extraction produced unexpected layout"
         exit 1
     fi
 
-    # Copy all files to managed bin directory
     rm -rf "${ITE_BIN_DIR:?}/"*
     cp -R "$extracted_dir"/* "$ITE_BIN_DIR"/
-
-    # Ensure binary is executable
     chmod +x "$ITE_EXECUTABLE" 2>/dev/null || true
 
-    # Version check
     local installed_version
     installed_version=$("$ITE_EXECUTABLE" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
-    success "iTE v${installed_version:-unknown} installed to ${ITE_EXECUTABLE}"
+    success "Installed iTE v${installed_version:-unknown}"
+    info "Location: ${ITE_EXECUTABLE}"
 }
 
 # ── PATH management ──────────────────────────────────────────
@@ -214,10 +245,9 @@ ensure_path() {
     fi
 
     if echo "$PATH" | tr ':' '\n' | grep -qxF "$ITE_BIN_DIR"; then
-        return  # already in PATH
+        return
     fi
 
-    # Determine shell profile
     local shell_profile=""
     local shell_name
     shell_name=$(basename "${SHELL:-/bin/sh}")
@@ -249,13 +279,11 @@ ensure_path() {
     local path_line="export PATH=\"\$HOME/.ite/bin:\$PATH\""
 
     if [ -n "$shell_profile" ]; then
-        # Check if already present
         if grep -qF ".ite/bin" "$shell_profile" 2>/dev/null; then
             return
         fi
-
         printf '\n# iTE\n%s\n' "$path_line" >> "$shell_profile"
-        success "Added iTE to PATH in ${shell_profile}"
+        success "Added to PATH (${shell_profile})"
         info "Restart your terminal or run: source ${shell_profile}"
     else
         warn "Could not detect shell profile to update PATH."
@@ -263,27 +291,22 @@ ensure_path() {
         echo "  Add this to your shell profile:"
         echo "  ${BOLD}${path_line}${RESET}"
         echo ""
-        echo "  Then restart your terminal or run:"
-        echo "  ${BOLD}export PATH=\"\$HOME/.ite/bin:\$PATH\"${RESET}"
     fi
 }
 
 # ── Main ─────────────────────────────────────────────────────
 main() {
-    echo ""
-    printf "${BOLD}${CYAN}iTE${RESET} ${DIM}Installer${RESET}\n"
-    echo ""
+    show_banner
 
     check_deps
 
     local target
     target=$(detect_target)
-    info "Detected: ${target}"
 
     local manifest_json
     manifest_json=$(fetch_manifest)
 
-    # Parse manifest with python if available, fallback to grep/sed
+    # Parse manifest
     local version url sha256 archive_type executable_name
     if command -v python3 >/dev/null 2>&1; then
         local parsed_tmp
@@ -308,28 +331,26 @@ print(
             read -r executable_name
         } < "$parsed_tmp"
         rm -f "$parsed_tmp"
+    elif command -v jq >/dev/null 2>&1; then
+        version=$(echo "$manifest_json" | jq -r '.version')
+        url=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].url")
+        sha256=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].sha256")
+        archive_type=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].archiveType")
+        executable_name=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].executable")
     else
-        # Fallback: jq if available
-        if command -v jq >/dev/null 2>&1; then
-            version=$(echo "$manifest_json" | jq -r '.version')
-            url=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].url")
-            sha256=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].sha256")
-            archive_type=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].archiveType")
-            executable_name=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].executable")
-        else
-            error "Need python3 or jq to parse the release manifest."
-            exit 1
-        fi
+        error "Need python3 or jq to parse the release manifest"
+        exit 1
     fi
 
     if [ -z "$url" ] || [ "$url" = "null" ]; then
         error "No build available for: ${target}"
-        error "Supported targets: darwin-arm64, darwin-x64, linux-x64"
+        error "Supported: darwin-arm64, darwin-x64, linux-x64"
         exit 1
     fi
 
-    # Allow version pinning
     version="${ITE_INSTALL_VERSION:-$version}"
+
+    success "Detected ${BOLD}${target}${RESET}"
 
     check_existing "$target" "$version"
 
@@ -337,21 +358,18 @@ print(
     [ "$archive_type" = "zip" ] && archive_ext="zip"
     local archive_name="ite-${version}-${target}.${archive_ext}"
     local archive_path="/tmp/${archive_name}"
+    local label="iTE v${version} (${target})"
 
-    # Clean up any previous download
     rm -f "$archive_path"
 
-    download_artifact "$url" "$sha256" "$archive_path"
+    download_artifact "$url" "$sha256" "$archive_path" "$label"
     install_artifact "$archive_path" "$archive_type" "$executable_name"
     ensure_path
 
-    # Clean up
     rm -f "$archive_path"
 
     echo ""
-    success "iTE is ready!"
-    echo ""
-    info "Run: ${BOLD}ite${RESET}"
+    heading "Ready! Run: ${BOLD}ite${RESET}"
     echo ""
 }
 
