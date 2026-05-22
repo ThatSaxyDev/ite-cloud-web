@@ -1,10 +1,10 @@
 {
-  "version": "0.0.71",
-  "generated_at": "2026-05-22T17:09:43.862928+00:00",
+  "version": "0.0.72",
+  "generated_at": "2026-05-22T17:35:53.531062+00:00",
   "assets": {
     "darwin-arm64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.0.71/ite-0.0.71-darwin-arm64.tar.gz",
-      "sha256": "1eabb3fca110561346cc8fece42d8df0ce974421eb840949aabfbc452fee50be",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.0.72/ite-0.0.72-darwin-arm64.tar.gz",
+      "sha256": "76839d599a1b044e61b678a0dcb369c746df16c37c9ccc8bf93893e08b70276b",
       "archiveType": "tar.gz",
       "executable": "ite",
       "label": "macOS Apple Silicon"
