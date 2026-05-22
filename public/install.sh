@@ -29,11 +29,11 @@ if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
     RESET="\033[0m"
 fi
 
-info()    { printf "  ${DIM}%s${RESET}\n" "$*"; }
-success() { printf "  ${GREEN}✓${RESET} %s\n" "$*"; }
-warn()    { printf "  ${YELLOW}!${RESET} %s\n" "$*" >&2; }
-error()   { printf "  ${RED}✗${RESET} %s\n" "$*" >&2; }
-heading() { printf "  ${BOLD}${CYAN}%s${RESET}\n" "$*"; }
+info()    { printf "  ${DIM}%b${RESET}\n" "$*"; }
+success() { printf "  ${GREEN}✓${RESET} %b\n" "$*"; }
+warn()    { printf "  ${YELLOW}!${RESET} %b\n" "$*" >&2; }
+error()   { printf "  ${RED}✗${RESET} %b\n" "$*" >&2; }
+heading() { printf "  ${BOLD}${CYAN}%b${RESET}\n" "$*"; }
 
 # ── Spinner ──────────────────────────────────────────────────
 # Runs while a background PID is alive, shows a braille spinner.
