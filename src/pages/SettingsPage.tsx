@@ -30,7 +30,7 @@ const NEXT_STEPS = [
 
 export function SettingsPage() {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
-  const [installMethod, setInstallMethod] = useState<InstallMethod>("pipx");
+  const [installMethod, setInstallMethod] = useState<InstallMethod>("curl");
   const [installTransition, setInstallTransition] = useState<{
     slots: InstallReelSlot[];
   } | null>(null);
@@ -106,6 +106,16 @@ export function SettingsPage() {
             aria-label="Choose install method"
             role="tablist"
           >
+            <button
+              aria-selected={installMethod === "curl"}
+              className="onboarding-install-toggle"
+              data-active={installMethod === "curl"}
+              onClick={() => handleInstallMethodChange("curl")}
+              role="tab"
+              type="button"
+            >
+              curl
+            </button>
             <button
               aria-selected={installMethod === "pipx"}
               className="onboarding-install-toggle"

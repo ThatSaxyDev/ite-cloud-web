@@ -410,13 +410,17 @@ export function DocsPage() {
             <section className="docs-section" id="install">
               <h2 data-scramble="true">Install</h2>
               <p>
-                The fastest way to install iTE is through <strong>pipx</strong>.
-                It keeps iTE isolated from your system Python and gives you the{" "}
-                <code>ite</code> command globally.
+                The fastest way to install iTE is with a single{" "}
+                <strong>curl</strong> command. If you prefer package managers,{" "}
+                <strong>pipx</strong> and <strong>uv</strong> are also available.
               </p>
 
               <CodeBlock
-                label="pipx (recommended)"
+                label="curl"
+                code="curl -fsSL https://ite.kiishi.space/install.sh | sh"
+              />
+              <CodeBlock
+                label="pipx"
                 code="pipx install ite-agent"
               />
               <CodeBlock label="uv" code="uv tool install ite-agent" />

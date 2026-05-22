@@ -35,7 +35,7 @@ const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
 function HomePage() {
   const [ctaLabel, setCtaLabel] = useState("Get started");
   const [ctaHref, setCtaHref] = useState("/login?mode=sign-up");
-  const [installMethod, setInstallMethod] = useState<InstallMethod>("pipx");
+  const [installMethod, setInstallMethod] = useState<InstallMethod>("curl");
   const [installCopied, setInstallCopied] = useState(false);
   const [installTransition, setInstallTransition] = useState<{
     slots: InstallReelSlot[];
@@ -165,6 +165,16 @@ function HomePage() {
                       aria-label="Choose install method"
                       role="tablist"
                     >
+                      <button
+                        aria-selected={installMethod === "curl"}
+                        className="hero-command-toggle"
+                        data-active={installMethod === "curl"}
+                        onClick={() => handleInstallMethodChange("curl")}
+                        role="tab"
+                        type="button"
+                      >
+                        curl
+                      </button>
                       <button
                         aria-selected={installMethod === "pipx"}
                         className="hero-command-toggle"

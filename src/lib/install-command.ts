@@ -1,4 +1,5 @@
 export const INSTALL_COMMANDS = {
+  curl: "curl -fsSL https://ite.kiishi.space/install.sh | sh",
   pipx: "pipx install ite-agent",
   uv: "uv tool install ite-agent"
 } as const;
