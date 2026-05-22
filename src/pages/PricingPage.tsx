@@ -189,7 +189,7 @@ export function PricingPage() {
   }, [authState.kind, checkoutIntent, checkoutPending, plan]);
 
   const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
-  const ctaLabel = trialAvailable ? "Start intro offer" : "Buy 30 days";
+  const ctaLabel = trialAvailable ? "Start Pro intro" : "Subscribe to Pro";
 
   return (
     <main className="pricing-page">
@@ -283,7 +283,7 @@ export function PricingPage() {
               type="button"
             >
               <span className="button-text" data-scramble>
-                {checkoutPending ? "Opening checkout..." : ctaLabel}
+                {checkoutPending ? "Opening secure checkout..." : ctaLabel}
               </span>
               <span className="button-shine" />
             </button>
