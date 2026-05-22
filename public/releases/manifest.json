@@ -1,9 +1,9 @@
 {
   "version": "0.0.69",
-  "generated_at": "2026-05-22T13:28:58.310859+00:00",
+  "generated_at": "2026-05-22T13:46:53.067902+00:00",
   "assets": {
     "darwin-arm64": {
-      "url": "https://github.com/kiishidavid/ite/releases/download/v0.0.69/ite-0.0.69-darwin-arm64.tar.gz",
+      "url": "https://github.com/ThatSaxyDev/ite/releases/download/v0.0.69/ite-0.0.69-darwin-arm64.tar.gz",
       "sha256": "8ac7969053d83911c40939ec91fe955f92283b366d7c465cc6c925b5fa50ac98",
       "archiveType": "tar.gz",
       "executable": "ite",
