@@ -122,15 +122,24 @@ fetch_manifest() {
 check_existing() {
     local target="$1"
     local version="$2"
+    local sha256="$3"
+    local stamp_file="${ITE_MANAGED_ROOT}/.sha256"
 
     if [ -f "$ITE_EXECUTABLE" ]; then
         local installed_version
         installed_version=$("$ITE_EXECUTABLE" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
         if [ "$installed_version" = "$version" ]; then
-            success "iTE v${version} is already installed"
-            info "Location: ${ITE_EXECUTABLE}"
-            ensure_path
-            exit 0
+            local installed_sha256=""
+            if [ -f "$stamp_file" ]; then
+                installed_sha256=$(head -1 "$stamp_file")
+            fi
+            if [ "$installed_sha256" = "$sha256" ]; then
+                success "iTE v${version} is already installed"
+                info "Location: ${ITE_EXECUTABLE}"
+                ensure_path
+                exit 0
+            fi
+            info "v${version} already installed, but build differs — refreshing"
         elif [ -n "$installed_version" ]; then
             info "Updating from v${installed_version} → v${version}"
         else
@@ -206,6 +215,7 @@ install_artifact() {
     local archive_path="$1"
     local archive_type="$2"
     local executable_name="$3"
+    local sha256="$4"
 
     mkdir -p "$ITE_BIN_DIR"
 
@@ -236,6 +246,10 @@ install_artifact() {
     installed_version=$("$ITE_EXECUTABLE" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
     success "Installed iTE v${installed_version:-unknown}"
     info "Location: ${ITE_EXECUTABLE}"
+
+    if [ -n "$sha256" ]; then
+        echo "$sha256" > "${ITE_MANAGED_ROOT}/.sha256"
+    fi
 }
 
 # ── PATH management ──────────────────────────────────────────
@@ -352,7 +366,7 @@ print(
 
     success "Detected ${BOLD}${target}${RESET}"
 
-    check_existing "$target" "$version"
+    check_existing "$target" "$version" "$sha256"
 
     local archive_ext="tar.gz"
     [ "$archive_type" = "zip" ] && archive_ext="zip"
@@ -363,7 +377,7 @@ print(
     rm -f "$archive_path"
 
     download_artifact "$url" "$sha256" "$archive_path" "$label"
-    install_artifact "$archive_path" "$archive_type" "$executable_name"
+    install_artifact "$archive_path" "$archive_type" "$executable_name" "$sha256"
     ensure_path
 
     rm -f "$archive_path"
