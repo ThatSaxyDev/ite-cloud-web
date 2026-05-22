@@ -62,14 +62,14 @@ detect_target() {
 
 # ── Dependency checks ────────────────────────────────────────
 check_deps() {
-    local missing=()
+    local missing=""
     for cmd in curl tar; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
-            missing+=("$cmd")
+            missing="$missing $cmd"
         fi
     done
-    if [ ${#missing[@]} -gt 0 ]; then
-        error "Missing required tools: ${missing[*]}"
+    if [ -n "$missing" ]; then
+        error "Missing required tools:${missing}"
         error "Please install them and try again."
         exit 1
     fi
@@ -286,8 +286,9 @@ main() {
     # Parse manifest with python if available, fallback to grep/sed
     local version url sha256 archive_type executable_name
     if command -v python3 >/dev/null 2>&1; then
-        read -r version url sha256 archive_type executable_name < <(
-            echo "$manifest_json" | python3 -c "
+        local parsed_tmp
+        parsed_tmp=$(mktemp)
+        echo "$manifest_json" | python3 -c "
 import json, sys
 m = json.load(sys.stdin)
 a = m['assets'].get('$target', {})
@@ -297,10 +298,11 @@ print(
     a.get('sha256', ''),
     a.get('archiveType', 'tar.gz'),
     a.get('executable', 'ite'),
-    sep='\n'
-)
-"
-        )
+    sep='\n')
+" > "$parsed_tmp"
+        IFS='
+' read -r version url sha256 archive_type executable_name < "$parsed_tmp"
+        rm -f "$parsed_tmp"
     else
         # Fallback: jq if available
         if command -v jq >/dev/null 2>&1; then
