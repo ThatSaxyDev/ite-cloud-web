@@ -394,10 +394,10 @@ export function BillingPage() {
               >
                 <span className="button-text" data-scramble>
                   {checkoutPending
-                    ? "Opening checkout..."
+                    ? "Opening secure checkout..."
                     : trialAvailable
-                      ? "Start intro offer"
-                      : "Buy 30 days of Pro"}
+                      ? "Start Pro intro"
+                      : "Subscribe to Pro"}
                 </span>
                 <span className="button-shine" />
               </button>
