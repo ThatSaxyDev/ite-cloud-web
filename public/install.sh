@@ -32,7 +32,7 @@ info()    { printf "${DIM}[iTE]${RESET} %s\n" "$*"; }
 success() { printf "${GREEN}[iTE]${RESET} %s\n" "$*"; }
 warn()    { printf "${YELLOW}[iTE]${RESET} %s\n" "$*" >&2; }
 error()   { printf "${RED}[iTE]${RESET} %s\n" "$*" >&2; }
-step()    { printf "${BOLD}→${RESET} %s\n" "$*"; }
+step()    { printf "${BOLD}→${RESET} %s\n" "$*" >&2; }
 
 # ── OS / Arch detection ──────────────────────────────────────
 detect_target() {
@@ -298,10 +298,15 @@ print(
     a.get('sha256', ''),
     a.get('archiveType', 'tar.gz'),
     a.get('executable', 'ite'),
-    sep='\n')
+    sep=chr(10))
 " > "$parsed_tmp"
-        IFS='
-' read -r version url sha256 archive_type executable_name < "$parsed_tmp"
+        {
+            read -r version
+            read -r url
+            read -r sha256
+            read -r archive_type
+            read -r executable_name
+        } < "$parsed_tmp"
         rm -f "$parsed_tmp"
     else
         # Fallback: jq if available
