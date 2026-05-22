@@ -19,7 +19,7 @@ ITE_MANAGED_ROOT="${ITE_INSTALL_DIR:-$HOME/.ite}"
 ITE_APP_DIR="${ITE_MANAGED_ROOT}/app"
 ITE_BIN_DIR="${ITE_MANAGED_ROOT}/bin"
 ITE_EXECUTABLE="${ITE_BIN_DIR}/ite"
-ITE_APP_EXECUTABLE="${ITE_APP_DIR}/ite"
+ITE_APP_EXECUTABLE="${ITE_APP_DIR}/ite/ite"
 
 # ── Terminal helpers ─────────────────────────────────────────
 BOLD=""; DIM=""; GREEN=""; YELLOW=""; RED=""; CYAN=""; BLUE=""; MAGENTA=""; RESET=""
@@ -247,8 +247,8 @@ install_artifact() {
     # Copy extracted directory contents into ITE_APP_DIR
     cp -R "$extracted_dir"/* "$ITE_APP_DIR"/
 
-    # Create symlink for PATH: ~/.ite/bin/ite -> ../app/ite
-    ln -sf ../app/ite "$ITE_EXECUTABLE"
+    # Create symlink for PATH: ~/.ite/bin/ite -> ../app/ite/ite
+    ln -sf ../app/ite/ite "$ITE_EXECUTABLE"
     chmod +x "$ITE_APP_EXECUTABLE" 2>/dev/null || true
 
     local installed_version
