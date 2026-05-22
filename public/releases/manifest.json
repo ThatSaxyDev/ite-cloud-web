@@ -1,0 +1,13 @@
+{
+  "version": "0.0.69",
+  "generated_at": "2026-05-22T12:40:39.315125+00:00",
+  "assets": {
+    "darwin-arm64": {
+      "url": "https://github.com/kiishidavid/ite/releases/download/v0.0.69/ite-0.0.69-darwin-arm64.tar.gz",
+      "sha256": "b9e86e4afd3c2d2d5e9716de0295cb84cdb513fc499a98aaada6685c64e9e878",
+      "archiveType": "tar.gz",
+      "executable": "ite",
+      "label": "macOS Apple Silicon"
+    }
+  }
+}
