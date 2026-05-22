@@ -628,6 +628,13 @@ button {
     background: transparent;
     font-family: var(--font-mono);
     font-size: 0.96rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.hero-command-card code::-webkit-scrollbar {
+    display: none;
 }
 
 .hero-command-code {
