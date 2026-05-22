@@ -156,8 +156,8 @@ download_artifact() {
 
     printf "  ${DIM}Downloading${RESET} ${BOLD}${label}${RESET}\n" >&2
 
-    curl -fsSL --connect-timeout 10 --max-time 300 \
-        -o "$archive_path" \
+    curl -fsSL --connect-timeout 10 --max-time 600 --retry 2 --retry-delay 2 \
+        -C - -o "$archive_path" \
         "$url" &
     local curl_pid=$!
 
