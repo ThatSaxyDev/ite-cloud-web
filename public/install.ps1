@@ -163,8 +163,10 @@ function Add-ToPath {
         return
     }
 
-    $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User") ?? ""
-    $currentMachinePath = [Environment]::GetEnvironmentVariable("Path", "Machine") ?? ""
+    $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if ($null -eq $currentUserPath) { $currentUserPath = "" }
+    $currentMachinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+    if ($null -eq $currentMachinePath) { $currentMachinePath = "" }
 
     if ($currentUserPath -like "*$BinDir*" -or $currentMachinePath -like "*$BinDir*") {
         return  # Already in PATH
