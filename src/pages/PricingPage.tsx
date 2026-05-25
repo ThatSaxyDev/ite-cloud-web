@@ -241,8 +241,6 @@ export function PricingPage() {
           <div className="pricing-plan-top">
             <div>
               <span className="pricing-plan-name">{cleanPlan?.displayName ?? "iTE Pro"}</span>
-              <strong>{trialAvailable ? (cleanPlan?.trialOffer.label ?? "First month free") : (cleanPlan?.accessPass.label ?? "$8/month")}</strong>
-              <p>Cancel anytime.</p>
             </div>
             <div className="pricing-price">
               <span>{trialAvailable ? "Free" : "$8"}</span>
