@@ -189,7 +189,27 @@ export function PricingPage() {
   }, [authState.kind, checkoutIntent, checkoutPending, plan]);
 
   const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
-  const ctaLabel = trialAvailable ? "Start Pro intro" : "Subscribe to Pro";
+  const ctaLabel = trialAvailable ? "Start free trial" : "Subscribe to Pro";
+
+  const cleanPlan = useMemo(() => {
+    if (!plan) return null;
+    return {
+      ...plan,
+      trialOffer: {
+        ...plan.trialOffer,
+        label: "First month free",
+      },
+      accessPass: {
+        ...plan.accessPass,
+        label: "$8/month",
+      },
+      includes: [
+        "Cloud coding models included",
+        "Local models always free",
+        "Your API keys still work",
+      ],
+    };
+  }, [plan]);
 
   return (
     <main className="pricing-page">
@@ -212,22 +232,21 @@ export function PricingPage() {
           <p className="sessions-kicker">Pricing</p>
           <h1>iTE Pro</h1>
           <p>
-            Start with a first-month intro, then use $8 renewable 30-day passes for
-            reliable access to bundled coding models. Usage is fair-use based,
-            and local models and BYOK providers stay yours.
+            Reliable access to cloud coding models. First month free, then $8/month.
+            Cancel anytime.
           </p>
         </div>
 
         <article className="pricing-plan">
           <div className="pricing-plan-top">
             <div>
-              <span className="pricing-plan-name">{plan?.displayName ?? "iTE Pro"}</span>
-              <strong>{trialAvailable ? (plan?.trialOffer.label ?? "First-month intro") : (plan?.accessPass.label ?? "30 days of Pro access")}</strong>
-              <p>{plan?.recurringPrice.label ?? "$8/month"} after the intro. Renew when you need it.</p>
+              <span className="pricing-plan-name">{cleanPlan?.displayName ?? "iTE Pro"}</span>
+              <strong>{trialAvailable ? (cleanPlan?.trialOffer.label ?? "First month free") : (cleanPlan?.accessPass.label ?? "$8/month")}</strong>
+              <p>{cleanPlan?.recurringPrice.label ?? "$8/month"} after first month. Cancel anytime.</p>
             </div>
             <div className="pricing-price">
-              <span>{trialAvailable ? "Intro" : "$8"}</span>
-              <em>{trialAvailable ? "first month" : "per 30 days"}</em>
+              <span>{trialAvailable ? "Free" : "$8"}</span>
+              <em>{trialAvailable ? "first month" : "per month"}</em>
             </div>
           </div>
 
@@ -236,11 +255,10 @@ export function PricingPage() {
           <div className="pricing-includes">
             <strong>Included</strong>
             <ul>
-              {(plan?.includes ?? [
-                "Bundled cloud models within 5-hour, weekly, and monthly fair-use windows",
-                "Local models remain available",
-                "Bring your own provider keys remain available",
-                "Renew month to month",
+              {(cleanPlan?.includes ?? [
+                "Cloud coding models included",
+                "Local models always free",
+                "Your API keys still work",
               ]).map((item) => (
                 <li key={item}>{item}</li>
               ))}
