@@ -201,7 +201,7 @@ export function PricingPage() {
       },
       accessPass: {
         ...plan.accessPass,
-        label: "$8/month",
+        label: "Pro",
       },
       includes: [
         "Cloud coding models included",
@@ -242,7 +242,7 @@ export function PricingPage() {
             <div>
               <span className="pricing-plan-name">{cleanPlan?.displayName ?? "iTE Pro"}</span>
               <strong>{trialAvailable ? (cleanPlan?.trialOffer.label ?? "First month free") : (cleanPlan?.accessPass.label ?? "$8/month")}</strong>
-              <p>{cleanPlan?.recurringPrice.label ?? "$8/month"} after first month. Cancel anytime.</p>
+              <p>Cancel anytime.</p>
             </div>
             <div className="pricing-price">
               <span>{trialAvailable ? "Free" : "$8"}</span>
