@@ -45,10 +45,11 @@ spinner() {
     local frames="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏"
     while kill -0 "$pid" 2>/dev/null; do
         for f in $frames; do
-            printf "\r  ${CYAN}%s${RESET} ${DIM}%s${RESET}" "$f" "$msg" >&2
+            printf "\r  %s %s" "$f" "$msg" >&2
             sleep 0.1
         done
     done
+    printf "\r%80s\r" "" >&2
     wait "$pid"
     return $?
 }
@@ -91,6 +92,26 @@ detect_target() {
     esac
 
     echo "${os}-${arch}"
+}
+
+# Convert target to human-friendly display name
+target_to_display() {
+    local target="$1"
+    local os="${target%-*}"
+    local arch="${target#*-}"
+
+    case "$os" in
+        darwin) os="macOS" ;;
+        linux)  os="Linux" ;;
+        win32)  os="Windows" ;;
+    esac
+
+    case "$arch" in
+        arm64) arch="Apple Silicon" ;;
+        x64)   arch="Intel" ;;
+    esac
+
+    echo "${os} ${arch}"
 }
 
 # ── Dependency checks ────────────────────────────────────────
@@ -165,50 +186,48 @@ download_artifact() {
     local archive_path="$3"
     local label="$4"
 
-    printf "  ${DIM}Downloading${RESET} ${label}\n" >&2
-
     curl -fsSL --connect-timeout 10 --max-time 600 --retry 2 --retry-delay 2 \
         -C - -o "$archive_path" \
         "$url" &
     local curl_pid=$!
 
-    spinner "$curl_pid" "Downloading..."
+    spinner "$curl_pid" "Downloading $label"
 
     local exit_code=$?
     if [ "$exit_code" -ne 0 ]; then
-        printf "\r  ${RED}✗${RESET} ${DIM}Download failed${RESET}\n" >&2
+        printf "\r  ${RED}✗${RESET} Download failed\n" >&2
         rm -f "$archive_path"
         exit 1
     fi
 
     local size
     size=$(ls -lh "$archive_path" 2>/dev/null | awk '{print $5}')
-    printf "\r  ${GREEN}✓${RESET} ${DIM}Downloaded${RESET} ${size}\n" >&2
+    printf "\r  ${GREEN}✓${RESET} Downloaded ${size}\n" >&2
 
     if [ -n "$sha256_expected" ] && command -v shasum >/dev/null 2>&1; then
-        printf "  ${DIM}Verifying checksum...${RESET}" >&2
+        printf "  Verifying checksum..." >&2
         local sha256_actual
         sha256_actual=$(shasum -a 256 "$archive_path" | awk '{print $1}')
         if [ "$sha256_actual" != "$sha256_expected" ]; then
-            printf "\r  ${RED}✗${RESET} ${DIM}Checksum mismatch${RESET}\n" >&2
+            printf "\r  ${RED}✗ Checksum mismatch\n" >&2
             error "Expected: $sha256_expected"
             error "Got:      $sha256_actual"
             rm -f "$archive_path"
             exit 1
         fi
-        printf "\r  ${GREEN}✓${RESET} ${DIM}Checksum verified${RESET}\n" >&2
+        printf "\r  ${GREEN}✓ Checksum verified\n" >&2
     elif [ -n "$sha256_expected" ] && command -v sha256sum >/dev/null 2>&1; then
-        printf "  ${DIM}Verifying checksum...${RESET}" >&2
+        printf "  Verifying checksum..." >&2
         local sha256_actual
         sha256_actual=$(sha256sum "$archive_path" | awk '{print $1}')
         if [ "$sha256_actual" != "$sha256_expected" ]; then
-            printf "\r  ${RED}✗${RESET} ${DIM}Checksum mismatch${RESET}\n" >&2
+            printf "\r  ${RED}✗ Checksum mismatch\n" >&2
             error "Expected: $sha256_expected"
             error "Got:      $sha256_actual"
             rm -f "$archive_path"
             exit 1
         fi
-        printf "\r  ${GREEN}✓${RESET} ${DIM}Checksum verified${RESET}\n" >&2
+        printf "\r  ${GREEN}✓ Checksum verified\n" >&2
     fi
 }
 
@@ -373,7 +392,9 @@ print(
 
     version="${ITE_INSTALL_VERSION:-$version}"
 
-    success "Detected ${target}"
+    local display_name
+    display_name=$(target_to_display "$target")
+    success "Detected ${display_name}"
 
     check_existing "$target" "$version" "$sha256"
 
@@ -381,7 +402,9 @@ print(
     [ "$archive_type" = "zip" ] && archive_ext="zip"
     local archive_name="ite-${version}-${target}.${archive_ext}"
     local archive_path="/tmp/${archive_name}"
-    local label="iTE v${version} (${target})"
+    local display_name
+    display_name=$(target_to_display "$target")
+    local label="iTE v${version} (${display_name})"
 
     rm -f "$archive_path"
 
