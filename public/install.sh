@@ -45,7 +45,7 @@ spinner() {
     local frames="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏"
     while kill -0 "$pid" 2>/dev/null; do
         for f in $frames; do
-            printf "\r  ${BOLD}${CYAN}%s${RESET} ${DIM}%s${RESET}" "$f" "$msg" >&2
+            printf "\r  ${CYAN}%s${RESET} ${DIM}%s${RESET}" "$f" "$msg" >&2
             sleep 0.1
         done
     done
@@ -165,7 +165,7 @@ download_artifact() {
     local archive_path="$3"
     local label="$4"
 
-    printf "  ${DIM}Downloading${RESET} ${BOLD}${label}${RESET}\n" >&2
+    printf "  ${DIM}Downloading${RESET} ${label}\n" >&2
 
     curl -fsSL --connect-timeout 10 --max-time 600 --retry 2 --retry-delay 2 \
         -C - -o "$archive_path" \
@@ -373,7 +373,7 @@ print(
 
     version="${ITE_INSTALL_VERSION:-$version}"
 
-    success "Detected ${BOLD}${target}${RESET}"
+    success "Detected ${target}"
 
     check_existing "$target" "$version" "$sha256"
 
@@ -392,7 +392,7 @@ print(
     rm -f "$archive_path"
 
     echo ""
-    heading "Ready! Run: ${BOLD}ite${RESET}"
+    heading "Ready! Run: ite"
     echo ""
 }
 
