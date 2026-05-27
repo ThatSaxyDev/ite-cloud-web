@@ -228,24 +228,22 @@ check_existing() {
     local stamp_file="${ITE_MANAGED_ROOT}/.sha256"
 
     if [ -f "$ITE_APP_EXECUTABLE" ]; then
-        local installed_version
-        installed_version=$("$ITE_APP_EXECUTABLE" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
-        if [ "$installed_version" = "$version" ]; then
-            local installed_sha256=""
-            if [ -f "$stamp_file" ]; then
-                installed_sha256=$(head -1 "$stamp_file")
-            fi
-            if [ "$installed_sha256" = "$sha256" ]; then
-                success "iTE ${BOLD}v${version}${RESET} is already installed"
-                location "$ITE_EXECUTABLE"
-                ensure_path
-                exit 0
-            fi
-            info "v${version} already installed, but build differs; refreshing"
-        elif [ -n "$installed_version" ]; then
-            info "Updating v${installed_version} to v${version}"
+        local installed_sha256=""
+        if [ -f "$stamp_file" ]; then
+            installed_sha256=$(head -1 "$stamp_file")
+        fi
+
+        if [ -n "$sha256" ] && [ "$installed_sha256" = "$sha256" ]; then
+            success "iTE ${BOLD}v${version}${RESET} is already installed"
+            location "$ITE_EXECUTABLE"
+            ensure_path
+            exit 0
+        fi
+
+        if [ -n "$installed_sha256" ]; then
+            info "Existing iTE build differs; refreshing"
         else
-            info "Repairing existing install"
+            info "Existing iTE install found; refreshing"
         fi
     fi
 
@@ -264,8 +262,19 @@ download_artifact() {
     local sha256_expected="$2"
     local archive_path="$3"
 
-    local curl_pid total_size
-    total_size=$(content_length "$url")
+    local curl_pid total_size total_size_tmp total_size_pid
+    total_size_tmp=$(mktemp)
+    content_length "$url" > "$total_size_tmp" &
+    total_size_pid=$!
+
+    if spinner "$total_size_pid" "Preparing download"; then
+        finish_spinner
+        total_size=$(cat "$total_size_tmp")
+    else
+        finish_spinner
+        total_size=""
+    fi
+    rm -f "$total_size_tmp"
 
     curl -fsSL --connect-timeout 10 --max-time 1800 --retry 3 --retry-delay 5 \
         -C - -o "$archive_path" \
@@ -370,8 +379,7 @@ install_artifact() {
         exit 1
     fi
 
-    local install_pid installed_version_tmp
-    installed_version_tmp=$(mktemp)
+    local install_pid
     (
         rm -rf "${ITE_APP_DIR:?}"
         mkdir -p "$ITE_APP_DIR"
@@ -387,10 +395,6 @@ install_artifact() {
         if [ -n "$sha256" ]; then
             echo "$sha256" > "${ITE_MANAGED_ROOT}/.sha256"
         fi
-
-        "$ITE_APP_EXECUTABLE" --version 2>/dev/null |
-            grep -oE '[0-9]+\.[0-9]+\.[0-9]+' |
-            head -1 > "$installed_version_tmp" || true
     ) &
     install_pid=$!
 
@@ -402,10 +406,7 @@ install_artifact() {
 
     finish_spinner
 
-    local installed_version
-    installed_version=$(cat "$installed_version_tmp" 2>/dev/null) || true
-    rm -f "$installed_version_tmp"
-    success "Installed iTE v${installed_version:-unknown}"
+    success "Installed iTE v${version}"
     location "$ITE_EXECUTABLE"
 }
 
