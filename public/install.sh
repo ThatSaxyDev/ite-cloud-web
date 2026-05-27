@@ -11,7 +11,10 @@
 #   ITE_INSTALL_VERSION        - pin a specific version
 #   ITE_INSTALL_SKIP_PATH      - skip PATH modification
 
-set -euo pipefail
+set -eu
+if (set -o pipefail) 2>/dev/null; then
+    set -o pipefail
+fi
 
 # ── Configuration ────────────────────────────────────────────
 ITE_MANIFEST_URL="${ITE_INSTALL_MANIFEST_URL:-https://ite.kiishi.space/releases/manifest.json}"
@@ -70,11 +73,6 @@ file_size() {
     fi
 }
 
-content_length() {
-    curl -fsIL --connect-timeout 10 --max-time 30 "$1" 2>/dev/null |
-        awk 'BEGIN { IGNORECASE = 1 } /^Content-Length:/ { gsub("\r", "", $2); n = $2 } END { print n }'
-}
-
 format_bytes() {
     awk -v bytes="${1:-0}" 'BEGIN {
         if (bytes >= 1073741824) printf "%.1fGB", bytes / 1073741824;
@@ -104,10 +102,16 @@ download_spinner() {
     local total_size="${3:-0}"
     local frames="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏"
     local frame current progress
+    local last_current=0
 
     while kill -0 "$pid" 2>/dev/null; do
         for frame in $frames; do
             current=$(file_size "$archive_path")
+            if [ "$current" -lt "$last_current" ] 2>/dev/null; then
+                current="$last_current"
+            else
+                last_current="$current"
+            fi
             if [ -n "$total_size" ] && [ "$total_size" -gt 0 ] 2>/dev/null; then
                 progress=$(format_progress "$current" "$total_size")
             else
@@ -246,14 +250,6 @@ check_existing() {
             info "Existing iTE install found; refreshing"
         fi
     fi
-
-    for alt in pipx uv; do
-        if command -v "$alt" >/dev/null 2>&1; then
-            if "$alt" list 2>/dev/null | grep -q "ite-agent"; then
-                info "Existing ${alt} install detected; it will not be modified"
-            fi
-        fi
-    done
 }
 
 # ── Download and verify ──────────────────────────────────────
@@ -262,26 +258,14 @@ download_artifact() {
     local sha256_expected="$2"
     local archive_path="$3"
 
-    local curl_pid total_size total_size_tmp total_size_pid
-    total_size_tmp=$(mktemp)
-    content_length "$url" > "$total_size_tmp" &
-    total_size_pid=$!
-
-    if spinner "$total_size_pid" "Preparing download"; then
-        finish_spinner
-        total_size=$(cat "$total_size_tmp")
-    else
-        finish_spinner
-        total_size=""
-    fi
-    rm -f "$total_size_tmp"
+    local curl_pid
 
     curl -fsSL --connect-timeout 10 --max-time 1800 --retry 3 --retry-delay 5 \
         -C - -o "$archive_path" \
         "$url" 2>/dev/null &
     curl_pid=$!
 
-    if ! download_spinner "$curl_pid" "$archive_path" "$total_size"; then
+    if ! download_spinner "$curl_pid" "$archive_path"; then
         finish_spinner
         error "Download failed"
         rm -f "$archive_path"
@@ -485,13 +469,26 @@ main() {
 
     # Parse manifest
     local version url sha256 archive_type executable_name
-    if command -v python3 >/dev/null 2>&1; then
-        local parsed_tmp
+    if command -v jq >/dev/null 2>&1; then
+        local manifest_tmp
+        manifest_tmp=$(mktemp)
+        printf '%s' "$manifest_json" > "$manifest_tmp"
+        version=$(jq -r '.version' "$manifest_tmp")
+        url=$(jq -r ".assets[\"$target\"].url" "$manifest_tmp")
+        sha256=$(jq -r ".assets[\"$target\"].sha256" "$manifest_tmp")
+        archive_type=$(jq -r ".assets[\"$target\"].archiveType" "$manifest_tmp")
+        executable_name=$(jq -r ".assets[\"$target\"].executable" "$manifest_tmp")
+        rm -f "$manifest_tmp"
+    elif command -v python3 >/dev/null 2>&1; then
+        local manifest_tmp parsed_tmp
+        manifest_tmp=$(mktemp)
         parsed_tmp=$(mktemp)
-        echo "$manifest_json" | python3 -c "
+        printf '%s' "$manifest_json" > "$manifest_tmp"
+        python3 -c "
 import json, sys
-m = json.load(sys.stdin)
-a = m['assets'].get('$target', {})
+with open(sys.argv[1], 'r', encoding='utf-8') as f:
+    m = json.load(f)
+a = m['assets'].get(sys.argv[2], {})
 print(
     m.get('version', ''),
     a.get('url', ''),
@@ -499,7 +496,7 @@ print(
     a.get('archiveType', 'tar.gz'),
     a.get('executable', 'ite'),
     sep=chr(10))
-" > "$parsed_tmp"
+" "$manifest_tmp" "$target" > "$parsed_tmp"
         {
             read -r version
             read -r url
@@ -507,15 +504,9 @@ print(
             read -r archive_type
             read -r executable_name
         } < "$parsed_tmp"
-        rm -f "$parsed_tmp"
-    elif command -v jq >/dev/null 2>&1; then
-        version=$(echo "$manifest_json" | jq -r '.version')
-        url=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].url")
-        sha256=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].sha256")
-        archive_type=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].archiveType")
-        executable_name=$(echo "$manifest_json" | jq -r ".assets[\"$target\"].executable")
+        rm -f "$manifest_tmp" "$parsed_tmp"
     else
-        error "Need python3 or jq to parse the release manifest"
+        error "Need jq or python3 to parse the release manifest"
         exit 1
     fi
 
