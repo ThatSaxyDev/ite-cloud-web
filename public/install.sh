@@ -22,6 +22,9 @@ ITE_EXECUTABLE="${ITE_BIN_DIR}/ite"
 ITE_APP_EXECUTABLE="${ITE_APP_DIR}/ite/ite"
 
 # ── Terminal helpers ─────────────────────────────────────────
+# NOTE:Avoid BOLD and DIM for user-visible text. Many terminals render these
+# extremely dark/invisible (especially on dark backgrounds). Use plain text or
+# visible colors (GREEN, CYAN, YELLOW, RED) for anything users need to read.
 BOLD=""; DIM=""; GREEN=""; YELLOW=""; RED=""; CYAN=""; BLUE=""; MAGENTA=""; RESET=""
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
     BOLD="\033[1m"; DIM="\033[2m"
@@ -31,7 +34,7 @@ if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
     RESET="\033[0m"
 fi
 
-info()    { printf "  ${DIM}%b${RESET}\n" "$*"; }
+info()    { printf "  %b\n" "$*"; }
 success() { printf "  ${GREEN}✓${RESET} %b\n" "$*"; }
 warn()    { printf "  ${YELLOW}!${RESET} %b\n" "$*" >&2; }
 error()   { printf "  ${RED}✗${RESET} %b\n" "$*" >&2; }
@@ -49,7 +52,7 @@ spinner() {
             sleep 0.1
         done
     done
-    printf "\r%80s\r" "" >&2
+    printf "\r%80s\r\n" "" >&2
     wait "$pid"
     return $?
 }
@@ -132,7 +135,7 @@ check_deps() {
 # ── Fetch manifest ───────────────────────────────────────────
 fetch_manifest() {
     local manifest_json
-    manifest_json=$(curl -fsSL --connect-timeout 10 --max-time 30 "$ITE_MANIFEST_URL" 2>/dev/null) || {
+    manifest_json=$(curl -fsSL --connect-timeout 10 --max-time 60 "$ITE_MANIFEST_URL" 2>/dev/null) || {
         error "Could not reach release server"
         error "URL: $ITE_MANIFEST_URL"
         error "Check your internet connection or try again later."
@@ -186,12 +189,10 @@ download_artifact() {
     local archive_path="$3"
     local label="$4"
 
-    curl -fsSL --connect-timeout 10 --max-time 600 --retry 2 --retry-delay 2 \
+    printf "  Downloading %s\n" "$label" >&2
+    curl -fsSL --connect-timeout 10 --max-time 1800 --retry 3 --retry-delay 5 -# \
         -C - -o "$archive_path" \
-        "$url" &
-    local curl_pid=$!
-
-    spinner "$curl_pid" "Downloading $label"
+        "$url"
 
     local exit_code=$?
     if [ "$exit_code" -ne 0 ]; then
