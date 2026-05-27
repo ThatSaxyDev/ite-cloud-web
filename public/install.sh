@@ -370,7 +370,8 @@ install_artifact() {
         exit 1
     fi
 
-    local install_pid
+    local install_pid installed_version_tmp
+    installed_version_tmp=$(mktemp)
     (
         rm -rf "${ITE_APP_DIR:?}"
         mkdir -p "$ITE_APP_DIR"
@@ -386,6 +387,10 @@ install_artifact() {
         if [ -n "$sha256" ]; then
             echo "$sha256" > "${ITE_MANAGED_ROOT}/.sha256"
         fi
+
+        "$ITE_APP_EXECUTABLE" --version 2>/dev/null |
+            grep -oE '[0-9]+\.[0-9]+\.[0-9]+' |
+            head -1 > "$installed_version_tmp" || true
     ) &
     install_pid=$!
 
@@ -398,7 +403,8 @@ install_artifact() {
     finish_spinner
 
     local installed_version
-    installed_version=$("$ITE_APP_EXECUTABLE" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || true
+    installed_version=$(cat "$installed_version_tmp" 2>/dev/null) || true
+    rm -f "$installed_version_tmp"
     success "Installed iTE v${installed_version:-unknown}"
     location "$ITE_EXECUTABLE"
 }
