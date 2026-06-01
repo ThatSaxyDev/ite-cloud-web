@@ -182,6 +182,18 @@ export const api = {
         sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
         thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
       };
+      modelPolicies: Array<{
+        id: string;
+        label: string;
+        bundledModelName: string;
+        policy: {
+          requestsPerMinute: number;
+          requestsPerHour: number;
+          maxOutputTokens: number;
+          fiveHourUsdCentsCap: number;
+          sevenDayUsdCentsCap: number;
+        };
+      }>;
     }>("/usage/summary");
   },
   activity() {

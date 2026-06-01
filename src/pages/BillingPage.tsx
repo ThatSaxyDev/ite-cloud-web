@@ -190,6 +190,9 @@ function modelLabel(modelKey: string) {
     case "nemotron-3-nano-omni-30b-a3b-reasoning-free":
     case "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free":
       return "Nemotron 3 Nano Omni (free)";
+    case "deepseek-v4-pro":
+    case "deepseek/deepseek-v4-pro":
+      return "DeepSeek V4 Pro";
     default:
       return modelKey;
   }

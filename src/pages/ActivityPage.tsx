@@ -15,6 +15,18 @@ type UsageState = {
     thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
   };
   entitlements: Entitlements;
+  modelPolicies: Array<{
+    id: string;
+    label: string;
+    bundledModelName: string;
+    policy: {
+      requestsPerMinute: number;
+      requestsPerHour: number;
+      maxOutputTokens: number;
+      fiveHourUsdCentsCap: number;
+      sevenDayUsdCentsCap: number;
+    };
+  }>;
 };
 
 function normalizeMeridiem(value: string) {
@@ -61,6 +73,15 @@ function progressWidth(used: number, cap: number) {
   return Math.min(100, Math.max(0, (used / cap) * 100));
 }
 
+function formatUsd(cents: number) {
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
+}
+
 export function ActivityPage() {
   const [usage, setUsage] = useState<UsageState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +98,8 @@ export function ActivityPage() {
         setUsage({
           usage: payload.usage,
           quotas: payload.quotas,
-          entitlements: payload.entitlements
+          entitlements: payload.entitlements,
+          modelPolicies: payload.modelPolicies ?? []
         });
         setError(null);
       } catch (caught) {
@@ -208,6 +230,30 @@ export function ActivityPage() {
                 <span className="button-text" data-scramble>Open billing</span>
                 <span className="button-border" />
               </Link>
+            </div>
+          </article>
+
+          <article className="detail-card">
+            <strong>Model guardrails</strong>
+            <p className="muted">
+              Expensive bundled models have separate request, output, and spend ceilings inside the shared windows.
+            </p>
+            <div className="usage-policy-list">
+              {usage.modelPolicies.map((model) => (
+                <div className="usage-policy-row" key={model.id}>
+                  <div className="usage-limit-copy">
+                    <strong>{model.label}</strong>
+                    <span>{model.policy.maxOutputTokens.toLocaleString()} output tokens max</span>
+                  </div>
+                  <div className="usage-limit-stats">
+                    <strong>{model.policy.requestsPerHour}/hour</strong>
+                    <span>
+                      {formatUsd(model.policy.fiveHourUsdCentsCap)} per 5h ·{" "}
+                      {formatUsd(model.policy.sevenDayUsdCentsCap)} weekly
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </article>
         </div>
