@@ -187,7 +187,6 @@ export const api = {
         label: string;
         bundledModelName: string;
         policy: {
-          requestsPerMinute: number;
           requestsPerHour: number;
           maxOutputTokens: number;
         };

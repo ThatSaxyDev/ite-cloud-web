@@ -20,7 +20,6 @@ type UsageState = {
     label: string;
     bundledModelName: string;
     policy: {
-      requestsPerMinute: number;
       requestsPerHour: number;
       maxOutputTokens: number;
     };
@@ -238,7 +237,7 @@ export function ActivityPage() {
                   </div>
                   <div className="usage-limit-stats">
                     <strong>{model.policy.requestsPerHour}/hour</strong>
-                    <span>{model.policy.requestsPerMinute}/minute throttle</span>
+                    <span>agent pace guardrail</span>
                   </div>
                 </div>
               ))}
