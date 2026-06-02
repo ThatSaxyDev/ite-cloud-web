@@ -26,6 +26,12 @@ type UsageState = {
       fiveHourUsdCentsCap: number;
       sevenDayUsdCentsCap: number;
     };
+    usage?: {
+      oneMinute: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
+      oneHour: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
+      fiveHour: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
+      sevenDay: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
+    };
   }>;
 };
 
@@ -80,6 +86,10 @@ function formatUsd(cents: number) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(cents / 100);
+}
+
+function requestCountLabel(count: number) {
+  return `${count.toLocaleString()} ${count === 1 ? "request" : "requests"}`;
 }
 
 export function ActivityPage() {
@@ -243,14 +253,37 @@ export function ActivityPage() {
                 <div className="usage-policy-row" key={model.id}>
                   <div className="usage-limit-copy">
                     <strong>{model.label}</strong>
-                    <span>{model.policy.maxOutputTokens.toLocaleString()} output tokens max</span>
+                    <span>
+                      {model.policy.maxOutputTokens.toLocaleString()} output tokens max ·{" "}
+                      {requestCountLabel(model.usage?.oneHour.requestCount ?? 0)} this hour
+                    </span>
                   </div>
                   <div className="usage-limit-stats">
-                    <strong>{model.policy.requestsPerHour}/hour</strong>
+                    <strong>
+                      {formatPercentRemaining(
+                        model.usage?.fiveHour.usedUsdCents ?? 0,
+                        model.policy.fiveHourUsdCentsCap
+                      )}
+                    </strong>
                     <span>
+                      {formatUsd(model.usage?.fiveHour.usedUsdCents ?? 0)} /{" "}
                       {formatUsd(model.policy.fiveHourUsdCentsCap)} per 5h ·{" "}
-                      {formatUsd(model.policy.sevenDayUsdCentsCap)} weekly
+                      {formatPercentRemaining(
+                        model.usage?.sevenDay.usedUsdCents ?? 0,
+                        model.policy.sevenDayUsdCentsCap
+                      )} weekly
                     </span>
+                  </div>
+                  <div className="usage-progress" aria-hidden="true">
+                    <span
+                      className="usage-progress-fill"
+                      style={{
+                        width: `${progressWidth(
+                          model.usage?.fiveHour.usedUsdCents ?? 0,
+                          model.policy.fiveHourUsdCentsCap
+                        )}%`
+                      }}
+                    />
                   </div>
                 </div>
               ))}

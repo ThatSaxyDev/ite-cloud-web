@@ -193,6 +193,12 @@ export const api = {
           fiveHourUsdCentsCap: number;
           sevenDayUsdCentsCap: number;
         };
+        usage?: {
+          oneMinute: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
+          oneHour: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
+          fiveHour: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
+          sevenDay: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
+        };
       }>;
     }>("/usage/summary");
   },
