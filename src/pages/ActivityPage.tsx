@@ -23,14 +23,6 @@ type UsageState = {
       requestsPerMinute: number;
       requestsPerHour: number;
       maxOutputTokens: number;
-      fiveHourUsdCentsCap: number;
-      sevenDayUsdCentsCap: number;
-    };
-    usage?: {
-      oneMinute: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
-      oneHour: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
-      fiveHour: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
-      sevenDay: { requestCount: number; usedUsdCents: number; nextResetAt: string | null };
     };
   }>;
 };
@@ -77,19 +69,6 @@ function progressWidth(used: number, cap: number) {
     return 0;
   }
   return Math.min(100, Math.max(0, (used / cap) * 100));
-}
-
-function formatUsd(cents: number) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
-}
-
-function requestCountLabel(count: number) {
-  return `${count.toLocaleString()} ${count === 1 ? "request" : "requests"}`;
 }
 
 export function ActivityPage() {
@@ -246,7 +225,7 @@ export function ActivityPage() {
           <article className="detail-card">
             <strong>Model guardrails</strong>
             <p className="muted">
-              Expensive bundled models have separate request, output, and spend ceilings inside the shared windows.
+              Model choice affects how quickly central usage is consumed. Request throttles and output caps protect the shared pool.
             </p>
             <div className="usage-policy-list">
               {usage.modelPolicies.map((model) => (
@@ -254,36 +233,12 @@ export function ActivityPage() {
                   <div className="usage-limit-copy">
                     <strong>{model.label}</strong>
                     <span>
-                      {model.policy.maxOutputTokens.toLocaleString()} output tokens max ·{" "}
-                      {requestCountLabel(model.usage?.oneHour.requestCount ?? 0)} this hour
+                      {model.policy.maxOutputTokens.toLocaleString()} output tokens max
                     </span>
                   </div>
                   <div className="usage-limit-stats">
-                    <strong>
-                      {formatPercentRemaining(
-                        model.usage?.fiveHour.usedUsdCents ?? 0,
-                        model.policy.fiveHourUsdCentsCap
-                      )}
-                    </strong>
-                    <span>
-                      {formatUsd(model.usage?.fiveHour.usedUsdCents ?? 0)} /{" "}
-                      {formatUsd(model.policy.fiveHourUsdCentsCap)} per 5h ·{" "}
-                      {formatPercentRemaining(
-                        model.usage?.sevenDay.usedUsdCents ?? 0,
-                        model.policy.sevenDayUsdCentsCap
-                      )} weekly
-                    </span>
-                  </div>
-                  <div className="usage-progress" aria-hidden="true">
-                    <span
-                      className="usage-progress-fill"
-                      style={{
-                        width: `${progressWidth(
-                          model.usage?.fiveHour.usedUsdCents ?? 0,
-                          model.policy.fiveHourUsdCentsCap
-                        )}%`
-                      }}
-                    />
+                    <strong>{model.policy.requestsPerHour}/hour</strong>
+                    <span>{model.policy.requestsPerMinute}/minute throttle</span>
                   </div>
                 </div>
               ))}
