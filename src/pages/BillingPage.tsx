@@ -217,11 +217,11 @@ export function BillingPage() {
         if (cancelled) {
           return;
         }
-      setBilling({
-        subscription: billingPayload.subscription,
-        entitlements: billingPayload.entitlements,
-        trial: billingPayload.trial,
-      });
+        setBilling({
+          subscription: billingPayload.subscription,
+          entitlements: billingPayload.entitlements,
+          trial: billingPayload.trial,
+        });
         setAnalytics(activityPayload.analytics);
         setError(null);
       } catch (caught) {
@@ -273,7 +273,9 @@ export function BillingPage() {
       setCheckoutPending(true);
       setError(null);
       const catalog = await api.pricingCatalog();
-      const plan = catalog.plans.find((item) => item.planKey === "ite_pro_monthly");
+      const plan = catalog.plans.find(
+        (item) => item.planKey === "ite_pro_monthly",
+      );
       if (!plan?.billingConfigured || !plan.checkoutEnabled) {
         setError(
           plan?.checkoutUnavailableMessage ??
@@ -375,7 +377,7 @@ export function BillingPage() {
               {paid
                 ? "Bundled models are live in iTE Cloud inside rolling usage windows. Local models and BYOK providers remain available alongside iTE Pro."
                 : trialAvailable
-                  ? "Free includes local models and your own keys. Start the Bachs-backed first-month intro to try managed bundled access."
+                  ? "Free includes local models and your own keys. Start the first-month intro to try managed bundled access."
                   : "Free includes local models and your own keys. iTE Pro adds managed bundled access in 30-day passes."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
