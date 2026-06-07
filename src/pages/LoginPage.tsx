@@ -237,12 +237,29 @@ export function LoginPage() {
         throw verification.error;
       }
 
-      const sessionCheck = await authClient.getSession();
-      if (!sessionCheck.data?.session) {
+      // verifyEmail may establish a session in some Better Auth versions.
+      const existingSession = await authClient.getSession();
+      if (existingSession.data?.session) {
+        markKnownUser();
+        window.location.assign(redirectTo);
+        return;
+      }
+
+      // No session yet — sign in explicitly.
+      if (!password) {
         setMode("sign-in");
         setVerificationOtp("");
         setVerificationSent(false);
         return;
+      }
+
+      const signInResult = await authClient.signIn.email({
+        email,
+        password,
+      });
+
+      if (signInResult.error) {
+        throw signInResult.error;
       }
 
       markKnownUser();
