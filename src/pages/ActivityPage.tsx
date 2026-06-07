@@ -200,10 +200,12 @@ export function ActivityPage() {
             </article>
           ) : (
             <article className="detail-card detail-card-featured">
-              <strong>Cloud models require iTE Pro</strong>
-              <p className="muted">
-                Subscribe to iTE Pro to access DeepSeek V4 Pro through iTE Cloud. Usage windows and bundled limits unlock once your subscription is active.
-              </p>
+              <div className="detail-card-copy">
+                <strong>Cloud models require iTE Pro</strong>
+                <p className="muted">
+                  Subscribe to iTE Pro to access DeepSeek V4 Pro through iTE Cloud. Usage windows and bundled limits unlock once your subscription is active.
+                </p>
+              </div>
               <div className="detail-card-actions">
                 <Link className="button" data-magnetic data-ripple to="/account/billing">
                   <span className="button-text" data-scramble>Subscribe to Pro</span>
