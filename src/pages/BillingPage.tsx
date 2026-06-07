@@ -429,7 +429,7 @@ export function BillingPage() {
                   : paid
                     ? "$8/month"
                     : trialAvailable
-                      ? "First-month intro, then $8 for 30 days"
+                      ? "First-month intro ($3), then $8 for 30 days"
                       : "$8 for 30 days of Pro access"}
               </dd>
             </div>

@@ -189,7 +189,7 @@ export function PricingPage() {
   }, [authState.kind, checkoutIntent, checkoutPending, plan]);
 
   const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
-  const ctaLabel = trialAvailable ? "Start free trial" : "Subscribe to Pro";
+  const ctaLabel = trialAvailable ? "Start intro trial" : "Subscribe to Pro";
 
   const cleanPlan = useMemo(() => {
     if (!plan) return null;
@@ -197,7 +197,7 @@ export function PricingPage() {
       ...plan,
       trialOffer: {
         ...plan.trialOffer,
-        label: "First month free",
+        label: "First month $3",
       },
       accessPass: {
         ...plan.accessPass,
@@ -232,7 +232,7 @@ export function PricingPage() {
           <p className="sessions-kicker">Pricing</p>
           <h1>iTE Pro</h1>
           <p>
-            Reliable access to cloud coding models. First month free, then $8/month.
+            Reliable access to cloud coding models. First month $3, then $8/month.
             Cancel anytime.
           </p>
         </div>
@@ -243,7 +243,7 @@ export function PricingPage() {
               <span className="pricing-plan-name">{cleanPlan?.displayName ?? "iTE Pro"}</span>
             </div>
             <div className="pricing-price">
-              <span>{trialAvailable ? "Free" : "$8"}</span>
+              <span>{trialAvailable ? "$3" : "$8"}</span>
               <em>{trialAvailable ? "first month" : "per month"}</em>
             </div>
           </div>
