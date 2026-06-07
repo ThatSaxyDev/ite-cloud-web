@@ -163,6 +163,20 @@ export function LoginPage() {
 
     try {
       if (mode === "sign-up") {
+        const check = await fetch(`${config.apiUrl}/auth/check-email`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        if (check.ok) {
+          const { exists } = await check.json();
+          if (exists) {
+            setError("An account with this email already exists. Sign in instead.");
+            setFormPending(false);
+            return;
+          }
+        }
+
         const result = await authClient.signUp.email({
           name,
           email,
