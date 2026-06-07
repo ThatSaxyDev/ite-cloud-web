@@ -149,7 +149,6 @@ export function ActivityPage() {
                   </div>
                   <div className="usage-limit-stats">
                     <strong>{formatPercentRemaining(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}</strong>
-                    <span>{usage.usage.fiveHour.eventCount} requests</span>
                   </div>
                   <div className="usage-progress" aria-hidden="true">
                     <span
@@ -168,7 +167,6 @@ export function ActivityPage() {
                   </div>
                   <div className="usage-limit-stats">
                     <strong>{formatPercentRemaining(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}</strong>
-                    <span>{usage.usage.sevenDay.eventCount} requests</span>
                   </div>
                   <div className="usage-progress" aria-hidden="true">
                     <span
@@ -187,7 +185,6 @@ export function ActivityPage() {
                   </div>
                   <div className="usage-limit-stats">
                     <strong>{formatPercentRemaining(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}</strong>
-                    <span>{usage.usage.thirtyDay.eventCount} requests</span>
                   </div>
                   <div className="usage-progress" aria-hidden="true">
                     <span
