@@ -23,7 +23,7 @@ function normalizeMeridiem(value: string) {
 
 function formatResetLabel(value: string | null, variant: "time" | "dateTime") {
   if (!value) {
-    return "No recent usage";
+    return "Available now";
   }
 
   const formatted = new Intl.DateTimeFormat(
