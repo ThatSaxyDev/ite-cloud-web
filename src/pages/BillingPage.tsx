@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import { api, type Entitlements } from "@/lib/api";
 
@@ -199,6 +200,9 @@ function modelLabel(modelKey: string) {
 }
 
 export function BillingPage() {
+  const location = useLocation();
+  const checkoutSuccess = new URLSearchParams(location.search).get("checkout") === "success";
+
   const [billing, setBilling] = useState<BillingState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checkoutPending, setCheckoutPending] = useState(false);
@@ -371,14 +375,18 @@ export function BillingPage() {
                 ? trialActive
                   ? "iTE Pro intro is active"
                   : "iTE Pro is active"
-                : "Start iTE Pro when you are ready"}
+                : checkoutSuccess
+                  ? "Confirming your payment..."
+                  : "Start iTE Pro when you are ready"}
             </strong>
             <p className="muted">
               {paid
                 ? "Bundled models are live in iTE Cloud inside rolling usage windows. Local models and BYOK providers remain available alongside iTE Pro."
-                : trialAvailable
-                  ? "Free includes local models and your own keys. Start the first-month intro to try managed bundled access."
-                  : "Free includes local models and your own keys. iTE Pro adds managed bundled access in 30-day passes."}
+                : checkoutSuccess
+                  ? "Your payment is being processed. This page will update automatically — please don't close it."
+                  : trialAvailable
+                    ? "Free includes local models and your own keys. Start the first-month intro to try managed bundled access."
+                    : "Free includes local models and your own keys. iTE Pro adds managed bundled access in 30-day passes."}
             </p>
             {billing?.subscription?.currentPeriodEnd ? (
               <p className="plan-meta">
@@ -387,7 +395,7 @@ export function BillingPage() {
               </p>
             ) : null}
           </div>
-          {!paid ? (
+          {!paid && !checkoutSuccess ? (
             <div className="detail-card-actions">
               <button
                 className="button"
