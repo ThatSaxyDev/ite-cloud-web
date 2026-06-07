@@ -237,20 +237,12 @@ export function LoginPage() {
         throw verification.error;
       }
 
-      if (!password) {
+      const sessionCheck = await authClient.getSession();
+      if (!sessionCheck.data?.session) {
         setMode("sign-in");
         setVerificationOtp("");
         setVerificationSent(false);
         return;
-      }
-
-      const signInResult = await authClient.signIn.email({
-        email,
-        password,
-      });
-
-      if (signInResult.error) {
-        throw signInResult.error;
       }
 
       markKnownUser();
