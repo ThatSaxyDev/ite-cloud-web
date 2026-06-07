@@ -207,8 +207,8 @@ export function ActivityPage() {
                 </p>
               </div>
               <div className="detail-card-actions">
-                <Link className="button" data-magnetic data-ripple to="/account/billing">
-                  <span className="button-text" data-scramble>Subscribe to Pro</span>
+                <Link className="button" data-magnetic to="/account/billing">
+                  <span className="button-text">Subscribe to Pro</span>
                   <span className="button-shine" />
                 </Link>
               </div>
