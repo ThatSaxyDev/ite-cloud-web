@@ -215,7 +215,7 @@ export function SettingsPage() {
         <div className="onboarding-hero-copy">
           <span className="onboarding-chip">Terminal first</span>
           <p className="onboarding-summary">
-            iTE runs where the work already is: inside your repo.
+            iTE runs where you already work — inside your project.
           </p>
         </div>
 
@@ -266,11 +266,9 @@ export function SettingsPage() {
       </section>
 
       <section className="detail-card onboarding-links-card">
-        <strong>Need local models or a custom provider?</strong>
+        <strong>Ready for local models or a custom provider?</strong>
         <p className="muted">
-          Keep the first run simple. When you are ready to use Ollama,
-          OpenRouter, or another compatible provider, the setup guide has the
-          provider-specific details.
+          When you want to use Ollama, OpenRouter, or another compatible provider, the setup guide has configuration details for every supported backend.
         </p>
         <div className="onboarding-link-row">
           <Link
