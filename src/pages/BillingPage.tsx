@@ -22,72 +22,11 @@ type BillingState = {
   };
 };
 
-type AnalyticsPayload = {
-  totals: {
-    todayUsdCents: number;
-    sevenDayUsdCents: number;
-    thirtyDayUsdCents: number;
-    allTimeUsdCents: number;
-    allTimeRequestCount: number;
-    currentPeriodUsdCents: number;
-    currentPeriodRequestCount: number;
-  };
-  daily: Array<{
-    date: string;
-    label: string;
-    usdCents: number;
-    requestCount: number;
-  }>;
-  byModel: Array<{
-    modelKey: string;
-    usdCents: number;
-    requestCount: number;
-    sharePercent: number;
-  }>;
-  currentPeriod: {
-    start: string | null;
-    end: string | null;
-  };
-};
-
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-function normalizeMeridiem(value: string) {
-  return value.replace(/\s?(AM|PM)$/i, (match) => match.trim().toLowerCase());
-}
-
-function formatResetLabel(value: string | null, variant: "time" | "dateTime") {
-  if (!value) {
-    return "No recent usage";
-  }
-
-  const formatted = new Intl.DateTimeFormat(
-    undefined,
-    variant === "time"
-      ? { hour: "numeric", minute: "2-digit" }
-      : { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" },
-  ).format(new Date(value));
-
-  return normalizeMeridiem(formatted);
-}
-
-function formatPercentRemaining(used: number, cap: number) {
-  if (cap <= 0) {
-    return "0% remaining";
-  }
-  return `${Math.max(0, Math.round(((cap - used) / cap) * 100))}% remaining`;
-}
-
-function progressWidth(used: number, cap: number) {
-  if (cap <= 0) {
-    return 0;
-  }
-  return Math.min(100, Math.max(0, (used / cap) * 100));
 }
 
 function formatPlanName(planKey: string | null | undefined) {
@@ -130,75 +69,6 @@ function formatSubscriptionPeriodLabel(status: string | null | undefined) {
   return "Current period ends";
 }
 
-function formatUsd(cents: number) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
-}
-
-function formatNgn(cents: number) {
-  const usd = cents / 100;
-  const ngn = usd * 1397.98;
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "NGN",
-    maximumFractionDigits: 0,
-  }).format(ngn);
-}
-
-function formatPeriod(start: string | null, end: string | null) {
-  if (!start || !end) {
-    return "Current billing period";
-  }
-
-  const startText = new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(start));
-  const endText = new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(end));
-  return `${startText} to ${endText}`;
-}
-
-function modelLabel(modelKey: string) {
-  switch (modelKey) {
-    case "kimi-k2.5":
-    case "moonshotai/kimi-k2.5":
-      return "Kimi K2.5";
-    case "kimi-k2.6":
-    case "moonshotai/kimi-k2.6":
-      return "Kimi K2.6";
-    case "minimax-m2.5":
-    case "minimax/minimax-m2.5":
-      return "MiniMax M2.5";
-    case "minimax-m2.5-free":
-    case "minimax/minimax-m2.5:free":
-      return "MiniMax M2.5 (free)";
-    case "minimax-m2.7":
-    case "minimax/minimax-m2.7":
-      return "MiniMax M2.7";
-    case "glm-5":
-    case "z-ai/glm-5":
-      return "GLM-5";
-    case "glm-5.1":
-    case "z-ai/glm-5.1":
-      return "GLM-5.1";
-    case "nemotron-3-nano-omni-30b-a3b-reasoning-free":
-    case "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free":
-      return "Nemotron 3 Nano Omni (free)";
-    case "deepseek-v4-pro":
-    case "deepseek/deepseek-v4-pro":
-      return "DeepSeek V4 Pro";
-    default:
-      return modelKey;
-  }
-}
-
 export function BillingPage() {
   const location = useLocation();
   const checkoutSuccess = new URLSearchParams(location.search).get("checkout") === "success";
@@ -207,17 +77,13 @@ export function BillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [checkoutPending, setCheckoutPending] = useState(false);
   const [syncPending, setSyncPending] = useState(false);
-  const [analytics, setAnalytics] = useState<AnalyticsPayload | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       try {
-        const [billingPayload, activityPayload] = await Promise.all([
-          api.billingMe(),
-          api.activity(),
-        ]);
+        const billingPayload = await api.billingMe();
         if (cancelled) {
           return;
         }
@@ -226,7 +92,6 @@ export function BillingPage() {
           entitlements: billingPayload.entitlements,
           trial: billingPayload.trial,
         });
-        setAnalytics(activityPayload.analytics);
         setError(null);
       } catch (caught) {
         if (cancelled) {
@@ -317,8 +182,6 @@ export function BillingPage() {
         entitlements: payload.entitlements,
         trial: payload.trial,
       });
-      const activityPayload = await api.activity();
-      setAnalytics(activityPayload.analytics);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "error" in caught
@@ -337,10 +200,6 @@ export function BillingPage() {
   const subscriptionStatus = billing?.subscription?.status ?? null;
   const trialAvailable = Boolean(billing?.trial.available);
   const trialActive = billing?.entitlements.planKey === "ite_pro_trial";
-  const maxDailyCents = Math.max(
-    ...(analytics?.daily.map((point) => point.usdCents) ?? [0]),
-    1,
-  );
 
   return (
     <section className="account-panel account-panel-wide">
@@ -443,109 +302,6 @@ export function BillingPage() {
             </div>
           </dl>
         </article>
-
-        {analytics ? (
-          <>
-            <div className="analytics-summary-grid">
-              <article className="detail-card analytics-summary-card">
-                <span className="analytics-summary-label">Today</span>
-                <strong>{formatUsd(analytics.totals.todayUsdCents)}</strong>
-                <span className="analytics-summary-meta">
-                  {formatNgn(analytics.totals.todayUsdCents)}
-                </span>
-              </article>
-              <article className="detail-card analytics-summary-card">
-                <span className="analytics-summary-label">7 days</span>
-                <strong>{formatUsd(analytics.totals.sevenDayUsdCents)}</strong>
-                <span className="analytics-summary-meta">
-                  {formatNgn(analytics.totals.sevenDayUsdCents)}
-                </span>
-              </article>
-              <article className="detail-card analytics-summary-card">
-                <span className="analytics-summary-label">Billing period</span>
-                <strong>
-                  {formatUsd(analytics.totals.currentPeriodUsdCents)}
-                </strong>
-                <span className="analytics-summary-meta">
-                  {formatPeriod(
-                    analytics.currentPeriod.start,
-                    analytics.currentPeriod.end,
-                  )}
-                </span>
-              </article>
-              <article className="detail-card analytics-summary-card">
-                <span className="analytics-summary-label">All time</span>
-                <strong>{formatUsd(analytics.totals.allTimeUsdCents)}</strong>
-                <span className="analytics-summary-meta">
-                  {formatNgn(analytics.totals.allTimeUsdCents)} ·{" "}
-                  {analytics.totals.allTimeRequestCount} requests
-                </span>
-              </article>
-            </div>
-
-            <article className="detail-card">
-              <div className="analytics-panel-header">
-                <strong>Last 14 days</strong>
-                <span className="muted">Bundled spend by day</span>
-              </div>
-              <div className="usage-chart">
-                {analytics.daily.map((point) => (
-                  <div className="usage-chart-day" key={point.date}>
-                    <div className="usage-chart-value">
-                      {point.usdCents > 0 ? formatUsd(point.usdCents) : " "}
-                    </div>
-                    <div className="usage-chart-bar-track">
-                      <span
-                        className="usage-chart-bar-fill"
-                        style={{
-                          height: `${Math.max(6, (point.usdCents / maxDailyCents) * 100)}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="usage-chart-label">{point.label}</span>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="detail-card">
-              <div className="analytics-panel-header">
-                <strong>Model breakdown</strong>
-                <span className="muted">Where bundled spend is going</span>
-              </div>
-              {analytics.byModel.length ? (
-                <div className="analytics-model-list">
-                  {analytics.byModel.map((model) => (
-                    <div className="analytics-model-row" key={model.modelKey}>
-                      <div className="analytics-model-copy">
-                        <strong>{modelLabel(model.modelKey)}</strong>
-                        <span className="muted">
-                          {model.requestCount} requests
-                        </span>
-                      </div>
-                      <div className="analytics-model-stats">
-                        <strong>{formatUsd(model.usdCents)}</strong>
-                        <span className="muted">
-                          {formatNgn(model.usdCents)} · {model.sharePercent}%
-                        </span>
-                      </div>
-                      <div className="analytics-model-share">
-                        <span
-                          className="analytics-model-share-fill"
-                          style={{
-                            width: `${Math.max(4, model.sharePercent)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="muted">No bundled usage yet.</p>
-              )}
-            </article>
-          </>
-        ) : null}
       </div>
     </section>
   );

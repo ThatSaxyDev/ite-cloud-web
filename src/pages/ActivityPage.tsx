@@ -15,15 +15,6 @@ type UsageState = {
     thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
   };
   entitlements: Entitlements;
-  modelPolicies: Array<{
-    id: string;
-    label: string;
-    bundledModelName: string;
-    policy: {
-      requestsPerHour: number;
-      maxOutputTokens: number;
-    };
-  }>;
 };
 
 function normalizeMeridiem(value: string) {
@@ -87,7 +78,6 @@ export function ActivityPage() {
           usage: payload.usage,
           quotas: payload.quotas,
           entitlements: payload.entitlements,
-          modelPolicies: payload.modelPolicies ?? []
         });
         setError(null);
       } catch (caught) {
@@ -144,105 +134,84 @@ export function ActivityPage() {
 
       {usage ? (
         <div className="detail-stack">
-          <article className="detail-card">
-            <p className="muted">
-              Bundled usage is measured across rolling 5-hour, weekly, and monthly windows.
-            </p>
-            <div className="usage-limit-list">
-              <div className="usage-limit-row">
-                <div className="usage-limit-copy">
-                  <strong>5h</strong>
-                  <span>
-                    Resets {formatResetLabel(usage.quotas.fiveHour.nextResetAt, "time")}
-                  </span>
-                </div>
-                <div className="usage-limit-stats">
-                  <strong>{formatPercentRemaining(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}</strong>
-                  <span>{usage.usage.fiveHour.eventCount} requests</span>
-                </div>
-                <div className="usage-progress" aria-hidden="true">
-                  <span
-                    className="usage-progress-fill"
-                    style={{ width: `${progressWidth(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="usage-limit-row">
-                <div className="usage-limit-copy">
-                  <strong>Weekly</strong>
-                  <span>
-                    Resets {formatResetLabel(usage.quotas.sevenDay.nextResetAt, "dateTime")}
-                  </span>
-                </div>
-                <div className="usage-limit-stats">
-                  <strong>{formatPercentRemaining(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}</strong>
-                  <span>{usage.usage.sevenDay.eventCount} requests</span>
-                </div>
-                <div className="usage-progress" aria-hidden="true">
-                  <span
-                    className="usage-progress-fill"
-                    style={{ width: `${progressWidth(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="usage-limit-row">
-                <div className="usage-limit-copy">
-                  <strong>Monthly</strong>
-                  <span>
-                    Resets {formatResetLabel(usage.quotas.thirtyDay.nextResetAt, "dateTime")}
-                  </span>
-                </div>
-                <div className="usage-limit-stats">
-                  <strong>{formatPercentRemaining(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}</strong>
-                  <span>{usage.usage.thirtyDay.eventCount} requests</span>
-                </div>
-                <div className="usage-progress" aria-hidden="true">
-                  <span
-                    className="usage-progress-fill"
-                    style={{ width: `${progressWidth(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article className="detail-card">
-            <strong>Need more headroom?</strong>
-            <p className="muted">
-              Upgrade when you need higher bundled limits and managed cloud access.
-            </p>
-            <div className="detail-card-actions">
-              <Link className="button secondary" data-magnetic to="/account/billing">
-                <span className="button-text" data-scramble>Open billing</span>
-                <span className="button-border" />
-              </Link>
-            </div>
-          </article>
-
-          <article className="detail-card">
-            <strong>Model guardrails</strong>
-            <p className="muted">
-              Model choice affects how quickly central usage is consumed. Request throttles and output caps protect the shared pool.
-            </p>
-            <div className="usage-policy-list">
-              {usage.modelPolicies.map((model) => (
-                <div className="usage-policy-row" key={model.id}>
+          {usage.entitlements.proAccess ? (
+            <article className="detail-card">
+              <p className="muted">
+                Bundled usage is measured across rolling 5-hour, weekly, and monthly windows.
+              </p>
+              <div className="usage-limit-list">
+                <div className="usage-limit-row">
                   <div className="usage-limit-copy">
-                    <strong>{model.label}</strong>
+                    <strong>5h</strong>
                     <span>
-                      {model.policy.maxOutputTokens.toLocaleString()} output tokens max
+                      Resets {formatResetLabel(usage.quotas.fiveHour.nextResetAt, "time")}
                     </span>
                   </div>
                   <div className="usage-limit-stats">
-                    <strong>{model.policy.requestsPerHour}/hour</strong>
-                    <span>agent pace guardrail</span>
+                    <strong>{formatPercentRemaining(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}</strong>
+                    <span>{usage.usage.fiveHour.eventCount} requests</span>
+                  </div>
+                  <div className="usage-progress" aria-hidden="true">
+                    <span
+                      className="usage-progress-fill"
+                      style={{ width: `${progressWidth(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}%` }}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          </article>
+
+                <div className="usage-limit-row">
+                  <div className="usage-limit-copy">
+                    <strong>Weekly</strong>
+                    <span>
+                      Resets {formatResetLabel(usage.quotas.sevenDay.nextResetAt, "dateTime")}
+                    </span>
+                  </div>
+                  <div className="usage-limit-stats">
+                    <strong>{formatPercentRemaining(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}</strong>
+                    <span>{usage.usage.sevenDay.eventCount} requests</span>
+                  </div>
+                  <div className="usage-progress" aria-hidden="true">
+                    <span
+                      className="usage-progress-fill"
+                      style={{ width: `${progressWidth(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="usage-limit-row">
+                  <div className="usage-limit-copy">
+                    <strong>Monthly</strong>
+                    <span>
+                      Resets {formatResetLabel(usage.quotas.thirtyDay.nextResetAt, "dateTime")}
+                    </span>
+                  </div>
+                  <div className="usage-limit-stats">
+                    <strong>{formatPercentRemaining(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}</strong>
+                    <span>{usage.usage.thirtyDay.eventCount} requests</span>
+                  </div>
+                  <div className="usage-progress" aria-hidden="true">
+                    <span
+                      className="usage-progress-fill"
+                      style={{ width: `${progressWidth(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </article>
+          ) : (
+            <article className="detail-card detail-card-featured">
+              <strong>Cloud models require iTE Pro</strong>
+              <p className="muted">
+                Subscribe to iTE Pro to access DeepSeek V4 Pro through iTE Cloud. Usage windows and bundled limits unlock once your subscription is active.
+              </p>
+              <div className="detail-card-actions">
+                <Link className="button" data-magnetic data-ripple to="/account/billing">
+                  <span className="button-text" data-scramble>Subscribe to Pro</span>
+                  <span className="button-shine" />
+                </Link>
+              </div>
+            </article>
+          )}
         </div>
       ) : null}
     </section>
