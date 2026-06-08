@@ -173,57 +173,21 @@ export const api = {
       ok: true;
       entitlements: Entitlements;
       usage: {
-        fiveHour: { usedUsdCents: number; eventCount: number };
-        sevenDay: { usedUsdCents: number; eventCount: number };
-        thirtyDay: { usedUsdCents: number; eventCount: number };
+        fiveHour: { usedUsdCents: number };
+        sevenDay: { usedUsdCents: number };
+        thirtyDay: { usedUsdCents: number };
       };
       quotas: {
         fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
         sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
         thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
       };
-      modelPolicies: Array<{
-        id: string;
-        label: string;
-        bundledModelName: string;
-        policy: {
-          requestsPerHour: number;
-          maxOutputTokens: number;
-        };
-      }>;
     }>("/usage/summary");
   },
   activity() {
     return apiRequest<{
       ok: true;
       actor: string;
-      analytics: {
-        totals: {
-          todayUsdCents: number;
-          sevenDayUsdCents: number;
-          thirtyDayUsdCents: number;
-          allTimeUsdCents: number;
-          allTimeRequestCount: number;
-          currentPeriodUsdCents: number;
-          currentPeriodRequestCount: number;
-        };
-        daily: Array<{
-          date: string;
-          label: string;
-          usdCents: number;
-          requestCount: number;
-        }>;
-        byModel: Array<{
-          modelKey: string;
-          usdCents: number;
-          requestCount: number;
-          sharePercent: number;
-        }>;
-        currentPeriod: {
-          start: string | null;
-          end: string | null;
-        };
-      };
       events: Array<{
         id: string;
         actorType: string;

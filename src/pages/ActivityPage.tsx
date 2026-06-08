@@ -5,9 +5,9 @@ import { api, type Entitlements } from "@/lib/api";
 
 type UsageState = {
   usage: {
-    fiveHour: { usedUsdCents: number; eventCount: number };
-    sevenDay: { usedUsdCents: number; eventCount: number };
-    thirtyDay: { usedUsdCents: number; eventCount: number };
+    fiveHour: { usedUsdCents: number };
+    sevenDay: { usedUsdCents: number };
+    thirtyDay: { usedUsdCents: number };
   };
   quotas: {
     fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
