@@ -189,7 +189,11 @@ export function PricingPage() {
   }, [authState.kind, checkoutIntent, checkoutPending, plan]);
 
   const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
-  const ctaLabel = trialAvailable ? "Start intro trial" : "Subscribe to Pro";
+  const ctaLabel = authState.kind === "pro"
+    ? "Manage subscription"
+    : trialAvailable
+      ? "Start intro trial"
+      : "Subscribe to Pro";
 
   const cleanPlan = useMemo(() => {
     if (!plan) return null;
