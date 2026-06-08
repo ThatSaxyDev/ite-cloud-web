@@ -247,6 +247,12 @@ export function BillingPage() {
                     ? "Free includes local models and your own keys. Start the first-month intro to try managed bundled access."
                     : "Free includes local models and your own keys. iTE Pro adds managed bundled access in 30-day passes."}
             </p>
+            {paid ? (
+              <p className="muted" style={{ marginTop: "0.5rem" }}>
+                If iTE is already open, run <code>/refresh</code> in your
+                terminal to unlock Pro features immediately.
+              </p>
+            ) : null}
             {billing?.subscription?.currentPeriodEnd ? (
               <p className="plan-meta">
                 {formatSubscriptionPeriodLabel(subscriptionStatus)}{" "}
