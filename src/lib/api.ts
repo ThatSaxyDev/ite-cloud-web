@@ -178,9 +178,9 @@ export const api = {
         thirtyDay: { usedUsdCents: number };
       };
       quotas: {
-        fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
-        sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
-        thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+        fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
+        sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
+        thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
       };
     }>("/usage/summary");
   },

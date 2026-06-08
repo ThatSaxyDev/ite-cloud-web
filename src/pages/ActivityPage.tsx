@@ -10,9 +10,9 @@ type UsageState = {
     thirtyDay: { usedUsdCents: number };
   };
   quotas: {
-    fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
-    sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
-    thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+    fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
+    sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
+    thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
   };
   entitlements: Entitlements;
 };
@@ -144,7 +144,7 @@ export function ActivityPage() {
                   <div className="usage-limit-copy">
                     <strong>5h</strong>
                     <span>
-                      Resets {formatResetLabel(usage.quotas.fiveHour.nextResetAt, "time")}
+                      Resets {formatResetLabel(usage.quotas.fiveHour.fullWindowClearAt ?? usage.quotas.fiveHour.nextResetAt, "time")}
                     </span>
                   </div>
                   <div className="usage-limit-stats">
@@ -162,7 +162,7 @@ export function ActivityPage() {
                   <div className="usage-limit-copy">
                     <strong>Weekly</strong>
                     <span>
-                      Resets {formatResetLabel(usage.quotas.sevenDay.nextResetAt, "dateTime")}
+                      Resets {formatResetLabel(usage.quotas.sevenDay.fullWindowClearAt ?? usage.quotas.sevenDay.nextResetAt, "dateTime")}
                     </span>
                   </div>
                   <div className="usage-limit-stats">
@@ -180,7 +180,7 @@ export function ActivityPage() {
                   <div className="usage-limit-copy">
                     <strong>Monthly</strong>
                     <span>
-                      Resets {formatResetLabel(usage.quotas.thirtyDay.nextResetAt, "dateTime")}
+                      Resets {formatResetLabel(usage.quotas.thirtyDay.fullWindowClearAt ?? usage.quotas.thirtyDay.nextResetAt, "dateTime")}
                     </span>
                   </div>
                   <div className="usage-limit-stats">
