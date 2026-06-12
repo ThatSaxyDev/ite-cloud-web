@@ -18,10 +18,26 @@ export function detectDefaultInstallMethod(): InstallMethod {
   return "curl";
 }
 
+function detectCurlOsLabel(): string {
+  if (typeof navigator === "undefined") {
+    return "macOS / Linux";
+  }
+  const uaPlatform = (navigator as unknown as Record<string, unknown>).userAgentData as
+    | { platform?: string }
+    | undefined;
+  if (uaPlatform?.platform) {
+    if (uaPlatform.platform === "macOS") return "macOS";
+    if (uaPlatform.platform === "Linux") return "Linux";
+  }
+  if (/Mac/i.test(navigator.platform)) return "macOS";
+  if (/Linux/i.test(navigator.platform)) return "Linux";
+  return "macOS / Linux";
+}
+
 export function getInstallMethodLabel(method: InstallMethod): string {
   switch (method) {
     case "curl":
-      return "macOS / Linux";
+      return detectCurlOsLabel();
     case "windows":
       return "Windows";
     case "pipx":

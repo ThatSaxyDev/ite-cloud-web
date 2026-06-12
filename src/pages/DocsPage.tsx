@@ -418,7 +418,7 @@ export function DocsPage() {
               </p>
 
               <CodeBlock
-                label="macOS / Linux"
+                label="macOS"
                 code="curl -fsSL https://ite.kiishi.space/install.sh | bash"
               />
               <CodeBlock

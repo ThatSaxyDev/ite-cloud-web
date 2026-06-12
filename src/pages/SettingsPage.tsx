@@ -5,6 +5,7 @@ import {
   buildInstallReelSlots,
   buildStaticInstallReelSlots,
   detectDefaultInstallMethod,
+  getInstallMethodLabel,
   INSTALL_COMMANDS,
   INSTALL_REEL_DURATION_MS,
   type InstallMethod,
@@ -117,7 +118,7 @@ export function SettingsPage() {
               role="tab"
               type="button"
             >
-              macOS / Linux
+              {getInstallMethodLabel("curl")}
             </button>
             <button
               aria-selected={installMethod === "windows"}

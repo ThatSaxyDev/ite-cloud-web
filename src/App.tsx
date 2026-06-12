@@ -176,7 +176,7 @@ function HomePage() {
                         role="tab"
                         type="button"
                       >
-                        macOS / Linux
+                        {getInstallMethodLabel("curl")}
                       </button>
                       <button
                         aria-selected={installMethod === "windows"}
