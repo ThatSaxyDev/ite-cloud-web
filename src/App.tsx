@@ -162,8 +162,7 @@ function HomePage() {
                   <AgentVisualization />
                 </div>
                 <div className="hero-command-card" aria-label="Install iTE">
-                  <div className="hero-command-header">
-                    <span className="hero-command-label">Install</span>
+                  <div className="hero-command-toolbar">
                     <div
                       className="hero-command-switch"
                       aria-label="Choose install method"
@@ -210,6 +209,13 @@ function HomePage() {
                         uv
                       </button>
                     </div>
+                    <button
+                      className="hero-command-copy"
+                      onClick={() => void handleCopyInstallCommand()}
+                      type="button"
+                    >
+                      {installCopied ? "Copied" : "Copy"}
+                    </button>
                   </div>
                   <div className="hero-command-line">
                     <code aria-live="polite" className="hero-command-code">
@@ -264,13 +270,6 @@ function HomePage() {
                         ))}
                       </span>
                     </code>
-                    <button
-                      className="hero-command-copy"
-                      onClick={() => void handleCopyInstallCommand()}
-                      type="button"
-                    >
-                      {installCopied ? "Copied" : "Copy"}
-                    </button>
                   </div>
                 </div>
                 <div className="hero-actions">
