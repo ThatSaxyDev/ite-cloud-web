@@ -11,8 +11,12 @@ const INSTALL_REEL_CHARSET = " abcdefghijklmnopqrstuvwxyz0123456789-./".split(""
 
 export type InstallMethod = keyof typeof INSTALL_COMMANDS;
 
+export function isWindowsOS(): boolean {
+  return typeof navigator !== "undefined" && /Win/i.test(navigator.platform);
+}
+
 export function detectDefaultInstallMethod(): InstallMethod {
-  if (typeof navigator !== "undefined" && /Win/i.test(navigator.platform)) {
+  if (isWindowsOS()) {
     return "windows";
   }
   return "curl";

@@ -7,6 +7,7 @@ import {
   detectDefaultInstallMethod,
   getInstallMethodLabel,
   INSTALL_COMMANDS,
+  isWindowsOS,
   INSTALL_REEL_DURATION_MS,
   type InstallMethod,
   type InstallReelSlot,
@@ -120,16 +121,18 @@ export function SettingsPage() {
             >
               {getInstallMethodLabel("curl")}
             </button>
-            <button
-              aria-selected={installMethod === "windows"}
-              className="onboarding-install-toggle"
-              data-active={installMethod === "windows"}
-              onClick={() => handleInstallMethodChange("windows")}
-              role="tab"
-              type="button"
-            >
-              Windows
-            </button>
+            {isWindowsOS() && (
+              <button
+                aria-selected={installMethod === "windows"}
+                className="onboarding-install-toggle"
+                data-active={installMethod === "windows"}
+                onClick={() => handleInstallMethodChange("windows")}
+                role="tab"
+                type="button"
+              >
+                Windows
+              </button>
+            )}
             <button
               aria-selected={installMethod === "pipx"}
               className="onboarding-install-toggle"
