@@ -410,14 +410,20 @@ export function DocsPage() {
             <section className="docs-section" id="install">
               <h2 data-scramble="true">Install</h2>
               <p>
-                The fastest way to install iTE is with a single{" "}
-                <strong>curl</strong> command. If you prefer package managers,{" "}
-                <strong>pipx</strong> and <strong>uv</strong> are also available.
+                The fastest way to install iTE is with a single command.{" "}
+                <strong>macOS/Linux</strong> users can use <strong>curl</strong>,
+                <strong>Windows</strong> users can use <strong>PowerShell</strong>.{" "}
+                If you prefer package managers, <strong>pipx</strong> and{" "}
+                <strong>uv</strong> are also available.
               </p>
 
               <CodeBlock
-                label="curl"
-                code="curl -fsSL https://ite.kiishi.space/install.sh | sh"
+                label="macOS / Linux"
+                code="curl -fsSL https://ite.kiishi.space/install.sh | bash"
+              />
+              <CodeBlock
+                label="Windows"
+                code="irm https://ite.kiishi.space/install.ps1 | iex"
               />
               <CodeBlock
                 label="pipx"

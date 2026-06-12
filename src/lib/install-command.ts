@@ -1,5 +1,6 @@
 export const INSTALL_COMMANDS = {
-  curl: "curl -fsSL https://ite.kiishi.space/install.sh | sh",
+  curl: "curl -fsSL https://ite.kiishi.space/install.sh | bash",
+  windows: "irm https://ite.kiishi.space/install.ps1 | iex",
   pipx: "pipx install ite-agent",
   uv: "uv tool install ite-agent"
 } as const;
@@ -9,6 +10,28 @@ export const INSTALL_REEL_DURATION_MS = 420;
 const INSTALL_REEL_CHARSET = " abcdefghijklmnopqrstuvwxyz0123456789-./".split("");
 
 export type InstallMethod = keyof typeof INSTALL_COMMANDS;
+
+export function detectDefaultInstallMethod(): InstallMethod {
+  if (typeof navigator !== "undefined" && /Win/i.test(navigator.platform)) {
+    return "windows";
+  }
+  return "curl";
+}
+
+export function getInstallMethodLabel(method: InstallMethod): string {
+  switch (method) {
+    case "curl":
+      return "macOS / Linux";
+    case "windows":
+      return "Windows";
+    case "pipx":
+      return "pipx";
+    case "uv":
+      return "uv";
+    default:
+      return method;
+  }
+}
 
 export type InstallReelSlot = {
   chars: string[];

@@ -17,6 +17,8 @@ import { getDevAuthUser } from "@/lib/dev-auth";
 import {
   buildInstallReelSlots,
   buildStaticInstallReelSlots,
+  detectDefaultInstallMethod,
+  getInstallMethodLabel,
   INSTALL_COMMANDS,
   INSTALL_REEL_DURATION_MS,
   type InstallMethod,
@@ -35,7 +37,9 @@ const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
 function HomePage() {
   const [ctaLabel, setCtaLabel] = useState("Get started");
   const [ctaHref, setCtaHref] = useState("/login?mode=sign-up");
-  const [installMethod, setInstallMethod] = useState<InstallMethod>("curl");
+  const [installMethod, setInstallMethod] = useState<InstallMethod>(() =>
+    detectDefaultInstallMethod()
+  );
   const [installCopied, setInstallCopied] = useState(false);
   const [installTransition, setInstallTransition] = useState<{
     slots: InstallReelSlot[];
@@ -173,7 +177,17 @@ function HomePage() {
                         role="tab"
                         type="button"
                       >
-                        curl
+                        macOS / Linux
+                      </button>
+                      <button
+                        aria-selected={installMethod === "windows"}
+                        className="hero-command-toggle"
+                        data-active={installMethod === "windows"}
+                        onClick={() => handleInstallMethodChange("windows")}
+                        role="tab"
+                        type="button"
+                      >
+                        Windows
                       </button>
                       <button
                         aria-selected={installMethod === "pipx"}

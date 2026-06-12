@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import {
   buildInstallReelSlots,
   buildStaticInstallReelSlots,
+  detectDefaultInstallMethod,
   INSTALL_COMMANDS,
   INSTALL_REEL_DURATION_MS,
   type InstallMethod,
@@ -30,7 +31,9 @@ const NEXT_STEPS = [
 
 export function SettingsPage() {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
-  const [installMethod, setInstallMethod] = useState<InstallMethod>("curl");
+  const [installMethod, setInstallMethod] = useState<InstallMethod>(() =>
+    detectDefaultInstallMethod()
+  );
   const [installTransition, setInstallTransition] = useState<{
     slots: InstallReelSlot[];
   } | null>(null);
@@ -114,7 +117,17 @@ export function SettingsPage() {
               role="tab"
               type="button"
             >
-              curl
+              macOS / Linux
+            </button>
+            <button
+              aria-selected={installMethod === "windows"}
+              className="onboarding-install-toggle"
+              data-active={installMethod === "windows"}
+              onClick={() => handleInstallMethodChange("windows")}
+              role="tab"
+              type="button"
+            >
+              Windows
             </button>
             <button
               aria-selected={installMethod === "pipx"}
