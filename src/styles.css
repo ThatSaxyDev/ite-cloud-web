@@ -602,6 +602,8 @@ button {
 .hero-command-switch {
     display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 2px;
     padding: 2px;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -701,6 +703,7 @@ button {
     font-family: var(--font-mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    white-space: nowrap;
     transition:
         color var(--motion-fast),
         background-color var(--motion-fast);
@@ -912,6 +915,7 @@ button {
 
     .hero-command-card code {
         display: block;
+        flex: 0 0 auto;
         width: 100%;
         font-size: 0.88rem;
         text-align: left;
@@ -925,22 +929,38 @@ button {
     }
 
     .hero-command-header {
+        flex-direction: column;
+        align-items: stretch;
         gap: 10px;
     }
 
+    .hero-command-label {
+        font-size: 10px;
+    }
+
+    .hero-command-switch {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 4px;
+    }
+
     .hero-command-toggle {
-        padding: 4px 8px;
+        padding: 5px 9px;
         font-size: 9px;
+        flex: 0 1 auto;
     }
 
     .hero-command-line {
+        flex-direction: column;
+        align-items: stretch;
         margin-top: 8px;
         padding: 10px 12px;
         gap: 10px;
     }
 
     .hero-command-copy {
-        padding: 4px 8px;
+        align-self: flex-end;
+        padding: 5px 10px;
         font-size: 9px;
     }
 
