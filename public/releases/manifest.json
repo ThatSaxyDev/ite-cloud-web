@@ -1,31 +1,31 @@
 {
-  "version": "0.1.26",
-  "generated_at": "2026-06-12T19:45:23.963549+00:00",
+  "version": "0.1.27",
+  "generated_at": "2026-06-12T23:03:26.141143+00:00",
   "assets": {
     "darwin-arm64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.26/ite-0.1.26-darwin-arm64.tar.gz",
-      "sha256": "4ccfc456b911ca4a6527a87c7dda616afa2fffbb4b568e11d5f8e4cf6a47d978",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.27/ite-0.1.27-darwin-arm64.tar.gz",
+      "sha256": "0b27d2f26e12a3e37b2fb8f6e172815d05b783aafca658b27041e6f2f1f24f49",
       "archiveType": "tar.gz",
       "executable": "ite",
       "label": "macOS Apple Silicon"
     },
     "darwin-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.26/ite-0.1.26-darwin-x64.tar.gz",
-      "sha256": "93bbcded3607d6cc32a1a10d4f7d6901a199b194500e729ff6b8deef5e3b9e89",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.27/ite-0.1.27-darwin-x64.tar.gz",
+      "sha256": "9f8bdf7960fce105f47f58ce8ec1cc11413949fbcc55e837009f9a2441fe009c",
       "archiveType": "tar.gz",
       "executable": "ite",
       "label": "macOS Intel"
     },
     "linux-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.26/ite-0.1.26-linux-x64.tar.gz",
-      "sha256": "dbabd1c944efccc5a179c4436144c9c3651bf9ca00edf80ff9f7792bae00f49f",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.27/ite-0.1.27-linux-x64.tar.gz",
+      "sha256": "489c5ce677261c2d505532275bf8bfa30d61f104737f1979fd5ae7f5e2e9eca6",
       "archiveType": "tar.gz",
       "executable": "ite",
       "label": "Linux x86_64"
     },
     "win32-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.26/ite-0.1.26-win32-x64.zip",
-      "sha256": "b75a4f729e1e1464158b94acd994682890ec5b39ed0affcc7f9208848d3080eb",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.27/ite-0.1.27-win32-x64.zip",
+      "sha256": "8e1a83977019d1e64ec0f2b96e55bc4de265faf0b46df481944ea69c594eb4ff",
       "archiveType": "zip",
       "executable": "ite.exe",
       "label": "Windows x86_64"
