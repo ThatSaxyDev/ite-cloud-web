@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
-import { authClient } from "@/lib/auth-client";
-import { markKnownUser } from "@/lib/browser-state";
+import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 
 type CliRequest = {
@@ -15,45 +14,38 @@ type CliRequest = {
   scope?: string | null;
 };
 
-type BrowserUser = {
-  email?: string;
-  name?: string;
-};
-
 export function CliAuthPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const token = params.get("token") || "";
   const isResume = params.get("resume") === "1";
+  const { isAuthenticated, user, isLoading } = useAuth();
+
   const [request, setRequest] = useState<CliRequest | null>(null);
-  const [user, setUser] = useState<BrowserUser | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "connecting" | "complete">("loading");
+  const [status, setStatus] = useState<
+    "loading" | "ready" | "connecting" | "complete"
+  >("loading");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function load() {
-      if (!token) {
-        setError("Missing terminal sign-in token.");
-        return;
-      }
+    if (isLoading) {
+      return;
+    }
 
-      if (!isResume) {
-        navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`, { replace: true });
-        return;
-      }
+    if (!token) {
+      setError("Missing terminal sign-in token.");
+      return;
+    }
 
-      const session = await authClient.getSession();
-      if (!session.data?.session) {
-        navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`, { replace: true });
-        return;
-      }
+    if (!isAuthenticated) {
+      navigate(
+        `/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`,
+        { replace: true },
+      );
+      return;
+    }
 
-      markKnownUser();
-      setUser({
-        email: session.data.user?.email,
-        name: session.data.user?.name,
-      });
-
+    async function inspect() {
       try {
         const response = await api.inspectCliRequest(token);
         setRequest(response);
@@ -67,11 +59,20 @@ export function CliAuthPage() {
       } catch (caught) {
         const message =
           typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not prepare device connection.")
+            ? String(
+                (
+                  caught as {
+                    error?: { message?: string };
+                  }
+                ).error?.message || "Could not prepare device connection.",
+              )
             : "Could not prepare device connection.";
 
         if (message.toLowerCase().includes("browser sign-in is required")) {
-          navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`, { replace: true });
+          navigate(
+            `/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`,
+            { replace: true },
+          );
           return;
         }
 
@@ -79,8 +80,8 @@ export function CliAuthPage() {
       }
     }
 
-    void load();
-  }, [isResume, navigate, token]);
+    void inspect();
+  }, [isLoading, isAuthenticated, isResume, navigate, token]);
 
   async function handleConnect() {
     if (!token) {
@@ -96,11 +97,20 @@ export function CliAuthPage() {
     } catch (caught) {
       const message =
         typeof caught === "object" && caught && "error" in caught
-          ? String((caught as { error?: { message?: string } }).error?.message || "Could not connect this device.")
+          ? String(
+              (
+                caught as {
+                  error?: { message?: string };
+                }
+              ).error?.message || "Could not connect this device.",
+            )
           : "Could not connect this device.";
 
       if (message.toLowerCase().includes("browser sign-in is required")) {
-        navigate(`/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`, { replace: true });
+        navigate(
+          `/login?redirect=${encodeURIComponent(`/auth/cli?token=${token}&resume=1`)}`,
+          { replace: true },
+        );
         return;
       }
 
@@ -109,8 +119,13 @@ export function CliAuthPage() {
     }
   }
 
-  const deviceLabel = request?.deviceLabel || request?.clientId || "ite-cli";
+  const deviceLabel =
+    request?.deviceLabel || request?.clientId || "ite-cli";
   const accountLabel = user?.email || user?.name || "your account";
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <main className="auth-page auth-page-wide">
@@ -129,14 +144,21 @@ export function CliAuthPage() {
                   check
                 </p>
                 <h1>Device connected</h1>
-                <p className="auth-flow-copy">You may now return to the terminal. iTE should continue automatically.</p>
+                <p className="auth-flow-copy">
+                  You may now return to the terminal. iTE should continue
+                  automatically.
+                </p>
               </>
             ) : (
               <>
                 <p className="auth-device-emoji" aria-hidden="true">
                   link
                 </p>
-                <h1>{status === "loading" ? "Preparing device" : "Connect device"}</h1>
+                <h1>
+                  {status === "loading"
+                    ? "Preparing device"
+                    : "Connect device"}
+                </h1>
                 <p className="auth-flow-copy">
                   {status === "loading"
                     ? "Finishing browser sign-in and preparing this terminal session."
@@ -163,7 +185,13 @@ export function CliAuthPage() {
           {error ? <p className="error">{error}</p> : null}
           <div className="auth-actions">
             {status === "ready" ? (
-              <button className="button" data-magnetic data-ripple onClick={() => void handleConnect()} type="button">
+              <button
+                className="button"
+                data-magnetic
+                data-ripple
+                onClick={() => void handleConnect()}
+                type="button"
+              >
                 <span className="button-text" data-scramble>
                   Connect
                 </span>
@@ -171,7 +199,13 @@ export function CliAuthPage() {
               </button>
             ) : null}
             {status === "connecting" ? (
-              <button className="button" data-magnetic data-ripple disabled type="button">
+              <button
+                className="button"
+                data-magnetic
+                data-ripple
+                disabled
+                type="button"
+              >
                 <span className="button-text" data-scramble>
                   Connecting...
                 </span>

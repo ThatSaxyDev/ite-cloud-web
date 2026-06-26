@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
-import { authClient } from "@/lib/auth-client";
-import { clearKnownUser, markKnownUser } from "@/lib/browser-state";
-import { getDevAuthUser } from "@/lib/dev-auth";
+import { useAuth } from "@/lib/auth-context";
 
 type SessionItem = {
   id: string;
@@ -16,60 +14,58 @@ type SessionItem = {
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
 export function AccountSessionsPage() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     async function load() {
-      if (getDevAuthUser()) {
-        markKnownUser();
-        setSessions([]);
-        return;
-      }
-
-      const session = await authClient.getSession();
-      if (!session.data?.session) {
-        navigate("/login?redirect=/account/sessions");
-        return;
-      }
-      markKnownUser();
       try {
         const sessionPayload = await api.listSessions();
         setSessions(sessionPayload.sessions);
       } catch (caught) {
         setError(
           typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not load activity.")
-            : "Could not load activity."
+            ? String(
+                (
+                  caught as {
+                    error?: { message?: string };
+                  }
+                ).error?.message || "Could not load sessions.",
+              )
+            : "Could not load sessions.",
         );
       }
     }
     void load();
-  }, [navigate]);
+  }, []);
 
   async function handleRevoke(sessionId: string) {
     await api.revokeSession(sessionId);
     setSessions((items) =>
-      items.map((item) => (item.id === sessionId ? { ...item, revokedAt: new Date().toISOString() } : item))
+      items.map((item) =>
+        item.id === sessionId
+          ? { ...item, revokedAt: new Date().toISOString() }
+          : item,
+      ),
     );
   }
 
   async function handleBrowserLogout() {
-    if (getDevAuthUser()) {
-      clearKnownUser();
-      navigate("/account/settings");
-      return;
+    setLoggingOut(true);
+    try {
+      await signOut();
+    } finally {
+      setLoggingOut(false);
     }
-
-    await authClient.signOut();
-    clearKnownUser();
-    navigate("/login?signedOut=1", { replace: true });
+    navigate("/", { replace: true });
   }
 
   return (
@@ -79,9 +75,15 @@ export function AccountSessionsPage() {
           <p className="sessions-kicker">Sessions</p>
           <h2>Device access</h2>
         </div>
-        <button className="button secondary" data-magnetic onClick={() => void handleBrowserLogout()} type="button">
+        <button
+          className="button secondary"
+          data-magnetic
+          disabled={loggingOut}
+          onClick={() => void handleBrowserLogout()}
+          type="button"
+        >
           <span className="button-text" data-scramble>
-            Sign out
+            {loggingOut ? "Signing out..." : "Sign out"}
           </span>
           <span className="button-border" />
         </button>
@@ -103,11 +105,18 @@ export function AccountSessionsPage() {
                 </div>
               </div>
               <div className="session-side">
-                <span className={`session-state ${session.revokedAt ? "is-revoked" : ""}`}>
+                <span
+                  className={`session-state ${session.revokedAt ? "is-revoked" : ""}`}
+                >
                   {session.revokedAt ? "Ended" : "Active"}
                 </span>
                 {!session.revokedAt ? (
-                  <button className="button secondary" data-magnetic onClick={() => void handleRevoke(session.id)} type="button">
+                  <button
+                    className="button secondary"
+                    data-magnetic
+                    onClick={() => void handleRevoke(session.id)}
+                    type="button"
+                  >
                     <span className="button-text" data-scramble>
                       End access
                     </span>

@@ -6,14 +6,10 @@ import { AgentVisualization } from "@/components/AgentVisualization";
 import { AccountLayout } from "@/components/AccountLayout";
 import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { StartupPreloader } from "@/components/StartupPreloader";
-import { authClient } from "@/lib/auth-client";
-import {
-  hasKnownUser,
-  markBrowserSeen,
-  markKnownUser,
-} from "@/lib/browser-state";
-import { getDevAuthUser } from "@/lib/dev-auth";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { markBrowserSeen } from "@/lib/browser-state";
 import {
   buildInstallReelSlots,
   buildStaticInstallReelSlots,
@@ -36,10 +32,11 @@ import { SettingsPage } from "@/pages/SettingsPage";
 
 const PRELOADER_SEEN_KEY = "ite-web-preloader-seen";
 function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
   const [ctaLabel, setCtaLabel] = useState("Get started");
   const [ctaHref, setCtaHref] = useState("/login?mode=sign-up");
   const [installMethod, setInstallMethod] = useState<InstallMethod>(() =>
-    detectDefaultInstallMethod()
+    detectDefaultInstallMethod(),
   );
   const [installCopied, setInstallCopied] = useState(false);
   const [installTransition, setInstallTransition] = useState<{
@@ -47,46 +44,22 @@ function HomePage() {
   } | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-
     markBrowserSeen();
+  }, []);
 
-    async function resolveCta() {
-      if (getDevAuthUser()) {
-        markKnownUser();
-        setCtaLabel("Continue");
-        setCtaHref("/account/settings");
-        return;
-      }
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
 
-      const session = await authClient.getSession();
-      if (cancelled) {
-        return;
-      }
-
-      if (session.data?.session) {
-        markKnownUser();
-        setCtaLabel("Continue");
-        setCtaHref("/account/settings");
-        return;
-      }
-
-      if (hasKnownUser()) {
-        setCtaLabel("Sign in");
-        setCtaHref("/login?mode=sign-in");
-        return;
-      }
-
+    if (isAuthenticated) {
+      setCtaLabel("Continue");
+      setCtaHref("/account/settings");
+    } else {
       setCtaLabel("Get started");
       setCtaHref("/login?mode=sign-up");
     }
-
-    void resolveCta();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }, [isLoading, isAuthenticated]);
 
   useEffect(() => {
     if (!installTransition) {
@@ -362,7 +335,7 @@ export function App() {
   }
 
   return (
-    <>
+    <AuthProvider>
       {showPreloader ? (
         <StartupPreloader onComplete={handlePreloaderComplete} />
       ) : null}
@@ -376,7 +349,14 @@ export function App() {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/cli" element={<CliAuthPage />} />
-        <Route path="/account" element={<AccountLayout />}>
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <AccountLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="/account/settings" replace />} />
           <Route path="billing" element={<BillingPage />} />
           <Route path="sessions" element={<AccountSessionsPage />} />
@@ -389,6 +369,6 @@ export function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </>
+    </AuthProvider>
   );
 }

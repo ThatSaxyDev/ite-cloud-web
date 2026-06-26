@@ -3,9 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { api } from "@/lib/api";
-import { authClient } from "@/lib/auth-client";
-import { markKnownUser } from "@/lib/browser-state";
-import { getDevAuthUser } from "@/lib/dev-auth";
+import { useAuth } from "@/lib/auth-context";
 
 type PricingPlan = Awaited<ReturnType<typeof api.pricingCatalog>>["plans"][number];
 
@@ -27,6 +25,7 @@ function formatRequestCount(value: number | null) {
 export function PricingPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [plan, setPlan] = useState<PricingPlan | null>(null);
   const [authState, setAuthState] = useState<AuthState>({ kind: "loading" });
   const [checkoutPending, setCheckoutPending] = useState(false);
@@ -66,23 +65,14 @@ export function PricingPage() {
     let cancelled = false;
 
     async function resolveAuth() {
-      if (getDevAuthUser()) {
-        markKnownUser();
-        setAuthState({ kind: "free", trialAvailable: true });
+      if (authLoading) {
         return;
       }
 
-      const session = await authClient.getSession();
-      if (cancelled) {
-        return;
-      }
-
-      if (!session.data?.session) {
+      if (!isAuthenticated) {
         setAuthState({ kind: "signed-out" });
         return;
       }
-
-      markKnownUser();
 
       try {
         const billing = await api.billingMe();
@@ -109,7 +99,7 @@ export function PricingPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   async function startCheckout() {
     if (!plan) {

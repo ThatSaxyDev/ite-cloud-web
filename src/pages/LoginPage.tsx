@@ -1,10 +1,9 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
-import { clearKnownUser, markKnownUser } from "@/lib/browser-state";
-import { getDevAuthUser } from "@/lib/dev-auth";
+import { useAuth } from "@/lib/auth-context";
 import { config } from "@/lib/config";
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -54,11 +53,14 @@ function EyeIcon({ open }: { open: boolean }) {
 }
 
 export function LoginPage() {
-  const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const redirectTo = params.get("redirect") || "/account/settings";
-  const [mode, setMode] = useState<"sign-in" | "sign-up" | "verify-email">(params.get("mode") === "sign-up" ? "sign-up" : "sign-in");
+  const redirectTo = params.get("redirect") || "/";
+  const { isAuthenticated, isLoading } = useAuth();
+
+  const [mode, setMode] = useState<"sign-in" | "sign-up" | "verify-email">(
+    params.get("mode") === "sign-up" ? "sign-up" : "sign-in",
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,29 +71,12 @@ export function LoginPage() {
   const [verificationSent, setVerificationSent] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
+  // If already authenticated, redirect away immediately.
   useEffect(() => {
-    async function resumeIfAlreadySignedIn() {
-      if (params.get("signedOut") === "1") {
-        clearKnownUser();
-        return;
-      }
-
-      if (getDevAuthUser()) {
-        markKnownUser();
-        window.location.assign(redirectTo);
-        return;
-      }
-
-      const session = await authClient.getSession();
-      if (!session.data?.session) {
-        return;
-      }
-      markKnownUser();
-      window.location.assign(redirectTo);
+    if (!isLoading && isAuthenticated) {
+      window.location.href = redirectTo;
     }
-
-    void resumeIfAlreadySignedIn();
-  }, [navigate, redirectTo]);
+  }, [isLoading, isAuthenticated, redirectTo]);
 
   useEffect(() => {
     setGithubPending(false);
@@ -139,19 +124,21 @@ export function LoginPage() {
       const query = new URLSearchParams({
         provider: "github",
         callbackURL,
-        errorCallbackURL
+        errorCallbackURL,
       });
 
       if (mode === "sign-up") {
         query.set("requestSignUp", "true");
       }
 
-      window.location.assign(`${config.apiUrl}/api/auth/sign-in/social?${query.toString()}`);
+      window.location.assign(
+        `${config.apiUrl}/api/auth/sign-in/social?${query.toString()}`,
+      );
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught
           ? String((caught as { message?: string }).message)
-          : "GitHub sign-in failed."
+          : "GitHub sign-in failed.",
       );
       setGithubPending(false);
     }
@@ -167,7 +154,7 @@ export function LoginPage() {
         const check = await fetch(`${config.apiUrl}/auth/check-email`, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email }),
         });
         if (check.ok) {
           const { exists } = await check.json();
@@ -181,7 +168,7 @@ export function LoginPage() {
         const result = await authClient.signUp.email({
           name,
           email,
-          password
+          password,
         });
         if (result.error) {
           throw result.error;
@@ -195,7 +182,7 @@ export function LoginPage() {
 
       const result = await authClient.signIn.email({
         email,
-        password
+        password,
       });
       if (result.error) {
         if (result.error.code === "EMAIL_NOT_VERIFIED") {
@@ -207,13 +194,14 @@ export function LoginPage() {
         }
         throw result.error;
       }
-      markKnownUser();
-      window.location.assign(redirectTo);
+
+      // Full page reload so AuthProvider picks up the fresh session cookie.
+      window.location.href = redirectTo;
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught
           ? String((caught as { message?: string }).message)
-          : "Authentication failed."
+          : "Authentication failed.",
       );
     } finally {
       setFormPending(false);
@@ -230,7 +218,7 @@ export function LoginPage() {
       setError(
         typeof caught === "object" && caught && "message" in caught
           ? String((caught as { message?: string }).message)
-          : "Failed to resend verification code."
+          : "Failed to resend verification code.",
       );
     } finally {
       setFormPending(false);
@@ -255,8 +243,7 @@ export function LoginPage() {
       // verifyEmail may establish a session in some Better Auth versions.
       const existingSession = await authClient.getSession();
       if (existingSession.data?.session) {
-        markKnownUser();
-        window.location.assign(redirectTo);
+        window.location.href = redirectTo;
         return;
       }
 
@@ -277,17 +264,21 @@ export function LoginPage() {
         throw signInResult.error;
       }
 
-      markKnownUser();
-      window.location.assign(redirectTo);
+      window.location.href = redirectTo;
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught
           ? String((caught as { message?: string }).message)
-          : "Email verification failed."
+          : "Email verification failed.",
       );
     } finally {
       setFormPending(false);
     }
+  }
+
+  // Show nothing while auth is resolving.
+  if (isLoading) {
+    return null;
   }
 
   return (
@@ -300,7 +291,13 @@ export function LoginPage() {
       <section className="auth-stage">
         <div className="auth-heading">
           <div className="auth-copy">
-            <h1>{mode === "sign-in" ? "Sign in" : mode === "sign-up" ? "Create account" : "Check your email"}</h1>
+            <h1>
+              {mode === "sign-in"
+                ? "Sign in"
+                : mode === "sign-up"
+                  ? "Create account"
+                  : "Check your email"}
+            </h1>
             <p className="auth-flow-copy">
               {mode === "verify-email"
                 ? `We sent a 6-digit verification code to ${email}. Enter it here to verify your account.`
@@ -326,12 +323,24 @@ export function LoginPage() {
                   maxLength={6}
                   placeholder="123456"
                   value={verificationOtp}
-                  onChange={(event) => setVerificationOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(event) =>
+                    setVerificationOtp(event.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                 />
               </label>
               <div className="auth-actions">
-                <button className="button" data-magnetic data-ripple disabled={formPending || verificationOtp.length < 6} type="submit">
-                  <span className="button-text" data-scramble data-scramble-value={formPending ? "Verifying..." : "Verify email"}>
+                <button
+                  className="button"
+                  data-magnetic
+                  data-ripple
+                  disabled={formPending || verificationOtp.length < 6}
+                  type="submit"
+                >
+                  <span
+                    className="button-text"
+                    data-scramble
+                    data-scramble-value={formPending ? "Verifying..." : "Verify email"}
+                  >
                     {formPending ? "Verifying..." : "Verify email"}
                   </span>
                   <span className="button-shine" />
@@ -361,7 +370,13 @@ export function LoginPage() {
           ) : (
             <form className="form-surface" onSubmit={handleSubmit}>
               <>
-                <button className="button secondary" data-magnetic disabled={githubPending || formPending} onClick={() => void handleGithubSignIn()} type="button">
+                <button
+                  className="button secondary"
+                  data-magnetic
+                  disabled={githubPending || formPending}
+                  onClick={() => void handleGithubSignIn()}
+                  type="button"
+                >
                   {githubPending ? "Connecting GitHub..." : "Continue with GitHub"}
                 </button>
                 <div className="auth-divider" aria-hidden="true">
@@ -407,30 +422,54 @@ export function LoginPage() {
               </label>
               {error ? <p className="error">{error}</p> : null}
               <div className="auth-actions">
-                <button className="button" data-magnetic data-ripple disabled={formPending || githubPending} type="submit">
+                <button
+                  className="button"
+                  data-magnetic
+                  data-ripple
+                  disabled={formPending || githubPending}
+                  type="submit"
+                >
                   <span
                     className="button-text"
                     data-scramble
-                    data-scramble-value={formPending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+                    data-scramble-value={
+                      formPending
+                        ? "Working..."
+                        : mode === "sign-in"
+                          ? "Sign in"
+                          : "Create account"
+                    }
                   >
-                    {formPending ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+                    {formPending
+                      ? "Working..."
+                      : mode === "sign-in"
+                        ? "Sign in"
+                        : "Create account"}
                   </span>
                   <span className="button-shine" />
                 </button>
               </div>
               <div className="auth-mode-switch">
-                <span>{mode === "sign-in" ? "New to iTE?" : "Already have an account?"}</span>
+                <span>
+                  {mode === "sign-in"
+                    ? "New to iTE?"
+                    : "Already have an account?"}
+                </span>
                 <button
                   className="auth-mode-link"
                   data-magnetic
                   disabled={formPending || githubPending}
-                  onClick={() => switchMode(mode === "sign-in" ? "sign-up" : "sign-in")}
+                  onClick={() =>
+                    switchMode(mode === "sign-in" ? "sign-up" : "sign-in")
+                  }
                   type="button"
                 >
                   <span
                     className="auth-mode-link-text"
                     data-scramble
-                    data-scramble-value={mode === "sign-in" ? "Create account" : "Sign in"}
+                    data-scramble-value={
+                      mode === "sign-in" ? "Create account" : "Sign in"
+                    }
                   >
                     {mode === "sign-in" ? "Create account" : "Sign in"}
                   </span>
