@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
-import { markKnownUser } from "@/lib/browser-state";
+import { clearKnownUser, markKnownUser } from "@/lib/browser-state";
 import { getDevAuthUser } from "@/lib/dev-auth";
 import { config } from "@/lib/config";
 
@@ -72,6 +72,7 @@ export function LoginPage() {
   useEffect(() => {
     async function resumeIfAlreadySignedIn() {
       if (params.get("signedOut") === "1") {
+        clearKnownUser();
         return;
       }
 

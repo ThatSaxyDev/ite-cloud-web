@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
-import { markKnownUser } from "@/lib/browser-state";
+import { clearKnownUser, markKnownUser } from "@/lib/browser-state";
 import { getDevAuthUser } from "@/lib/dev-auth";
 
 type SessionItem = {
@@ -62,11 +62,13 @@ export function AccountSessionsPage() {
 
   async function handleBrowserLogout() {
     if (getDevAuthUser()) {
+      clearKnownUser();
       navigate("/account/settings");
       return;
     }
 
     await authClient.signOut();
+    clearKnownUser();
     navigate("/login?signedOut=1", { replace: true });
   }
 

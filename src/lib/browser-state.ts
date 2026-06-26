@@ -33,3 +33,10 @@ export function hasKnownUser(): boolean {
   }
   return window.localStorage.getItem(KNOWN_USER_KEY) === "1";
 }
+
+export function clearKnownUser(): void {
+  if (!canUseStorage()) {
+    return;
+  }
+  window.localStorage.removeItem(KNOWN_USER_KEY);
+}
