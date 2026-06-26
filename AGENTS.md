@@ -69,7 +69,7 @@ src/
 - better-auth (authentication)
 - nanostores (state management)
 
-## Configuration
+## Config
 
 | File | Purpose |
 |------|---------|
