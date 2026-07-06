@@ -306,6 +306,7 @@ function HomePage() {
           </div>
         </div>
 
+        {/* TODO: re-enable pricing link on landing page
         <Link
           className="hero-pricing-link interactive-link"
           data-magnetic
@@ -314,6 +315,7 @@ function HomePage() {
         >
           Pricing
         </Link>
+        */}
 
         <section className="hero-demo-section">
           <video
