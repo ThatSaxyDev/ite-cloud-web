@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-const CONTRACT_ADDRESS =
-  "KNANiTVBP8RBwAz7FpE4Bz8Bc8sz1xSNKXbqXVNBAGS";
+const CONTRACT_ADDRESS = "xxxxxxxxxxxxxxxxxxxxxxxxxxpump";
 
 function SolanaIcon() {
   return (
