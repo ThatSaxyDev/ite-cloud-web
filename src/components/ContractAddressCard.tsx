@@ -60,13 +60,6 @@ export function ContractAddressCard() {
         Contract address
       </h2>
 
-      <div className="contract-chain">
-        <span className="contract-chain-icon" aria-hidden="true">
-          <SolanaIcon />
-        </span>
-        <span>Solana</span>
-      </div>
-
       <div className="contract-address-row">
         <code className="contract-address-code" aria-live="polite">
           {copied ? "Copied" : CONTRACT_ADDRESS}
@@ -79,6 +72,13 @@ export function ContractAddressCard() {
         >
           <CopyIcon />
         </button>
+      </div>
+
+      <div className="contract-chain">
+        <span className="contract-chain-icon" aria-hidden="true">
+          <SolanaIcon />
+        </span>
+        <span>Solana</span>
       </div>
     </section>
   );

@@ -838,8 +838,8 @@ button {
     max-width: 28rem;
     display: grid;
     justify-items: center;
-    gap: 18px;
-    padding: 28px 24px 24px;
+    gap: 14px;
+    padding: 24px 20px 20px;
     border: 1px solid var(--line);
     background: var(--bg-elevated);
     border-radius: 10px;
@@ -849,7 +849,7 @@ button {
 .contract-card-title {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 500;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -860,12 +860,12 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px;
+    padding: 5px 12px;
     border: 1px solid var(--line);
     background: var(--bg-elevated-strong);
     border-radius: 999px;
     font-family: var(--font-mono);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     color: var(--text);
 }
 
@@ -880,7 +880,7 @@ button {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr auto;
-    align-items: center;
+    align-items: stretch;
     gap: 0;
     border: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.015);
@@ -891,23 +891,21 @@ button {
     padding: 12px 14px;
     margin: 0;
     font-family: var(--font-mono);
-    font-size: clamp(0.7rem, 1.6vw, 0.82rem);
+    font-size: clamp(0.66rem, 1.5vw, 0.78rem);
     line-height: 1.5;
     color: var(--text-soft);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     text-align: center;
     user-select: all;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+    min-width: 0;
 }
 
 .contract-address-copy {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 100%;
-    align-self: stretch;
+    width: 44px;
     color: var(--text-soft);
     border-left: 1px solid var(--line);
     transition:
@@ -918,6 +916,39 @@ button {
 .contract-address-copy:hover {
     color: var(--text);
     background: var(--bg-elevated-strong);
+}
+
+@media (max-width: 480px) {
+    .hero-contract-slot {
+        margin-top: 44px;
+        padding: 0 16px;
+    }
+
+    .contract-card {
+        padding: 20px 16px 16px;
+        gap: 12px;
+    }
+
+    .contract-card-title {
+        font-size: 0.68rem;
+        letter-spacing: 0.16em;
+    }
+
+    .contract-address-row {
+        grid-template-columns: 1fr;
+    }
+
+    .contract-address-copy {
+        width: 100%;
+        height: 38px;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+    }
+
+    .contract-address-code {
+        padding: 10px 12px;
+        font-size: 0.7rem;
+    }
 }
 
 .hero-floating-footer p {
