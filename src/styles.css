@@ -822,6 +822,104 @@ button {
     white-space: nowrap;
 }
 
+.hero-contract-slot {
+    width: 100%;
+    max-width: var(--max-page);
+    margin: 64px auto 0;
+    padding: 0 22px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.contract-card {
+    width: 100%;
+    max-width: 28rem;
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+    padding: 28px 24px 24px;
+    border: 1px solid var(--line);
+    background: var(--bg-elevated);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.contract-card-title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+}
+
+.contract-chain {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: var(--bg-elevated-strong);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text);
+}
+
+.contract-chain-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-soft);
+}
+
+.contract-address-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.contract-address-code {
+    display: block;
+    padding: 12px 14px;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(0.7rem, 1.6vw, 0.82rem);
+    line-height: 1.5;
+    color: var(--text-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    user-select: all;
+}
+
+.contract-address-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 100%;
+    align-self: stretch;
+    color: var(--text-soft);
+    border-left: 1px solid var(--line);
+    transition:
+        color var(--motion-fast),
+        background var(--motion-fast);
+}
+
+.contract-address-copy:hover {
+    color: var(--text);
+    background: var(--bg-elevated-strong);
+}
+
 .hero-floating-footer p {
     margin: 0;
 }

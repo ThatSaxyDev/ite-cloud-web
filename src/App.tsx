@@ -8,6 +8,7 @@ import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects"
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { StartupPreloader } from "@/components/StartupPreloader";
 import { authClient } from "@/lib/auth-client";
+import { ContractAddressCard } from "@/components/ContractAddressCard";
 import {
   hasKnownUser,
   markBrowserSeen,
@@ -327,6 +328,10 @@ function HomePage() {
             src="/demo.mp4"
           />
         </section>
+
+        <div className="hero-contract-slot">
+          <ContractAddressCard />
+        </div>
 
         <footer className="hero-floating-footer">
           <p>
