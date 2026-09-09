@@ -1,31 +1,31 @@
 {
-  "version": "0.1.41",
-  "generated_at": "2026-09-09T01:25:26.857265+00:00",
+  "version": "0.2.0",
+  "generated_at": "2026-09-09T21:14:41.055922+00:00",
   "assets": {
     "darwin-arm64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.41/ite-0.1.41-darwin-arm64.tar.gz",
-      "sha256": "07a9e6a4457bd722c26a52d0c8e092d953fd791021d846b313969f211e159a65",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.0/ite-0.2.0-darwin-arm64.tar.gz",
+      "sha256": "2336d47cb6f07a467d77b869361347d80cf352a402049773189f92f3288b1627",
       "archiveType": "tar.gz",
       "executable": "ite",
       "label": "macOS Apple Silicon"
     },
     "darwin-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.41/ite-0.1.41-darwin-x64.tar.gz",
-      "sha256": "57df072a7eaf1679f9fd8fc0887619c3b92d4e3f885d347b6b25dafc35384766",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.0/ite-0.2.0-darwin-x64.tar.gz",
+      "sha256": "23892a15f5ff6a852276f692b36c71262778e11c931d1aea5b2bbf540a64adfc",
       "archiveType": "tar.gz",
       "executable": "ite",
       "label": "macOS Intel"
     },
     "linux-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.41/ite-0.1.41-linux-x64.tar.gz",
-      "sha256": "21f10bf8a800363b071ec60e3b0c63659b1173ed41acc7f4a2fdc33e84b0369a",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.0/ite-0.2.0-linux-x64.tar.gz",
+      "sha256": "43a45b2a6f0ae86a993739d2dc53bee4c77cd52a7549192ad0ca690ae771d98c",
       "archiveType": "tar.gz",
       "executable": "ite",
       "label": "Linux x86_64"
     },
     "win32-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.1.41/ite-0.1.41-win32-x64.zip",
-      "sha256": "571302d867a8a8bb7cb13d44e859f55974cc7958b21442c78f441ab43dbf3431",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.0/ite-0.2.0-win32-x64.zip",
+      "sha256": "fbe6291012231a7d41bd10e426dc3d2b5b2215f8ab1e448d5e0c0a905b228c0c",
       "archiveType": "zip",
       "executable": "ite.exe",
       "label": "Windows x86_64"
