@@ -200,7 +200,7 @@ export function ActivityPage() {
               <div className="detail-card-copy">
                 <strong>Cloud models require iTE Pro</strong>
                 <p className="muted">
-                  Subscribe to iTE Pro to access DeepSeek V4 Pro through iTE Cloud. Usage windows and bundled limits unlock once your subscription is active.
+                  Subscribe to iTE Pro to access DeepSeek Flash through iTE Cloud. Usage windows and bundled limits unlock once your subscription is active.
                 </p>
               </div>
               <div className="detail-card-actions">
