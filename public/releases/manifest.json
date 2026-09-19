@@ -1,34 +1,13 @@
 {
-  "version": "0.2.16",
-  "generated_at": "2026-09-15T06:28:24.604533+00:00",
+  "version": "0.2.17",
+  "generated_at": "2026-09-19T16:20:34.277177+00:00",
   "assets": {
     "darwin-arm64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.16/ite-0.2.16-darwin-arm64.tar.gz",
-      "sha256": "9c319fb0a48de5ec13045d02cbce6fe20f88979f088809b13e28c8075ce9616d",
+      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.17/ite-0.2.17-darwin-arm64.tar.gz",
+      "sha256": "50b4fdd78f97490fc0da1ed8efcbef88ada661ce936f482eb428326802e8c9e3",
       "archiveType": "tar.gz",
       "executable": "ite",
       "label": "macOS Apple Silicon"
-    },
-    "darwin-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.16/ite-0.2.16-darwin-x64.tar.gz",
-      "sha256": "a194bb3c61a9de595cf94fd51519e2e10d2e42864edea369a30e0552a26bdacf",
-      "archiveType": "tar.gz",
-      "executable": "ite",
-      "label": "macOS Intel"
-    },
-    "linux-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.16/ite-0.2.16-linux-x64.tar.gz",
-      "sha256": "89e876869f768ee11b7d201776f775b6388c720772a878c7fbfdba2c0c9dc12f",
-      "archiveType": "tar.gz",
-      "executable": "ite",
-      "label": "Linux x86_64"
-    },
-    "win32-x64": {
-      "url": "https://github.com/ThatSaxyDev/ite-releases/releases/download/v0.2.16/ite-0.2.16-win32-x64.zip",
-      "sha256": "b4dbac30c7720fde508a48e9cc7794f94535882497712ea84d98a7c6a85df0c4",
-      "archiveType": "zip",
-      "executable": "ite.exe",
-      "label": "Windows x86_64"
     }
   }
 }
