@@ -2268,7 +2268,7 @@ code {
 }
 
 .detail-card-featured {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) 320px;
     align-items: end;
     gap: 18px;
 }
@@ -2280,7 +2280,14 @@ code {
 }
 
 .billing-checkout-actions {
-    width: min(100%, 320px);
+    width: 100%;
+    grid-column: 2;
+    justify-self: end;
+}
+
+.detail-card-featured > .detail-card-copy {
+    grid-column: 1;
+    min-width: 0;
 }
 
 .billing-payment-note {
@@ -4826,6 +4833,14 @@ code {
     .onboarding-command-card,
     .onboarding-install-panel {
         padding: 16px;
+    }
+
+    .detail-card-featured {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .billing-checkout-actions {
+        grid-column: 1;
     }
 
     .onboarding-hero {
