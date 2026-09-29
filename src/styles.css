@@ -2527,7 +2527,8 @@ code {
 
 .pricing-cta-wrapper {
     position: relative;
-    display: inline-block;
+    display: grid;
+    gap: 10px;
     width: 100%;
 }
 
