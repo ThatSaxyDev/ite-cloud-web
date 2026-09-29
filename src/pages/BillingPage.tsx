@@ -140,13 +140,15 @@ export function BillingPage() {
     };
   }, []);
 
-  async function handleUpgrade() {
+  async function handleUpgrade(
+    planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d" = "ite_pro_subscription_monthly",
+  ) {
     try {
       setCheckoutPending(true);
       setError(null);
       const catalog = await api.pricingCatalog();
       const plan = catalog.plans.find(
-        (item) => item.planKey === "ite_pro_subscription_monthly",
+        (item) => item.planKey === planKey,
       );
       if (!plan?.billingConfigured || !plan.checkoutEnabled) {
         setError(
@@ -158,7 +160,7 @@ export function BillingPage() {
         setCheckoutPending(false);
         return;
       }
-      const payload = await api.createCheckout("ite_pro_subscription_monthly");
+      const payload = await api.createCheckout(planKey);
       window.location.assign(payload.checkoutUrl);
     } catch (caught) {
       setError(
@@ -262,7 +264,7 @@ export function BillingPage() {
                 : checkoutSuccess
                   ? "Your payment is being processed. This page will update automatically — please don't close it."
                   : trialAvailable
-                    ? "Free includes local models and your own keys. Start a 14-day trial, then continue at $8/month."
+                    ? "Free includes local models and your own keys. Use a USD card for a 14-day trial, or choose a ₦10,500 one-time pass if you prefer local payment methods."
                     : "Free includes local models and your own keys. Choose a $8/month subscription or a ₦10,500 30-day pass."}
             </p>
             {paid ? (
@@ -296,6 +298,22 @@ export function BillingPage() {
                       : "Subscribe to Pro"}
                 </span>
                 <span className="button-shine" />
+              </button>
+            </div>
+          ) : null}
+          {!paid && !checkoutSuccess ? (
+            <div className="detail-card-actions">
+              <button
+                className="button secondary"
+                data-magnetic
+                disabled={checkoutPending}
+                onClick={() => void handleUpgrade("ite_pro_pass_30d")}
+                type="button"
+              >
+                <span className="button-text" data-scramble>
+                  {checkoutPending ? "Opening secure checkout..." : "No USD card? Pay once — ₦10,500"}
+                </span>
+                <span className="button-border" />
               </button>
             </div>
           ) : null}
