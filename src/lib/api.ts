@@ -47,27 +47,29 @@ export const api = {
     return apiRequest<{
       ok: true;
       plans: Array<{
-        planKey: "ite_pro_monthly";
+        planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d";
         displayName: string;
-        provider: "bachs";
         billingConfigured: boolean;
         checkoutEnabled: boolean;
         checkoutUnavailableMessage?: string;
-        trialOffer: {
-          planKey: "ite_pro_trial";
-          interval: "month";
+        trialOffer?: {
+          days: number;
+          label: string;
+        };
+        accessPass?: {
+          interval: "day";
           intervalCount: number;
           label: string;
         };
-        accessPass: {
-          interval: "month";
-          intervalCount: number;
-          label: string;
-        };
-        recurringPrice: {
+        recurringPrice?: {
           amount: number;
           currency: "USD";
           interval: "month";
+          label: string;
+        };
+        oneTimePrice?: {
+          amount: number;
+          currency: "NGN";
           label: string;
         };
         usageLimits: {
@@ -115,12 +117,18 @@ export const api = {
     });
   },
   createCheckout(
-    planKey: "ite_pro_trial" | "ite_pro_monthly" = "ite_pro_trial",
+    planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d" = "ite_pro_subscription_monthly",
     urls?: { successUrl?: string; returnUrl?: string },
   ) {
     return apiRequest<{ ok: true; checkoutId: string; checkoutUrl: string }>("/billing/checkout", {
       method: "POST",
       body: JSON.stringify({ planKey, ...(urls ?? {}) })
+    });
+  },
+  billingPortal() {
+    return apiRequest<{ ok: true; portalUrl: string }>("/billing/portal", {
+      method: "POST",
+      body: JSON.stringify({})
     });
   },
   billingMe() {

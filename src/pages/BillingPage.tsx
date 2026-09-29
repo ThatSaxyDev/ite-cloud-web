@@ -34,11 +34,11 @@ function formatPlanName(planKey: string | null | undefined) {
     return "Free";
   }
 
-  if (planKey === "ite_pro_monthly") {
-    return "iTE Pro";
+  if (planKey === "ite_pro_subscription_monthly") {
+    return "iTE Pro monthly";
   }
-  if (planKey === "ite_pro_trial") {
-    return "iTE Pro intro";
+  if (planKey === "ite_pro_pass_30d") {
+    return "iTE Pro 30-day pass";
   }
 
   return planKey
@@ -51,6 +51,8 @@ function formatSubscriptionStatus(status: string | null | undefined) {
   switch (status) {
     case "active":
       return "Active";
+    case "trialing":
+      return "Trial active";
     case "past_due":
       return "Past due";
     case "canceled":
@@ -63,7 +65,7 @@ function formatSubscriptionStatus(status: string | null | undefined) {
 }
 
 function formatSubscriptionPeriodLabel(status: string | null | undefined) {
-  if (status === "active") {
+  if (status === "active" || status === "trialing" || status === "past_due") {
     return "Access through";
   }
   return "Current period ends";
@@ -77,6 +79,7 @@ export function BillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [checkoutPending, setCheckoutPending] = useState(false);
   const [syncPending, setSyncPending] = useState(false);
+  const [portalPending, setPortalPending] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -143,7 +146,7 @@ export function BillingPage() {
       setError(null);
       const catalog = await api.pricingCatalog();
       const plan = catalog.plans.find(
-        (item) => item.planKey === "ite_pro_monthly",
+        (item) => item.planKey === "ite_pro_subscription_monthly",
       );
       if (!plan?.billingConfigured || !plan.checkoutEnabled) {
         setError(
@@ -155,9 +158,7 @@ export function BillingPage() {
         setCheckoutPending(false);
         return;
       }
-      const payload = await api.createCheckout(
-        billing?.trial.available ? "ite_pro_trial" : "ite_pro_monthly",
-      );
+      const payload = await api.createCheckout("ite_pro_subscription_monthly");
       window.location.assign(payload.checkoutUrl);
     } catch (caught) {
       setError(
@@ -169,6 +170,22 @@ export function BillingPage() {
           : "Could not start checkout.",
       );
       setCheckoutPending(false);
+    }
+  }
+
+  async function handleManageSubscription() {
+    try {
+      setPortalPending(true);
+      setError(null);
+      const payload = await api.billingPortal();
+      window.location.assign(payload.portalUrl);
+    } catch (caught) {
+      setError(
+        typeof caught === "object" && caught && "error" in caught
+          ? String((caught as { error?: { message?: string } }).error?.message || "Could not open subscription management.")
+          : "Could not open subscription management.",
+      );
+      setPortalPending(false);
     }
   }
 
@@ -199,7 +216,8 @@ export function BillingPage() {
   const paid = Boolean(billing?.entitlements.proAccess);
   const subscriptionStatus = billing?.subscription?.status ?? null;
   const trialAvailable = Boolean(billing?.trial.available);
-  const trialActive = billing?.entitlements.planKey === "ite_pro_trial";
+  const trialActive = subscriptionStatus === "trialing";
+  const hasRecurringSubscription = billing?.subscription?.planKey === "ite_pro_subscription_monthly";
 
   return (
     <section className="account-panel account-panel-wide">
@@ -232,7 +250,7 @@ export function BillingPage() {
             <strong>
               {paid
                 ? trialActive
-                  ? "iTE Pro intro is active"
+                  ? "Your iTE Pro trial is active"
                   : "iTE Pro is active"
                 : checkoutSuccess
                   ? "Confirming your payment..."
@@ -244,8 +262,8 @@ export function BillingPage() {
                 : checkoutSuccess
                   ? "Your payment is being processed. This page will update automatically — please don't close it."
                   : trialAvailable
-                    ? "Free includes local models and your own keys. Start the first-month intro to try managed bundled access."
-                    : "Free includes local models and your own keys. iTE Pro adds managed bundled access in 30-day passes."}
+                    ? "Free includes local models and your own keys. Start a 14-day trial, then continue at $8/month."
+                    : "Free includes local models and your own keys. Choose a $8/month subscription or a ₦10,500 30-day pass."}
             </p>
             {paid ? (
               <p className="muted" style={{ marginTop: "0.5rem" }}>
@@ -274,10 +292,26 @@ export function BillingPage() {
                   {checkoutPending
                     ? "Opening secure checkout..."
                     : trialAvailable
-                      ? "Start Pro intro"
+                      ? "Start 14-day trial"
                       : "Subscribe to Pro"}
                 </span>
                 <span className="button-shine" />
+              </button>
+            </div>
+          ) : null}
+          {paid && hasRecurringSubscription ? (
+            <div className="detail-card-actions">
+              <button
+                className="button secondary"
+                data-magnetic
+                disabled={portalPending}
+                onClick={() => void handleManageSubscription()}
+                type="button"
+              >
+                <span className="button-text" data-scramble>
+                  {portalPending ? "Opening management..." : "Manage subscription"}
+                </span>
+                <span className="button-border" />
               </button>
             </div>
           ) : null}
@@ -298,12 +332,12 @@ export function BillingPage() {
               <dt>Price</dt>
               <dd>
                 {trialActive
-                  ? "First-month intro"
+                  ? "14-day free trial, then $8/month"
                   : paid
-                    ? "$8/month"
+                    ? hasRecurringSubscription ? "$8/month" : "₦10,500 one-time 30-day pass"
                     : trialAvailable
-                      ? "First-month intro ($3), then $8 for 30 days"
-                      : "$8 for 30 days of Pro access"}
+                      ? "14-day free trial, then $8/month"
+                      : "$8/month or ₦10,500 one-time pass"}
               </dd>
             </div>
           </dl>

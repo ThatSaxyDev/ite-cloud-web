@@ -28,6 +28,7 @@ export function PricingPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [plan, setPlan] = useState<PricingPlan | null>(null);
+  const [passPlan, setPassPlan] = useState<PricingPlan | null>(null);
   const [authState, setAuthState] = useState<AuthState>({ kind: "loading" });
   const [checkoutPending, setCheckoutPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +36,7 @@ export function PricingPage() {
 
   const checkoutIntent = new URLSearchParams(location.search).get("checkout");
   const loginRedirect = useMemo(
-    () => `/pricing?checkout=ite_pro_trial`,
+    () => `/pricing?checkout=ite_pro_subscription_monthly`,
     [],
   );
 
@@ -46,7 +47,8 @@ export function PricingPage() {
       try {
         const catalog = await api.pricingCatalog();
         if (!cancelled) {
-          setPlan(catalog.plans.find((item) => item.planKey === "ite_pro_monthly") ?? null);
+          setPlan(catalog.plans.find((item) => item.planKey === "ite_pro_subscription_monthly") ?? null);
+          setPassPlan(catalog.plans.find((item) => item.planKey === "ite_pro_pass_30d") ?? null);
         }
       } catch {
         if (!cancelled) {
@@ -111,16 +113,19 @@ export function PricingPage() {
     };
   }, []);
 
-  async function startCheckout() {
-    if (!plan) {
+  async function startCheckout(
+    planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d" = "ite_pro_subscription_monthly",
+  ) {
+    const catalogPlan = planKey === "ite_pro_subscription_monthly" ? plan : passPlan;
+    if (!catalogPlan) {
       return;
     }
 
-    if (!plan.billingConfigured || !plan.checkoutEnabled) {
+    if (!catalogPlan?.billingConfigured || !catalogPlan.checkoutEnabled) {
       setError(null);
       setCheckoutNotice(
-        plan.checkoutUnavailableMessage ??
-          (plan.billingConfigured
+        catalogPlan?.checkoutUnavailableMessage ??
+          (catalogPlan?.billingConfigured
             ? "Checkout is not open yet. Please check back soon."
             : "Billing is not configured yet. Please check back soon."),
       );
@@ -143,21 +148,11 @@ export function PricingPage() {
       setCheckoutNotice(null);
       const origin = window.location.origin;
       const rawRequestedPlan =
-        checkoutIntent === "ite_pro_monthly" || checkoutIntent === "ite_pro_trial"
+        checkoutIntent === "ite_pro_subscription_monthly" || checkoutIntent === "ite_pro_pass_30d"
           ? checkoutIntent
           : null;
-      const requestedPlan =
-        rawRequestedPlan === "ite_pro_trial" &&
-        authState.kind === "free" &&
-        !authState.trialAvailable
-          ? null
-          : rawRequestedPlan;
-      const planKey =
-        requestedPlan ??
-        (authState.kind === "free" && authState.trialAvailable
-          ? plan.trialOffer.planKey
-          : plan.planKey);
-      const payload = await api.createCheckout(planKey, {
+      const chosenPlanKey = rawRequestedPlan ?? planKey;
+      const payload = await api.createCheckout(chosenPlanKey, {
         successUrl: `${origin}/account/billing?checkout=success`,
         returnUrl: `${origin}/pricing`,
       });
@@ -177,7 +172,7 @@ export function PricingPage() {
 
   useEffect(() => {
     if (
-      (checkoutIntent !== "ite_pro_monthly" && checkoutIntent !== "ite_pro_trial") ||
+      (checkoutIntent !== "ite_pro_subscription_monthly" && checkoutIntent !== "ite_pro_pass_30d") ||
       !plan ||
       authState.kind !== "free" ||
       checkoutPending
@@ -186,13 +181,13 @@ export function PricingPage() {
     }
 
     void startCheckout();
-  }, [authState.kind, checkoutIntent, checkoutPending, plan]);
+  }, [authState.kind, checkoutIntent, checkoutPending, plan, passPlan]);
 
   const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
   const ctaLabel = authState.kind === "pro"
     ? "Manage subscription"
     : trialAvailable
-      ? "Start intro trial"
+      ? "Start 14-day trial"
       : "Subscribe to Pro";
 
   const cleanPlan = useMemo(() => {
@@ -201,11 +196,7 @@ export function PricingPage() {
       ...plan,
       trialOffer: {
         ...plan.trialOffer,
-        label: "First month $3",
-      },
-      accessPass: {
-        ...plan.accessPass,
-        label: "Pro",
+        label: "14-day free trial",
       },
       includes: [
         "Cloud coding models included",
@@ -236,8 +227,8 @@ export function PricingPage() {
           <p className="sessions-kicker">Pricing</p>
           <h1>iTE Pro</h1>
           <p>
-            Reliable access to cloud coding models. First month $3, then $8/month.
-            Cancel anytime.
+            Reliable access to cloud coding models. Subscribe for $8/month after a 14-day trial,
+            or choose a ₦10,500 one-time 30-day pass. Local models and your own keys stay available.
           </p>
         </div>
 
@@ -247,8 +238,8 @@ export function PricingPage() {
               <span className="pricing-plan-name">{cleanPlan?.displayName ?? "iTE Pro"}</span>
             </div>
             <div className="pricing-price">
-              <span>{trialAvailable ? "$3" : "$8"}</span>
-              <em>{trialAvailable ? "first month" : "per month"}</em>
+              <span>$8</span>
+              <em>per month after trial</em>
             </div>
           </div>
 
@@ -312,11 +303,24 @@ export function PricingPage() {
                 {plan.billingConfigured ? "Checkout paused" : "Billing unavailable"}
               </span>
             ) : null}
+            <button
+              className="button secondary pricing-cta"
+              data-magnetic
+              disabled={checkoutPending || !plan}
+              onClick={() => void startCheckout("ite_pro_pass_30d")}
+              type="button"
+            >
+              <span className="button-text" data-scramble>
+                {checkoutPending ? "Opening secure checkout..." : "Get 30-day pass — ₦10,500"}
+              </span>
+              <span className="button-border" />
+            </button>
           </div>
 
           {authState.kind === "signed-out" ? (
             <p className="pricing-note">
-              You will sign in first, then checkout starts automatically.
+              You will sign in first, then checkout starts automatically. The monthly option needs a USD card;
+              the one-time pass uses Bachs local payment methods where available.
             </p>
           ) : null}
           {authState.kind === "pro" ? (
