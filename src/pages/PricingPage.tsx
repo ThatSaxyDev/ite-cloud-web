@@ -35,10 +35,6 @@ export function PricingPage() {
   const [checkoutNotice, setCheckoutNotice] = useState<string | null>(null);
 
   const checkoutIntent = new URLSearchParams(location.search).get("checkout");
-  const loginRedirect = useMemo(
-    () => `/pricing?checkout=ite_pro_subscription_monthly`,
-    [],
-  );
 
   useEffect(() => {
     let cancelled = false;
@@ -133,7 +129,7 @@ export function PricingPage() {
     }
 
     if (authState.kind === "signed-out") {
-      navigate(`/login?mode=sign-up&redirect=${encodeURIComponent(loginRedirect)}`);
+      navigate(`/login?mode=sign-up&redirect=${encodeURIComponent(`/pricing?checkout=${planKey}`)}`);
       return;
     }
 
@@ -187,7 +183,7 @@ export function PricingPage() {
   const ctaLabel = authState.kind === "pro"
     ? "Manage subscription"
     : trialAvailable
-      ? "Start 14-day trial"
+      ? "I have a USD card — start 14-day trial"
       : "Subscribe to Pro";
 
   const cleanPlan = useMemo(() => {
@@ -306,12 +302,14 @@ export function PricingPage() {
             <button
               className="button secondary pricing-cta"
               data-magnetic
-              disabled={checkoutPending || !plan}
+              disabled={checkoutPending || !passPlan}
               onClick={() => void startCheckout("ite_pro_pass_30d")}
               type="button"
             >
               <span className="button-text" data-scramble>
-                {checkoutPending ? "Opening secure checkout..." : "Get 30-day pass — ₦10,500"}
+                {checkoutPending
+                  ? "Opening secure checkout..."
+                  : "No USD card? Pay once with local methods — ₦10,500"}
               </span>
               <span className="button-border" />
             </button>
