@@ -30,7 +30,7 @@ export function PricingPage() {
   const [plan, setPlan] = useState<PricingPlan | null>(null);
   const [passPlan, setPassPlan] = useState<PricingPlan | null>(null);
   const [authState, setAuthState] = useState<AuthState>({ kind: "loading" });
-  const [checkoutPending, setCheckoutPending] = useState(false);
+  const [checkoutPendingPlan, setCheckoutPendingPlan] = useState<"ite_pro_subscription_monthly" | "ite_pro_pass_30d" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checkoutNotice, setCheckoutNotice] = useState<string | null>(null);
 
@@ -139,7 +139,7 @@ export function PricingPage() {
     }
 
     try {
-      setCheckoutPending(true);
+      setCheckoutPendingPlan(planKey);
       setError(null);
       setCheckoutNotice(null);
       const origin = window.location.origin;
@@ -162,7 +162,7 @@ export function PricingPage() {
             )
           : "Could not start checkout.",
       );
-      setCheckoutPending(false);
+      setCheckoutPendingPlan(null);
     }
   }
 
@@ -171,13 +171,13 @@ export function PricingPage() {
       (checkoutIntent !== "ite_pro_subscription_monthly" && checkoutIntent !== "ite_pro_pass_30d") ||
       !plan ||
       authState.kind !== "free" ||
-      checkoutPending
+      checkoutPendingPlan
     ) {
       return;
     }
 
     void startCheckout();
-  }, [authState.kind, checkoutIntent, checkoutPending, plan, passPlan]);
+  }, [authState.kind, checkoutIntent, checkoutPendingPlan, plan, passPlan]);
 
   const trialAvailable = authState.kind !== "pro" && (authState.kind !== "free" || authState.trialAvailable);
   const ctaLabel = authState.kind === "pro"
@@ -285,12 +285,12 @@ export function PricingPage() {
               className="button pricing-cta"
               data-magnetic
               data-ripple
-              disabled={checkoutPending || !plan}
+              disabled={checkoutPendingPlan !== null || !plan}
               onClick={() => void startCheckout()}
               type="button"
             >
               <span className="button-text" data-scramble>
-                {checkoutPending ? "Opening secure checkout..." : ctaLabel}
+                {checkoutPendingPlan === "ite_pro_subscription_monthly" ? "Opening secure checkout..." : ctaLabel}
               </span>
               <span className="button-shine" />
             </button>
@@ -302,12 +302,12 @@ export function PricingPage() {
             <button
               className="button secondary pricing-cta"
               data-magnetic
-              disabled={checkoutPending || !passPlan}
+              disabled={checkoutPendingPlan !== null || !passPlan}
               onClick={() => void startCheckout("ite_pro_pass_30d")}
               type="button"
             >
               <span className="button-text" data-scramble>
-                {checkoutPending
+                {checkoutPendingPlan === "ite_pro_pass_30d"
                   ? "Opening secure checkout..."
                   : "No USD card? Pay once with local methods — ₦10,500"}
               </span>

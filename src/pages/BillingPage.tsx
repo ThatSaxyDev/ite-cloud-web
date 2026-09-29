@@ -77,7 +77,7 @@ export function BillingPage() {
 
   const [billing, setBilling] = useState<BillingState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [checkoutPending, setCheckoutPending] = useState(false);
+  const [checkoutPendingPlan, setCheckoutPendingPlan] = useState<"ite_pro_subscription_monthly" | "ite_pro_pass_30d" | null>(null);
   const [syncPending, setSyncPending] = useState(false);
   const [portalPending, setPortalPending] = useState(false);
 
@@ -144,7 +144,7 @@ export function BillingPage() {
     planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d" = "ite_pro_subscription_monthly",
   ) {
     try {
-      setCheckoutPending(true);
+      setCheckoutPendingPlan(planKey);
       setError(null);
       const catalog = await api.pricingCatalog();
       const plan = catalog.plans.find(
@@ -157,7 +157,7 @@ export function BillingPage() {
               ? "Checkout is not open yet. Please check back soon."
               : "Billing is not configured yet. Please check back soon."),
         );
-        setCheckoutPending(false);
+        setCheckoutPendingPlan(null);
         return;
       }
       const payload = await api.createCheckout(planKey);
@@ -171,7 +171,7 @@ export function BillingPage() {
             )
           : "Could not start checkout.",
       );
-      setCheckoutPending(false);
+      setCheckoutPendingPlan(null);
     }
   }
 
@@ -286,12 +286,12 @@ export function BillingPage() {
                 className="button"
                 data-magnetic
                 data-ripple
-                disabled={checkoutPending}
+                disabled={checkoutPendingPlan !== null}
                 onClick={() => void handleUpgrade()}
                 type="button"
               >
                 <span className="button-text" data-scramble>
-                  {checkoutPending
+                  {checkoutPendingPlan === "ite_pro_subscription_monthly"
                     ? "Opening secure checkout..."
                     : trialAvailable
                       ? "USD card — start 14-day trial"
@@ -302,12 +302,12 @@ export function BillingPage() {
               <button
                 className="button secondary"
                 data-magnetic
-                disabled={checkoutPending}
+                disabled={checkoutPendingPlan !== null}
                 onClick={() => void handleUpgrade("ite_pro_pass_30d")}
                 type="button"
               >
                 <span className="button-text" data-scramble>
-                  {checkoutPending ? "Opening secure checkout..." : "No USD card? Pay once — ₦10,500"}
+                  {checkoutPendingPlan === "ite_pro_pass_30d" ? "Opening secure checkout..." : "No USD card? Pay once — ₦10,500"}
                 </span>
                 <span className="button-border" />
               </button>
