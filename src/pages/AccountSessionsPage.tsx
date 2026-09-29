@@ -60,16 +60,6 @@ export function AccountSessionsPage() {
     );
   }
 
-  async function handleBrowserLogout() {
-    if (getDevAuthUser()) {
-      navigate("/account/settings");
-      return;
-    }
-
-    await authClient.signOut();
-    navigate("/login?signedOut=1", { replace: true });
-  }
-
   return (
     <section className="account-panel">
       <header className="account-panel-header">
@@ -77,12 +67,6 @@ export function AccountSessionsPage() {
           <p className="sessions-kicker">Sessions</p>
           <h2>Device access</h2>
         </div>
-        <button className="button secondary" data-magnetic onClick={() => void handleBrowserLogout()} type="button">
-          <span className="button-text" data-scramble>
-            Sign out
-          </span>
-          <span className="button-border" />
-        </button>
       </header>
 
       {error ? <p className="error">{error}</p> : null}

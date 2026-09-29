@@ -84,6 +84,9 @@ export function AccountLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [signOutPending, setSignOutPending] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,8 +131,27 @@ export function AccountLayout() {
     setMobileNavOpen(false);
   }
 
+  async function handleSignOut() {
+    setSignOutPending(true);
+    setSignOutError(null);
+
+    try {
+      const result = await authClient.signOut();
+      if (result.error) {
+        setSignOutError(result.error.message || "We could not sign you out. Please try again.");
+        return;
+      }
+      navigate("/login?signedOut=1", { replace: true });
+    } catch {
+      setSignOutError("We could not sign you out. Check your connection and try again.");
+    } finally {
+      setSignOutPending(false);
+    }
+  }
+
   useEffect(() => {
     setMobileNavOpen(false);
+    setAccountMenuOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -253,15 +275,40 @@ export function AccountLayout() {
           </nav>
 
           <div className="account-sidebar-bottom">
-            <div className="account-user-block">
+            <button
+              aria-controls="account-menu"
+              aria-expanded={accountMenuOpen}
+              aria-label="Account options"
+              className="account-user-block"
+              onClick={() => {
+                setAccountMenuOpen((current) => !current);
+                setSignOutError(null);
+              }}
+              type="button"
+            >
               <span className="account-user-avatar">
-                {user?.image ? <img alt={user.name || user.email || "iTE user"} className="account-user-avatar-image" src={user.image} /> : initial}
+                {user?.image ? <img alt="" className="account-user-avatar-image" src={user.image} /> : initial}
               </span>
-              <div className="account-user-meta">
+              <span className="account-user-meta">
                 <strong>{user?.name || "iTE User"}</strong>
                 <span>{user?.email || "Signed in"}</span>
+              </span>
+              <span aria-hidden="true" className="account-user-menu-indicator">•••</span>
+            </button>
+            {accountMenuOpen ? (
+              <div className="account-menu" id="account-menu">
+                <p className="account-menu-label">Account</p>
+                {signOutError ? <p className="account-menu-error" role="alert">{signOutError}</p> : null}
+                <button
+                  className="account-menu-sign-out"
+                  disabled={signOutPending}
+                  onClick={() => void handleSignOut()}
+                  type="button"
+                >
+                  {signOutPending ? "Signing out…" : "Sign out"}
+                </button>
               </div>
-            </div>
+            ) : null}
           </div>
         </div>
       </aside>

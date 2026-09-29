@@ -2095,8 +2095,17 @@ code {
     display: flex;
     align-items: center;
     gap: 8px;
+    width: 100%;
     min-width: 0;
     overflow: hidden;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+}
+
+.account-user-block:focus-visible {
+    outline: 1px solid var(--line-strong);
+    outline-offset: 4px;
 }
 
 .account-user-avatar {
@@ -2152,6 +2161,65 @@ code {
     overflow: visible;
     text-overflow: clip;
     word-break: break-word;
+}
+
+.account-user-menu-indicator {
+    margin-left: auto;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    transform: translateY(-2px);
+}
+
+.account-menu {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    background: rgba(8, 8, 8, 0.98);
+}
+
+.account-menu-label {
+    margin: 0;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.account-menu-error {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.account-menu-sign-out {
+    min-height: 40px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    color: var(--text-soft);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.account-menu-sign-out:hover:not(:disabled),
+.account-menu-sign-out:focus-visible {
+    border-color: var(--line-strong);
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.account-menu-sign-out:disabled {
+    cursor: wait;
+    opacity: 0.58;
 }
 
 .account-content {
