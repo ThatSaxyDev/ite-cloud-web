@@ -6,3 +6,6 @@ dist
 # Project
 .ite/
 .claude/
+
+# macOS Finder metadata
+.DS_Store
