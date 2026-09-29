@@ -256,7 +256,7 @@ export function BillingPage() {
                   : "iTE Pro is active"
                 : checkoutSuccess
                   ? "Confirming your payment..."
-                  : "Start iTE Pro when you are ready"}
+                  : "Choose how you want to pay"}
             </strong>
             <p className="muted">
               {paid
@@ -264,8 +264,8 @@ export function BillingPage() {
                 : checkoutSuccess
                   ? "Your payment is being processed. This page will update automatically — please don't close it."
                   : trialAvailable
-                    ? "Free includes local models and your own keys. Use a USD card for a 14-day trial, or choose a ₦10,500 one-time pass if you prefer local payment methods."
-                    : "Free includes local models and your own keys. Choose a $8/month subscription or a ₦10,500 30-day pass."}
+                    ? "Use a USD card to start a 14-day trial, then continue at $8/month. Or pay ₦10,500 once for 30 days of Pro with local payment methods."
+                    : "Choose $8/month with a USD card, or pay ₦10,500 once for 30 days of Pro with local payment methods."}
             </p>
             {paid ? (
               <p className="muted" style={{ marginTop: "0.5rem" }}>
@@ -294,7 +294,7 @@ export function BillingPage() {
                   {checkoutPending
                     ? "Opening secure checkout..."
                     : trialAvailable
-                      ? "Start 14-day trial"
+                      ? "USD card — start 14-day trial"
                       : "Subscribe to Pro"}
                 </span>
                 <span className="button-shine" />
@@ -335,7 +335,7 @@ export function BillingPage() {
           ) : null}
         </article>
 
-        <article className="detail-card">
+        {paid ? <article className="detail-card">
           <strong>Plan details</strong>
           <dl className="meta-list">
             <div>
@@ -353,13 +353,11 @@ export function BillingPage() {
                   ? "14-day free trial, then $8/month"
                   : paid
                     ? hasRecurringSubscription ? "$8/month" : "₦10,500 one-time 30-day pass"
-                    : trialAvailable
-                      ? "14-day free trial, then $8/month"
-                      : "$8/month or ₦10,500 one-time pass"}
+                    : "$8/month or ₦10,500 one-time pass"}
               </dd>
             </div>
           </dl>
-        </article>
+        </article> : null}
       </div>
     </section>
   );
