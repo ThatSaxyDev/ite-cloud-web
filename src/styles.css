@@ -2279,6 +2279,17 @@ code {
     gap: 8px;
 }
 
+.billing-checkout-actions {
+    width: min(100%, 320px);
+}
+
+.billing-payment-note {
+    margin: 4px 0 0;
+    color: var(--text-soft);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
 .pricing-page {
     position: relative;
     z-index: 1;

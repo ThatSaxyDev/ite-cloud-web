@@ -281,7 +281,7 @@ export function BillingPage() {
             ) : null}
           </div>
           {!paid && !checkoutSuccess ? (
-            <div className="detail-card-actions">
+            <div className="detail-card-actions billing-checkout-actions">
               <button
                 className="button"
                 data-magnetic
@@ -299,10 +299,6 @@ export function BillingPage() {
                 </span>
                 <span className="button-shine" />
               </button>
-            </div>
-          ) : null}
-          {!paid && !checkoutSuccess ? (
-            <div className="detail-card-actions">
               <button
                 className="button secondary"
                 data-magnetic
@@ -315,6 +311,9 @@ export function BillingPage() {
                 </span>
                 <span className="button-border" />
               </button>
+              <p className="billing-payment-note">
+                Subscriptions require a USD card. The one-time pass is for local payment methods and does not renew.
+              </p>
             </div>
           ) : null}
           {paid && hasRecurringSubscription ? (

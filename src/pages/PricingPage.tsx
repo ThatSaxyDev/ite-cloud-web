@@ -314,11 +314,13 @@ export function PricingPage() {
               <span className="button-border" />
             </button>
           </div>
+          <p className="billing-payment-note">
+            Subscriptions require a USD card. The ₦10,500 pass uses local payment methods and does not renew.
+          </p>
 
           {authState.kind === "signed-out" ? (
             <p className="pricing-note">
-              You will sign in first, then checkout starts automatically. The monthly option needs a USD card;
-              the one-time pass uses Bachs local payment methods where available.
+              You will sign in first, then checkout starts automatically.
             </p>
           ) : null}
           {authState.kind === "pro" ? (
