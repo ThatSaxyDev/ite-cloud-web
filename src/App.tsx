@@ -69,6 +69,7 @@ function HomePage() {
     <a className="skip-link" href="#main-content">Skip to main content</a>
     <header className="record-nav"><Link aria-label="iTE home" to="/"><GlitchImageLogo /></Link><div><Link to="/docs">Docs</Link><Link className="record-nav__account" to={accountHref}>{accountLabel}<span>→</span></Link></div></header>
     <section className="record-hero" id="main-content"><div className="record-hero__copy"><p>iTE /</p><h1>Terminal-native<br /><em>coding agent</em></h1><p>'…if you only had one prompt, what would it be?'</p></div><AgentConstellation /><div className="record-hero__install"><p>INSTALL ITE</p><InstallLine /></div></section>
+    <section className="record-reel"><video autoPlay loop muted playsInline preload="metadata" poster="/ite-prev.png" src="/demo.mp4" /></section>
     <section className="record-close"><div className="record-close__logo"><GlitchImageLogo /></div><div className="record-close__links"><Link to="/docs">Documentation ↗</Link><Link to={accountHref}>{accountLabel} ↗</Link></div></section>
     <footer className="record-footer"><p>© {new Date().getFullYear()} iTE</p><a href="https://kiishi.space" rel="noreferrer" target="_blank">Kiishi David ↗</a></footer>
   </main>;
