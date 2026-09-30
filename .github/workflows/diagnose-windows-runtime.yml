@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   diagnose:
-    name: Run v0.2.24 on Windows
+    name: Run v0.2.25 on Windows
     runs-on: windows-latest
     timeout-minutes: 5
     steps:
@@ -18,8 +18,8 @@ jobs:
           $ErrorActionPreference = "Stop"
           $ProgressPreference = "SilentlyContinue"
 
-          $version = "0.2.24"
-          $expectedSha256 = "e8e3cbe3fbf5ada6cfb196f88bdb236c7484cd02f1c4d0ecd78174d805c3baf9"
+          $version = "0.2.25"
+          $expectedSha256 = "791d2998126547c8b4c3bd7ccf9acc2ecf683e46df4f668cfc3dcc10f0c8b4a6"
           $archiveUrl = "https://github.com/ThatSaxyDev/ite-releases/releases/download/v$version/ite-$version-win32-x64.zip"
           $archivePath = Join-Path $env:RUNNER_TEMP "ite-$version-win32-x64.zip"
           $extractPath = Join-Path $env:RUNNER_TEMP "ite-$version-win32-x64"
