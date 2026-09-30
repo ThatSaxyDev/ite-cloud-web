@@ -34,7 +34,61 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   }
 }
 
+export type Entitlements = {
+  planKey: string;
+  bundledInference: boolean;
+  remoteCompanion: boolean;
+  proAccess: boolean;
+  updatedAt: string | null;
+};
+
 export const api = {
+  pricingCatalog() {
+    return apiRequest<{
+      ok: true;
+      plans: Array<{
+        planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d";
+        displayName: string;
+        billingConfigured: boolean;
+        checkoutEnabled: boolean;
+        checkoutUnavailableMessage?: string;
+        trialOffer?: {
+          days: number;
+          label: string;
+        };
+        accessPass?: {
+          interval: "day";
+          intervalCount: number;
+          label: string;
+        };
+        recurringPrice?: {
+          amount: number;
+          currency: "USD";
+          interval: "month";
+          label: string;
+        };
+        oneTimePrice?: {
+          amount: number;
+          currency: "NGN";
+          label: string;
+        };
+        usageLimits: {
+          fiveHour: { capUsdCents: number; label: string };
+          sevenDay: { capUsdCents: number; label: string };
+          thirtyDay: { capUsdCents: number; label: string };
+        };
+        usageSummary: string;
+        requestEstimates: Array<{
+          model: string;
+          label: string;
+          requestsPerFiveHour: number | null;
+          requestsPerWeek: number | null;
+          requestsPerMonth: number | null;
+        }>;
+        includes: string[];
+      }>;
+    }>("/pricing/catalog");
+  },
   inspectCliRequest(token: string) {
     const query = new URLSearchParams({ token });
     return apiRequest<{
@@ -62,10 +116,19 @@ export const api = {
       body: JSON.stringify({ sessionId })
     });
   },
-  createCheckout(planKey: "ite_pro_monthly" = "ite_pro_monthly") {
+  createCheckout(
+    planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d" = "ite_pro_subscription_monthly",
+    urls?: { successUrl?: string; returnUrl?: string },
+  ) {
     return apiRequest<{ ok: true; checkoutId: string; checkoutUrl: string }>("/billing/checkout", {
       method: "POST",
-      body: JSON.stringify({ planKey })
+      body: JSON.stringify({ planKey, ...(urls ?? {}) })
+    });
+  },
+  billingPortal() {
+    return apiRequest<{ ok: true; portalUrl: string }>("/billing/portal", {
+      method: "POST",
+      body: JSON.stringify({})
     });
   },
   billingMe() {
@@ -81,27 +144,13 @@ export const api = {
         canceledAt: string | null;
         endedAt: string | null;
       } | null;
-      entitlements: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
+      entitlements: Entitlements;
+      trial: {
+        startedAt: string | null;
+        usedAt: string | null;
+        available: boolean;
       };
     }>("/billing/me");
-  },
-  toggleBundledAccess(enabled: boolean) {
-    return apiRequest<{
-      ok: true;
-      entitlements: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
-      };
-    }>("/billing/bundled-access", {
-      method: "POST",
-      body: JSON.stringify({ enabled })
-    });
   },
   syncBilling() {
     return apiRequest<{
@@ -116,11 +165,11 @@ export const api = {
         canceledAt: string | null;
         endedAt: string | null;
       } | null;
-      entitlements: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
+      entitlements: Entitlements;
+      trial: {
+        startedAt: string | null;
+        usedAt: string | null;
+        available: boolean;
       };
     }>("/billing/sync", {
       method: "POST",
@@ -130,59 +179,23 @@ export const api = {
   billingUsage() {
     return apiRequest<{
       ok: true;
-      entitlements: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
-      };
+      entitlements: Entitlements;
       usage: {
-        fiveHour: { usedUsdCents: number; eventCount: number };
-        sevenDay: { usedUsdCents: number; eventCount: number };
+        fiveHour: { usedUsdCents: number };
+        sevenDay: { usedUsdCents: number };
+        thirtyDay: { usedUsdCents: number };
       };
       quotas: {
-        fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
-        sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+        fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
+        sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
+        thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
       };
     }>("/usage/summary");
-  },
-  createBillingPortal() {
-    return apiRequest<{ ok: true; customerPortalUrl: string }>("/billing/portal", {
-      method: "POST",
-      body: JSON.stringify({})
-    });
   },
   activity() {
     return apiRequest<{
       ok: true;
       actor: string;
-      analytics: {
-        totals: {
-          todayUsdCents: number;
-          sevenDayUsdCents: number;
-          thirtyDayUsdCents: number;
-          allTimeUsdCents: number;
-          allTimeRequestCount: number;
-          currentPeriodUsdCents: number;
-          currentPeriodRequestCount: number;
-        };
-        daily: Array<{
-          date: string;
-          label: string;
-          usdCents: number;
-          requestCount: number;
-        }>;
-        byModel: Array<{
-          modelKey: string;
-          usdCents: number;
-          requestCount: number;
-          sharePercent: number;
-        }>;
-        currentPeriod: {
-          start: string | null;
-          end: string | null;
-        };
-      };
       events: Array<{
         id: string;
         actorType: string;
@@ -198,12 +211,7 @@ export const api = {
       ok: true;
       actor: string;
       user: { id: string; email?: string; name?: string };
-      entitlements?: {
-        planKey: string;
-        bundledInference: boolean;
-        proAccess: boolean;
-        updatedAt: string | null;
-      };
+      entitlements?: Entitlements;
     }>("/auth/me");
   }
 };

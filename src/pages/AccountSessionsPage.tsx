@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { markKnownUser } from "@/lib/browser-state";
+import { getDevAuthUser } from "@/lib/dev-auth";
 
 type SessionItem = {
   id: string;
@@ -26,6 +27,12 @@ export function AccountSessionsPage() {
 
   useEffect(() => {
     async function load() {
+      if (getDevAuthUser()) {
+        markKnownUser();
+        setSessions([]);
+        return;
+      }
+
       const session = await authClient.getSession();
       if (!session.data?.session) {
         navigate("/login?redirect=/account/sessions");
@@ -53,11 +60,6 @@ export function AccountSessionsPage() {
     );
   }
 
-  async function handleBrowserLogout() {
-    await authClient.signOut();
-    navigate("/login");
-  }
-
   return (
     <section className="account-panel">
       <header className="account-panel-header">
@@ -65,12 +67,6 @@ export function AccountSessionsPage() {
           <p className="sessions-kicker">Sessions</p>
           <h2>Device access</h2>
         </div>
-        <button className="button secondary" data-magnetic onClick={() => void handleBrowserLogout()} type="button">
-          <span className="button-text" data-scramble>
-            Sign out
-          </span>
-          <span className="button-border" />
-        </button>
       </header>
 
       {error ? <p className="error">{error}</p> : null}

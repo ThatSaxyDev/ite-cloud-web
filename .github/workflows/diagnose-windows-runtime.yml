@@ -1,0 +1,61 @@
+name: Diagnose Windows Runtime
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Run v0.2.24 on Windows
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download, verify, and run the published runtime
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $ProgressPreference = "SilentlyContinue"
+
+          $version = "0.2.24"
+          $expectedSha256 = "e8e3cbe3fbf5ada6cfb196f88bdb236c7484cd02f1c4d0ecd78174d805c3baf9"
+          $archiveUrl = "https://github.com/ThatSaxyDev/ite-releases/releases/download/v$version/ite-$version-win32-x64.zip"
+          $archivePath = Join-Path $env:RUNNER_TEMP "ite-$version-win32-x64.zip"
+          $extractPath = Join-Path $env:RUNNER_TEMP "ite-$version-win32-x64"
+
+          Write-Host "Downloading iTE v$version from $archiveUrl"
+          Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath
+
+          $actualSha256 = (Get-FileHash -Path $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualSha256 -ne $expectedSha256) {
+            throw "Archive checksum mismatch. Expected $expectedSha256, got $actualSha256."
+          }
+          Write-Host "Checksum verified."
+
+          Expand-Archive -Path $archivePath -DestinationPath $extractPath -Force
+          $exe = Get-ChildItem -Path $extractPath -Filter "ite.exe" -File -Recurse |
+            Select-Object -First 1
+          if (-not $exe) {
+            throw "The published archive does not contain ite.exe."
+          }
+
+          Write-Host "Running $($exe.FullName) --version"
+          try {
+            $output = @(& $exe.FullName --version 2>&1)
+            $exitCode = $LASTEXITCODE
+          } catch {
+            Write-Host "PowerShell could not invoke the runtime:"
+            Write-Host $_.Exception.ToString()
+            throw
+          }
+
+          if ($output.Count -gt 0) {
+            Write-Host "Runtime output:"
+            $output | ForEach-Object { Write-Host "$_" }
+          }
+          Write-Host "Runtime exit code: $exitCode"
+
+          if ($exitCode -ne 0) {
+            throw "The published Windows runtime exited with code $exitCode."
+          }

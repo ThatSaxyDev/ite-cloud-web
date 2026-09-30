@@ -13,7 +13,7 @@ src/
 ├── main.tsx              # Entry point - React root render
 ├── App.tsx               # Root component with routing
 ├── styles.css            # Global styles
-├── vite-env.d.ts         # Vite types
+├── vite-env.d.ts         # Vite  types
 ├── components/           # Reusable UI components
 │   ├── AccountLayout.tsx
 │   ├── AmbientTriangles.tsx

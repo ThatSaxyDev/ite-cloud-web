@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { authClient } from "@/lib/auth-client";
 import { markKnownUser } from "@/lib/browser-state";
+import { getDevAuthUser } from "@/lib/dev-auth";
 import { config } from "@/lib/config";
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -70,12 +71,22 @@ export function LoginPage() {
 
   useEffect(() => {
     async function resumeIfAlreadySignedIn() {
+      if (params.get("signedOut") === "1") {
+        return;
+      }
+
+      if (getDevAuthUser()) {
+        markKnownUser();
+        window.location.assign(redirectTo);
+        return;
+      }
+
       const session = await authClient.getSession();
       if (!session.data?.session) {
         return;
       }
       markKnownUser();
-      navigate(redirectTo, { replace: true });
+      window.location.assign(redirectTo);
     }
 
     void resumeIfAlreadySignedIn();
@@ -152,6 +163,20 @@ export function LoginPage() {
 
     try {
       if (mode === "sign-up") {
+        const check = await fetch(`${config.apiUrl}/auth/check-email`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        if (check.ok) {
+          const { exists } = await check.json();
+          if (exists) {
+            setError("An account with this email already exists. Sign in instead.");
+            setFormPending(false);
+            return;
+          }
+        }
+
         const result = await authClient.signUp.email({
           name,
           email,
@@ -182,7 +207,7 @@ export function LoginPage() {
         throw result.error;
       }
       markKnownUser();
-      navigate(redirectTo);
+      window.location.assign(redirectTo);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught
@@ -226,6 +251,15 @@ export function LoginPage() {
         throw verification.error;
       }
 
+      // verifyEmail may establish a session in some Better Auth versions.
+      const existingSession = await authClient.getSession();
+      if (existingSession.data?.session) {
+        markKnownUser();
+        window.location.assign(redirectTo);
+        return;
+      }
+
+      // No session yet — sign in explicitly.
       if (!password) {
         setMode("sign-in");
         setVerificationOtp("");
@@ -243,7 +277,7 @@ export function LoginPage() {
       }
 
       markKnownUser();
-      navigate(redirectTo);
+      window.location.assign(redirectTo);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "message" in caught

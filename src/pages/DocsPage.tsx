@@ -193,6 +193,7 @@ export function DocsPage() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
   const headerRef = useRef<HTMLElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -245,6 +246,31 @@ export function DocsPage() {
     };
   }, [mobileNavOpen]);
 
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+      if (
+        drawerRef.current?.contains(target) ||
+        headerRef.current?.contains(target)
+      ) {
+        return;
+      }
+      closeMobileNav();
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+    };
+  }, [mobileNavOpen]);
+
   return (
     <main className="docs-shell">
       {/* Persistent Mobile Header */}
@@ -278,6 +304,7 @@ export function DocsPage() {
         />
       )}
       <aside
+        ref={drawerRef}
         className="docs-mobile-drawer"
         data-open={mobileNavOpen}
         aria-label="Documentation sections"
@@ -305,7 +332,10 @@ export function DocsPage() {
         </div>
       </aside>
 
-      <section className="docs-stage">
+      <section
+        className="docs-stage"
+        onClick={mobileNavOpen ? closeMobileNav : undefined}
+      >
         {/* Desktop Header */}
         <header className="docs-header">
           <div className="docs-header-left">
@@ -334,10 +364,13 @@ export function DocsPage() {
                 <strong>iTE</strong> is an AI coding agent for your terminal.
               </p>
               <div className="docs-image-container">
-                <img
-                  alt="iTE terminal interface"
+                <video
+                  autoPlay
                   className="docs-image"
-                  src="/docs-image.png"
+                  loop
+                  muted
+                  playsInline
+                  src="/demo.mp4"
                 />
               </div>
             </section>
@@ -366,8 +399,7 @@ export function DocsPage() {
               <div className="docs-note">
                 <strong>Supported terminals</strong>
                 <p>
-                  <strong>macOS:</strong> Terminal.app, iTerm2, Ghostty, Kitty,
-                  Alacritty, WezTerm
+                  <strong>macOS:</strong> Terminal.app, Warp, iTerm2, Ghostty
                   <br />
                   <strong>Windows:</strong> Windows Terminal, PowerShell, CMD
                 </p>
@@ -378,13 +410,23 @@ export function DocsPage() {
             <section className="docs-section" id="install">
               <h2 data-scramble="true">Install</h2>
               <p>
-                The fastest way to install iTE is through <strong>pipx</strong>.
-                It keeps iTE isolated from your system Python and gives you the{" "}
-                <code>ite</code> command globally.
+                The fastest way to install iTE is with a single command.{" "}
+                <strong>macOS/Linux</strong> users can use <strong>curl</strong>,
+                <strong>Windows</strong> users can use <strong>PowerShell</strong>.{" "}
+                If you prefer package managers, <strong>pipx</strong> and{" "}
+                <strong>uv</strong> are also available.
               </p>
 
               <CodeBlock
-                label="pipx (recommended)"
+                label="macOS"
+                code="curl -fsSL https://ite.kiishi.space/install.sh | bash"
+              />
+              <CodeBlock
+                label="Windows"
+                code="irm https://ite.kiishi.space/install.ps1 | iex"
+              />
+              <CodeBlock
+                label="pipx"
                 code="pipx install ite-agent"
               />
               <CodeBlock label="uv" code="uv tool install ite-agent" />

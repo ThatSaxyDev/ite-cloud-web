@@ -8,8 +8,12 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 3000"
   },
+  "overrides": {
+    "zod": "4.4.1",
+    "nanoid": "3.3.11"
+  },
   "dependencies": {
-    "better-auth": "latest",
+    "better-auth": "1.6.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.1"
@@ -22,4 +26,3 @@
     "vite": "^6.2.2"
   }
 }
-

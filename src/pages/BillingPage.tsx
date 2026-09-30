@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
-import { api } from "@/lib/api";
+import { api, type Entitlements } from "@/lib/api";
 
 type BillingState = {
   subscription: {
@@ -13,63 +14,19 @@ type BillingState = {
     canceledAt: string | null;
     endedAt: string | null;
   } | null;
-  entitlements: {
-    planKey: string;
-    bundledInference: boolean;
-    proAccess: boolean;
-    updatedAt: string | null;
-  };
-};
-
-type UsageState = {
-  usage: {
-    fiveHour: { usedUsdCents: number; eventCount: number };
-    sevenDay: { usedUsdCents: number; eventCount: number };
-  };
-  quotas: {
-    fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
-    sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null };
+  entitlements: Entitlements;
+  trial: {
+    startedAt: string | null;
+    usedAt: string | null;
+    available: boolean;
   };
 };
 
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
-}
-
-function normalizeMeridiem(value: string) {
-  return value.replace(/\s?(AM|PM)$/i, (match) => match.trim().toLowerCase());
-}
-
-function formatResetLabel(value: string | null, variant: "time" | "dateTime") {
-  if (!value) {
-    return "No recent usage";
-  }
-
-  const formatted = new Intl.DateTimeFormat(
-    undefined,
-    variant === "time"
-      ? { hour: "numeric", minute: "2-digit" }
-      : { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }
-  ).format(new Date(value));
-
-  return normalizeMeridiem(formatted);
-}
-
-function formatPercentRemaining(used: number, cap: number) {
-  if (cap <= 0) {
-    return "0% remaining";
-  }
-  return `${Math.max(0, Math.round(((cap - used) / cap) * 100))}% remaining`;
-}
-
-function progressWidth(used: number, cap: number) {
-  if (cap <= 0) {
-    return 0;
-  }
-  return Math.min(100, Math.max(0, (used / cap) * 100));
 }
 
 function formatPlanName(planKey: string | null | undefined) {
@@ -77,8 +34,11 @@ function formatPlanName(planKey: string | null | undefined) {
     return "Free";
   }
 
-  if (planKey === "ite_pro_monthly") {
-    return "iTE Pro Monthly";
+  if (planKey === "ite_pro_subscription_monthly") {
+    return "iTE Pro monthly";
+  }
+  if (planKey === "ite_pro_pass_30d") {
+    return "iTE Pro 30-day pass";
   }
 
   return planKey
@@ -87,30 +47,53 @@ function formatPlanName(planKey: string | null | undefined) {
     .join(" ");
 }
 
+function formatSubscriptionStatus(status: string | null | undefined) {
+  switch (status) {
+    case "active":
+      return "Active";
+    case "trialing":
+      return "Trial active";
+    case "past_due":
+      return "Past due";
+    case "canceled":
+      return "Canceled";
+    case "unpaid":
+      return "Unpaid";
+    default:
+      return "Free";
+  }
+}
+
+function formatSubscriptionPeriodLabel(status: string | null | undefined) {
+  if (status === "active" || status === "trialing" || status === "past_due") {
+    return "Access through";
+  }
+  return "Current period ends";
+}
+
 export function BillingPage() {
+  const location = useLocation();
+  const checkoutSuccess = new URLSearchParams(location.search).get("checkout") === "success";
+
   const [billing, setBilling] = useState<BillingState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [checkoutPending, setCheckoutPending] = useState(false);
+  const [checkoutPendingPlan, setCheckoutPendingPlan] = useState<"ite_pro_subscription_monthly" | "ite_pro_pass_30d" | null>(null);
   const [syncPending, setSyncPending] = useState(false);
   const [portalPending, setPortalPending] = useState(false);
-  const [usage, setUsage] = useState<UsageState | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       try {
-        const [billingPayload, usagePayload] = await Promise.all([api.billingMe(), api.billingUsage()]);
+        const billingPayload = await api.billingMe();
         if (cancelled) {
           return;
         }
         setBilling({
           subscription: billingPayload.subscription,
-          entitlements: billingPayload.entitlements
-        });
-        setUsage({
-          usage: usagePayload.usage,
-          quotas: usagePayload.quotas
+          entitlements: billingPayload.entitlements,
+          trial: billingPayload.trial,
         });
         setError(null);
       } catch (caught) {
@@ -119,8 +102,11 @@ export function BillingPage() {
         }
         setError(
           typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not load billing.")
-            : "Could not load billing."
+            ? String(
+                (caught as { error?: { message?: string } }).error?.message ||
+                  "Could not load billing.",
+              )
+            : "Could not load billing.",
         );
       }
     }
@@ -135,6 +121,12 @@ export function BillingPage() {
       }
     }
 
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void load();
+      }
+    }, 20000);
+
     void load();
 
     window.addEventListener("focus", handleWindowFocus);
@@ -142,23 +134,60 @@ export function BillingPage() {
 
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
       window.removeEventListener("focus", handleWindowFocus);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
-  async function handleUpgrade() {
+  async function handleUpgrade(
+    planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d" = "ite_pro_subscription_monthly",
+  ) {
     try {
-      setCheckoutPending(true);
-      const payload = await api.createCheckout();
+      setCheckoutPendingPlan(planKey);
+      setError(null);
+      const catalog = await api.pricingCatalog();
+      const plan = catalog.plans.find(
+        (item) => item.planKey === planKey,
+      );
+      if (!plan?.billingConfigured || !plan.checkoutEnabled) {
+        setError(
+          plan?.checkoutUnavailableMessage ??
+            (plan?.billingConfigured
+              ? "Checkout is not open yet. Please check back soon."
+              : "Billing is not configured yet. Please check back soon."),
+        );
+        setCheckoutPendingPlan(null);
+        return;
+      }
+      const payload = await api.createCheckout(planKey);
       window.location.assign(payload.checkoutUrl);
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "error" in caught
-          ? String((caught as { error?: { message?: string } }).error?.message || "Could not start checkout.")
-          : "Could not start checkout."
+          ? String(
+              (caught as { error?: { message?: string } }).error?.message ||
+                "Could not start checkout.",
+            )
+          : "Could not start checkout.",
       );
-      setCheckoutPending(false);
+      setCheckoutPendingPlan(null);
+    }
+  }
+
+  async function handleManageSubscription() {
+    try {
+      setPortalPending(true);
+      setError(null);
+      const payload = await api.billingPortal();
+      window.location.assign(payload.portalUrl);
+    } catch (caught) {
+      setError(
+        typeof caught === "object" && caught && "error" in caught
+          ? String((caught as { error?: { message?: string } }).error?.message || "Could not open subscription management.")
+          : "Could not open subscription management.",
+      );
+      setPortalPending(false);
     }
   }
 
@@ -169,59 +198,44 @@ export function BillingPage() {
       const payload = await api.syncBilling();
       setBilling({
         subscription: payload.subscription,
-        entitlements: payload.entitlements
-      });
-      const usagePayload = await api.billingUsage();
-      setUsage({
-        usage: usagePayload.usage,
-        quotas: usagePayload.quotas
+        entitlements: payload.entitlements,
+        trial: payload.trial,
       });
     } catch (caught) {
       setError(
         typeof caught === "object" && caught && "error" in caught
-          ? String((caught as { error?: { message?: string } }).error?.message || "Could not refresh billing.")
-          : "Could not refresh billing."
+          ? String(
+              (caught as { error?: { message?: string } }).error?.message ||
+                "Could not refresh billing.",
+            )
+          : "Could not refresh billing.",
       );
     } finally {
       setSyncPending(false);
     }
   }
 
-  async function handleManageBilling() {
-    try {
-      setPortalPending(true);
-      setError(null);
-      const payload = await api.createBillingPortal();
-      window.location.assign(payload.customerPortalUrl);
-    } catch (caught) {
-      setError(
-        typeof caught === "object" && caught && "error" in caught
-          ? String((caught as { error?: { message?: string } }).error?.message || "Could not open billing.")
-          : "Could not open billing."
-      );
-      setPortalPending(false);
-    }
-  }
-
   const paid = Boolean(billing?.entitlements.proAccess);
+  const subscriptionStatus = billing?.subscription?.status ?? null;
+  const trialAvailable = Boolean(billing?.trial.available);
+  const trialActive = subscriptionStatus === "trialing";
+  const hasRecurringSubscription = billing?.subscription?.planKey === "ite_pro_subscription_monthly";
 
   return (
-    <section className="account-panel">
+    <section className="account-panel account-panel-wide">
       <header className="account-panel-header">
         <div>
           <p className="sessions-kicker">Billing</p>
           <h2>{paid ? "iTE Pro" : "Free"}</h2>
         </div>
         <div className="detail-card-actions">
-          {paid ? (
-            <button className="button secondary" data-magnetic disabled={portalPending} onClick={() => void handleManageBilling()} type="button">
-              <span className="button-text" data-scramble>
-                {portalPending ? "Opening..." : "Manage subscription"}
-              </span>
-              <span className="button-border" />
-            </button>
-          ) : null}
-          <button className="button secondary" data-magnetic disabled={syncPending} onClick={() => void handleSync()} type="button">
+          <button
+            className="button secondary"
+            data-magnetic
+            disabled={syncPending}
+            onClick={() => void handleSync()}
+            type="button"
+          >
             <span className="button-text" data-scramble>
               {syncPending ? "Refreshing..." : "Refresh usage"}
             </span>
@@ -235,82 +249,114 @@ export function BillingPage() {
       <div className="detail-stack">
         <article className="detail-card detail-card-featured">
           <div className="detail-card-copy">
-            <strong>{paid ? "Pro is active" : "Upgrade when you are ready"}</strong>
+            <strong>
+              {paid
+                ? trialActive
+                  ? "Your iTE Pro trial is active"
+                  : "iTE Pro is active"
+                : checkoutSuccess
+                  ? "Confirming your payment..."
+                  : "Choose how you want to pay"}
+            </strong>
             <p className="muted">
               {paid
-                ? "Bundled models are live in iTE Cloud. You can keep using local or BYOK providers alongside bundled access, and usage is measured within rolling spend windows."
-                : "Free includes local models and your own keys. Pro adds managed bundled access while keeping BYOK and local providers available."}
+                ? "Bundled models are live in iTE Cloud inside rolling usage windows. Local models and BYOK providers remain available alongside iTE Pro."
+                : checkoutSuccess
+                  ? "Your payment is being processed. This page will update automatically — please don't close it."
+                  : trialAvailable
+                    ? "Use a USD card to start a 14-day trial, then continue at $8/month. Or pay ₦10,500 once for 30 days of Pro with local payment methods."
+                    : "Choose $8/month with a USD card, or pay ₦10,500 once for 30 days of Pro with local payment methods."}
             </p>
+            {paid ? (
+              <p className="muted" style={{ marginTop: "0.5rem" }}>
+                If iTE is already open, run <code>/refresh</code> in your
+                terminal to unlock Pro features immediately.
+              </p>
+            ) : null}
             {billing?.subscription?.currentPeriodEnd ? (
-              <p className="plan-meta">Renews {formatTimestamp(billing.subscription.currentPeriodEnd)}</p>
+              <p className="plan-meta">
+                {formatSubscriptionPeriodLabel(subscriptionStatus)}{" "}
+                {formatTimestamp(billing.subscription.currentPeriodEnd)}
+              </p>
             ) : null}
           </div>
-          {!paid ? (
-            <div className="detail-card-actions">
-              <button className="button" data-magnetic data-ripple disabled={checkoutPending} onClick={() => void handleUpgrade()} type="button">
+          {!paid && !checkoutSuccess ? (
+            <div className="detail-card-actions billing-checkout-actions">
+              <button
+                className="button"
+                data-magnetic
+                data-ripple
+                disabled={checkoutPendingPlan !== null}
+                onClick={() => void handleUpgrade()}
+                type="button"
+              >
                 <span className="button-text" data-scramble>
-                  {checkoutPending ? "Opening checkout..." : "Upgrade to Pro"}
+                  {checkoutPendingPlan === "ite_pro_subscription_monthly"
+                    ? "Opening secure checkout..."
+                    : trialAvailable
+                      ? "USD card — start 14-day trial"
+                      : "Subscribe to Pro"}
                 </span>
                 <span className="button-shine" />
+              </button>
+              <button
+                className="button secondary"
+                data-magnetic
+                disabled={checkoutPendingPlan !== null}
+                onClick={() => void handleUpgrade("ite_pro_pass_30d")}
+                type="button"
+              >
+                <span className="button-text" data-scramble>
+                  {checkoutPendingPlan === "ite_pro_pass_30d" ? "Opening secure checkout..." : "No USD card? Pay once — ₦10,500"}
+                </span>
+                <span className="button-border" />
+              </button>
+              <p className="billing-payment-note">
+                Subscriptions require a USD card. The one-time pass is for local payment methods and does not renew.
+              </p>
+            </div>
+          ) : null}
+          {paid && hasRecurringSubscription ? (
+            <div className="detail-card-actions">
+              <button
+                className="button secondary"
+                data-magnetic
+                disabled={portalPending}
+                onClick={() => void handleManageSubscription()}
+                type="button"
+              >
+                <span className="button-text" data-scramble>
+                  {portalPending ? "Opening management..." : "Manage subscription"}
+                </span>
+                <span className="button-border" />
               </button>
             </div>
           ) : null}
         </article>
 
-        <article className="detail-card">
+        {paid ? <article className="detail-card">
           <strong>Plan details</strong>
           <dl className="meta-list">
             <div>
               <dt>Status</dt>
-              <dd>{billing?.subscription?.status ?? "Free"}</dd>
+              <dd>{formatSubscriptionStatus(subscriptionStatus)}</dd>
             </div>
             <div>
               <dt>Plan</dt>
               <dd>{formatPlanName(billing?.entitlements.planKey)}</dd>
             </div>
+            <div>
+              <dt>Price</dt>
+              <dd>
+                {trialActive
+                  ? "14-day free trial, then $8/month"
+                  : paid
+                    ? hasRecurringSubscription ? "$8/month" : "₦10,500 one-time 30-day pass"
+                    : "$8/month or ₦10,500 one-time pass"}
+              </dd>
+            </div>
           </dl>
-        </article>
-
-        <article className="detail-card">
-          <strong>Usage</strong>
-          <div className="usage-limit-list">
-            <div className="usage-limit-row">
-              <div className="usage-limit-copy">
-                <strong>5h</strong>
-                <span>
-                  Resets {formatResetLabel(usage?.quotas.fiveHour.nextResetAt ?? null, "time")}
-                </span>
-              </div>
-              <div className="usage-limit-stats">
-                <strong>{formatPercentRemaining(usage?.quotas.fiveHour.usedUsdCents ?? 0, usage?.quotas.fiveHour.capUsdCents ?? 0)}</strong>
-              </div>
-              <div className="usage-progress" aria-hidden="true">
-                <span
-                  className="usage-progress-fill"
-                  style={{ width: `${progressWidth(usage?.quotas.fiveHour.usedUsdCents ?? 0, usage?.quotas.fiveHour.capUsdCents ?? 0)}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="usage-limit-row">
-              <div className="usage-limit-copy">
-                <strong>Weekly</strong>
-                <span>
-                  Resets {formatResetLabel(usage?.quotas.sevenDay.nextResetAt ?? null, "dateTime")}
-                </span>
-              </div>
-              <div className="usage-limit-stats">
-                <strong>{formatPercentRemaining(usage?.quotas.sevenDay.usedUsdCents ?? 0, usage?.quotas.sevenDay.capUsdCents ?? 0)}</strong>
-              </div>
-              <div className="usage-progress" aria-hidden="true">
-                <span
-                  className="usage-progress-fill"
-                  style={{ width: `${progressWidth(usage?.quotas.sevenDay.usedUsdCents ?? 0, usage?.quotas.sevenDay.capUsdCents ?? 0)}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </article>
+        </article> : null}
       </div>
     </section>
   );
