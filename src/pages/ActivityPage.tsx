@@ -22,7 +22,7 @@ export function ActivityPage() {
             <br />
             <span>keep going.</span>
           </h1>
-          <p>Your rolling usage windows. Updated from your account.</p>
+          <p>Your rolling usage windows.</p>
         </div>
         <button
           className="workspace-textlink"

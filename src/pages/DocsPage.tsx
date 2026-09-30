@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 
 function MenuIcon({ className }: { className?: string }) {
@@ -188,6 +188,14 @@ function SidebarContent({
 }
 
 export function DocsPage() {
+  const navigate = useNavigate();
+  function goBack() {
+    if (typeof window.history.state?.idx === "number" && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  }
   const [query, setQuery] = useState("");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -291,7 +299,9 @@ export function DocsPage() {
           <Link className="docs-mobile-logo" to="/" onClick={closeMobileNav}>
             <GlitchImageLogo />
           </Link>
-          <div className="docs-mobile-header-spacer" />
+          <button className="docs-back-button" onClick={goBack} type="button">
+            <span aria-hidden="true">←</span> Back
+          </button>
         </div>
       </header>
 
@@ -338,6 +348,9 @@ export function DocsPage() {
       >
         {/* Desktop Header */}
         <header className="docs-header">
+          <button className="docs-back-button" onClick={goBack} type="button">
+            <span aria-hidden="true">←</span> Back
+          </button>
           <div className="docs-header-left">
             <Link className="docs-logo" data-magnetic to="/">
               <GlitchImageLogo className="docs-logo-image" />

@@ -3108,6 +3108,23 @@ code {
     line-height: 1.55;
 }
 
+.docs-back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 72px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: 500 15px "Onest", sans-serif;
+    cursor: pointer;
+}
+.docs-back-button:hover { color: #79a1ff; }
+.docs-back-button:focus-visible { outline: 2px solid #5287ff; outline-offset: 3px; }
+
 .docs-header {
     display: flex;
     align-items: center;

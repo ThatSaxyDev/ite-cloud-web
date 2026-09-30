@@ -87,7 +87,6 @@ export function AccountLayout() {
         <Link to="/" aria-label="iTE landing page" className="workspace-brand">
           <GlitchImageLogo />
         </Link>
-        <span className="workspace-wordmark">YOUR ACCOUNT</span>
         <Link to="/docs">Documentation ↗</Link>
       </header>
       <div className="workspace-layout">

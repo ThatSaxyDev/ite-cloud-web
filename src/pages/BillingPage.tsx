@@ -93,7 +93,7 @@ export function BillingPage() {
               </>
             )}
           </h1>
-          <p>Manage your plan. Keep the terminal yours.</p>
+          <p>Manage your plan.</p>
         </div>
         <button
           className="workspace-textlink"
