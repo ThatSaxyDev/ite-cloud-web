@@ -1,303 +1,192 @@
-import { type CSSProperties, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-
+import { useEffect, useRef, useState } from "react";
+import { Link, useOutletContext } from "react-router-dom";
+import type { AccountUser } from "@/components/AccountLayout";
+import { api } from "@/lib/api";
+import { useAccountResource } from "@/lib/use-account-resource";
 import {
-  buildInstallReelSlots,
-  buildStaticInstallReelSlots,
   detectDefaultInstallMethod,
   getInstallMethodLabel,
   INSTALL_COMMANDS,
-  isWindowsOS,
-  INSTALL_REEL_DURATION_MS,
   type InstallMethod,
-  type InstallReelSlot,
 } from "@/lib/install-command";
 
-const NEXT_STEPS = [
-  {
-    eyebrow: "Step 1",
-    title: "Open a project",
-    body: "Run iTE from the repo you want it to understand. It starts with the files and context already in front of you.",
-  },
-  {
-    eyebrow: "Step 2",
-    title: "Pair the session",
-    body: "Complete the browser sign-in once, then return to the terminal. Your CLI is connected to this account.",
-  },
-  {
-    eyebrow: "Step 3",
-    title: "Work with intent",
-    body: "Ask for a plan, review the changes, and let iTE handle the edits and checks you approve.",
-  },
-] as const;
-
 export function SettingsPage() {
-  const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
-  const [installMethod, setInstallMethod] = useState<InstallMethod>(() =>
-    detectDefaultInstallMethod()
+  const user = useOutletContext<AccountUser>();
+  const billing = useAccountResource(api.billingMe);
+  const sessions = useAccountResource(api.listSessions);
+  const [method, setMethod] = useState<InstallMethod>(
+    detectDefaultInstallMethod,
   );
-  const [installTransition, setInstallTransition] = useState<{
-    slots: InstallReelSlot[];
-  } | null>(null);
-
-  const installCommand = INSTALL_COMMANDS[installMethod];
-
-  useEffect(() => {
-    if (!installTransition) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setInstallTransition(null);
-    }, INSTALL_REEL_DURATION_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [installTransition]);
-
-  function handleInstallMethodChange(nextMethod: InstallMethod) {
-    if (nextMethod === installMethod) {
-      return;
-    }
-
-    const nextCommand = INSTALL_COMMANDS[nextMethod];
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (!prefersReducedMotion) {
-      setInstallTransition({
-        slots: buildInstallReelSlots(installCommand, nextCommand),
-      });
-    } else {
-      setInstallTransition(null);
-    }
-
-    setInstallMethod(nextMethod);
-  }
-
-  async function handleCopy(command: string) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState(false);
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  async function copy(command: string) {
+    setCopyError(false);
     try {
       await navigator.clipboard.writeText(command);
-      setCopiedCommand(command);
-      window.setTimeout(() => {
-        setCopiedCommand((current) => (current === command ? null : current));
-      }, 1400);
+      setCopied(command);
+      window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => setCopied(null), 1800);
     } catch {
-      setCopiedCommand(null);
+      setCopyError(true);
     }
   }
-
-  const reelSlots =
-    installTransition?.slots ?? buildStaticInstallReelSlots(installCommand);
-
+  const active = sessions.data?.sessions.filter((s) => !s.revokedAt);
   return (
-    <section className="account-panel account-panel-onboarding">
-      <header className="account-panel-header onboarding-header">
+    <section className="workspace-page account-home">
+      <header className="workspace-pagehead">
         <div>
-          <p className="sessions-kicker">Getting started</p>
-          <h2>Start in your terminal.</h2>
+          <p className="workspace-kicker">
+            HOME / {user.name?.split(" ")[0] || "YOUR ACCOUNT"}
+          </p>
+          <h1>
+            Back to the
+            <br />
+            <span>terminal.</span>
+          </h1>
+          <p>Your account lives here. The work happens in your codebase.</p>
         </div>
+        <Link className="workspace-textlink" to="/docs">
+          Need a hand? ↗
+        </Link>
       </header>
-
-      <section className="onboarding-install-panel" aria-label="Install iTE">
-        <div className="onboarding-install-panel-top">
-          <div>
-            <span className="onboarding-chip">Install iTE</span>
-          </div>
-          <div
-            className="onboarding-install-switch"
-            aria-label="Choose install method"
-            role="tablist"
-          >
-            <button
-              aria-selected={installMethod === "curl"}
-              className="onboarding-install-toggle"
-              data-active={installMethod === "curl"}
-              onClick={() => handleInstallMethodChange("curl")}
-              role="tab"
-              type="button"
-            >
-              {getInstallMethodLabel("curl")}
-            </button>
-            {isWindowsOS() && (
+      <div className="home-launch">
+        <section className="home-install" aria-labelledby="install-title">
+          <p className="workspace-kicker">MAKE THE CONNECTION</p>
+          <h2 id="install-title">Put iTE in your terminal.</h2>
+          <div className="workspace-methods" aria-label="Install method">
+            {(["curl", "windows", "pipx", "uv"] as const).map((m) => (
               <button
-                aria-selected={installMethod === "windows"}
-                className="onboarding-install-toggle"
-                data-active={installMethod === "windows"}
-                onClick={() => handleInstallMethodChange("windows")}
-                role="tab"
-                type="button"
+                key={m}
+                aria-pressed={method === m}
+                onClick={() => {
+                  setMethod(m);
+                  setCopied(null);
+                  setCopyError(false);
+                }}
               >
-                Windows
+                {getInstallMethodLabel(m)}
               </button>
-            )}
-            <button
-              aria-selected={installMethod === "pipx"}
-              className="onboarding-install-toggle"
-              data-active={installMethod === "pipx"}
-              onClick={() => handleInstallMethodChange("pipx")}
-              role="tab"
-              type="button"
-            >
-              pipx
-            </button>
-            <button
-              aria-selected={installMethod === "uv"}
-              className="onboarding-install-toggle"
-              data-active={installMethod === "uv"}
-              onClick={() => handleInstallMethodChange("uv")}
-              role="tab"
-              type="button"
-            >
-              uv
+            ))}
+          </div>
+          <div className="workspace-command">
+            <span aria-hidden="true">$</span>
+            <code>{INSTALL_COMMANDS[method]}</code>
+            <button onClick={() => void copy(INSTALL_COMMANDS[method])}>
+              {copied === INSTALL_COMMANDS[method] ? "Copied" : "Copy"}
             </button>
           </div>
-        </div>
-        <div className="onboarding-command-line onboarding-command-line-large">
-          <code
-            aria-live="polite"
-            className="hero-command-code onboarding-command-code"
-          >
-            <span className="sr-only">{installCommand}</span>
-            <span
-              aria-hidden="true"
-              className="hero-command-reels"
-              data-animating={installTransition ? "true" : "false"}
+          <div className="home-run">
+            <p>Then open a project and run</p>
+            <div className="workspace-command">
+              <span aria-hidden="true">$</span>
+              <code>ite</code>
+              <button onClick={() => void copy("ite")}>
+                {copied === "ite" ? "Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+          <p className="workspace-muted">
+            Follow the sign-in prompt to connect your terminal to this account.
+          </p>
+          <p className="workspace-muted" role="status">
+            {copyError
+              ? "Clipboard unavailable. Select the command and copy it manually."
+              : copied
+                ? "Command copied to clipboard."
+                : ""}
+          </p>
+        </section>
+        <aside className="home-access">
+          <p className="workspace-kicker">YOUR ACCESS</p>
+          <h2>
+            {billing.data
+              ? billing.data.entitlements.proAccess
+                ? "iTE Pro"
+                : "Free"
+              : billing.error
+                ? "Unavailable"
+                : "Connecting…"}
+          </h2>
+          {billing.error ? (
+            <>
+              <p role="alert">{billing.error}</p>
+              <button
+                className="workspace-textlink"
+                onClick={() => void billing.refresh()}
+              >
+                Retry connection ↗
+              </button>
+            </>
+          ) : (
+            <>
+              <p>
+                {billing.data
+                  ? billing.data.entitlements.bundledInference
+                    ? "Cloud inference is included with your account."
+                    : "Use your own provider or a local model. Pro adds bundled cloud inference."
+                  : "Checking your account access."}
+              </p>
+              <Link className="workspace-textlink" to="/account/billing">
+                {billing.data?.entitlements.proAccess
+                  ? "Manage your plan"
+                  : "Explore Pro"}{" "}
+                ↗
+              </Link>
+            </>
+          )}
+          <div className="home-access-links">
+            <Link to="/account/usage">
+              Check usage <span>↗</span>
+            </Link>
+            <Link to="/docs#configure">
+              Configure a provider <span>↗</span>
+            </Link>
+          </div>
+        </aside>
+      </div>
+      <section className="home-terminals">
+        <div>
+          <p className="workspace-kicker">TERMINAL CONNECTIONS</p>
+          <h2>
+            {active
+              ? `${active.length} connected ${active.length === 1 ? "terminal" : "terminals"}`
+              : sessions.error
+                ? "Connection unavailable"
+                : "Checking terminals…"}
+          </h2>
+          <p>
+            {sessions.error ||
+              (active?.length
+                ? "Manage which devices can use this account."
+                : "Your terminal will appear here after you sign in from iTE.")}
+          </p>
+          {sessions.error && (
+            <button
+              className="workspace-textlink"
+              onClick={() => void sessions.refresh()}
             >
-              {reelSlots.map((slot, index) => (
-                <span
-                  className="hero-command-slot"
-                  key={`${index}-${slot.chars.join("")}`}
-                >
-                  <span
-                    className="hero-command-slot-track"
-                    data-animating={installTransition ? "true" : "false"}
-                    style={
-                      {
-                        "--slot-count": String(slot.chars.length),
-                        "--slot-start":
-                          installTransition && slot.direction === "down"
-                            ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
-                            : "0%",
-                        "--slot-end":
-                          installTransition && slot.direction === "up"
-                            ? `calc(-100% * ${(slot.chars.length - 1) / slot.chars.length})`
-                            : "0%",
-                        animationDelay: `${slot.delay}ms`,
-                        animationDuration: `${slot.duration}ms`,
-                        transform:
-                          installTransition && slot.direction === "down"
-                            ? `translateY(calc(-100% * ${(slot.chars.length - 1) / slot.chars.length}))`
-                            : "translateY(0)",
-                      } as CSSProperties
-                    }
-                  >
-                    {slot.chars.map((char, charIndex) => (
-                      <span
-                        className="hero-command-slot-char"
-                        key={`${index}-${charIndex}-${char}`}
-                      >
-                        {char}
-                      </span>
-                    ))}
-                  </span>
-                </span>
-              ))}
-            </span>
-          </code>
-          <button
-            className="onboarding-copy-button"
-            onClick={() => void handleCopy(installCommand)}
-            type="button"
-          >
-            {copiedCommand === installCommand ? "Copied" : "Copy"}
-          </button>
+              Try again ↗
+            </button>
+          )}
         </div>
+        <Link className="workspace-textlink" to="/account/sessions">
+          Manage sessions ↗
+        </Link>
       </section>
-
-      <section className="onboarding-demo-panel" aria-label="iTE demo video">
+      <details className="home-demo">
+        <summary>
+          See iTE at work <span>↗</span>
+        </summary>
         <video
-          autoPlay
-          className="onboarding-demo-video"
-          loop
-          muted
+          controls
           playsInline
+          preload="none"
+          poster="/ite-prev.png"
           src="/demo.mp4"
         />
-      </section>
-
-      <section className="onboarding-hero">
-        <div className="onboarding-hero-copy">
-          <span className="onboarding-chip">Terminal first</span>
-          <p className="onboarding-summary">
-            iTE runs where you already work — inside your project.
-          </p>
-        </div>
-
-        <div className="onboarding-command-stack" aria-label="Launch command">
-          <article className="onboarding-command-card">
-            <div className="onboarding-command-topline">
-              <span>Launch iTE</span>
-            </div>
-            <div className="onboarding-command-line">
-              <code>ite</code>
-              <button
-                className="onboarding-copy-button"
-                onClick={() => void handleCopy("ite")}
-                type="button"
-              >
-                {copiedCommand === "ite" ? "Copied" : "Copy"}
-              </button>
-            </div>
-            <p className="muted">
-              Run this from any project. The browser sign-in pairs that terminal
-              session with your account.
-            </p>
-          </article>
-
-          <article className="onboarding-command-card">
-            <div className="onboarding-command-topline">
-              <span>Account ready</span>
-            </div>
-            <p className="onboarding-card-statement">
-              Hosted access is available after sign-in. Bring your own provider
-              only when your workflow needs it.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section className="onboarding-steps" aria-label="How to use iTE">
-        {NEXT_STEPS.map((item) => (
-          <article
-            className="detail-card onboarding-step-card"
-            key={item.title}
-          >
-            <span className="onboarding-step-eyebrow">{item.eyebrow}</span>
-            <strong>{item.title}</strong>
-            <p className="muted">{item.body}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="detail-card onboarding-links-card">
-        <strong>Ready for local models or a custom provider?</strong>
-        <p className="muted">
-          When you want to use Ollama, OpenRouter, or another compatible provider, the setup guide has configuration details for every supported backend.
-        </p>
-        <div className="onboarding-link-row">
-          <Link
-            className="interactive-link"
-            data-magnetic
-            data-scramble
-            to="/docs#configure"
-          >
-            Open setup guide
-          </Link>
-        </div>
-      </section>
+      </details>
     </section>
   );
 }

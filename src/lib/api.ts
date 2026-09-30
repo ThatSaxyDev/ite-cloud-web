@@ -7,26 +7,39 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     const response = await fetch(`${config.apiUrl}${path}`, {
       credentials: "include",
+      ...init,
       headers: {
         "content-type": "application/json",
-        ...(init?.headers ?? {})
+        ...(init?.headers ?? {}),
       },
-      ...init,
-      signal: init?.signal ?? controller.signal
+      signal: init?.signal ?? controller.signal,
     });
 
-    const payload = await response.json();
+    const body = await response.text();
+    let payload: unknown;
+    try {
+      payload = body ? JSON.parse(body) : null;
+    } catch {
+      throw new Error(
+        "The account service returned an unexpected response. Please try again.",
+      );
+    }
     if (!response.ok) {
       throw payload;
     }
     return payload as T;
   } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") {
+    if (controller.signal.aborted) {
       throw {
         error: {
-          message: "The request timed out. Please try again."
-        }
+          message: "The request timed out. Please try again.",
+        },
       };
+    }
+    if (error instanceof TypeError) {
+      throw new Error(
+        "Could not reach the account service. Check your connection and try again.",
+      );
     }
     throw error;
   } finally {
@@ -104,31 +117,45 @@ export const api = {
   completeCli(token: string) {
     return apiRequest<{ ok: true; status: string }>("/auth/cli/complete", {
       method: "POST",
-      body: JSON.stringify({ token })
+      body: JSON.stringify({ token }),
     });
   },
   listSessions() {
-    return apiRequest<{ ok: true; sessions: Array<{ id: string; label: string; createdAt: string; lastSeenAt: string; revokedAt: string | null }> }>("/sessions");
+    return apiRequest<{
+      ok: true;
+      sessions: Array<{
+        id: string;
+        label: string;
+        createdAt: string;
+        lastSeenAt: string;
+        revokedAt: string | null;
+      }>;
+    }>("/sessions");
   },
   revokeSession(sessionId: string) {
     return apiRequest("/sessions/revoke", {
       method: "POST",
-      body: JSON.stringify({ sessionId })
+      body: JSON.stringify({ sessionId }),
     });
   },
   createCheckout(
-    planKey: "ite_pro_subscription_monthly" | "ite_pro_pass_30d" = "ite_pro_subscription_monthly",
+    planKey:
+      | "ite_pro_subscription_monthly"
+      | "ite_pro_pass_30d" = "ite_pro_subscription_monthly",
     urls?: { successUrl?: string; returnUrl?: string },
   ) {
-    return apiRequest<{ ok: true; checkoutId: string; checkoutUrl: string }>("/billing/checkout", {
-      method: "POST",
-      body: JSON.stringify({ planKey, ...(urls ?? {}) })
-    });
+    return apiRequest<{ ok: true; checkoutId: string; checkoutUrl: string }>(
+      "/billing/checkout",
+      {
+        method: "POST",
+        body: JSON.stringify({ planKey, ...(urls ?? {}) }),
+      },
+    );
   },
   billingPortal() {
     return apiRequest<{ ok: true; portalUrl: string }>("/billing/portal", {
       method: "POST",
-      body: JSON.stringify({})
+      body: JSON.stringify({}),
     });
   },
   billingMe() {
@@ -173,7 +200,7 @@ export const api = {
       };
     }>("/billing/sync", {
       method: "POST",
-      body: JSON.stringify({})
+      body: JSON.stringify({}),
     });
   },
   billingUsage() {
@@ -186,9 +213,24 @@ export const api = {
         thirtyDay: { usedUsdCents: number };
       };
       quotas: {
-        fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
-        sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
-        thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
+        fiveHour: {
+          usedUsdCents: number;
+          capUsdCents: number;
+          nextResetAt: string | null;
+          fullWindowClearAt: string | null;
+        };
+        sevenDay: {
+          usedUsdCents: number;
+          capUsdCents: number;
+          nextResetAt: string | null;
+          fullWindowClearAt: string | null;
+        };
+        thirtyDay: {
+          usedUsdCents: number;
+          capUsdCents: number;
+          nextResetAt: string | null;
+          fullWindowClearAt: string | null;
+        };
       };
     }>("/usage/summary");
   },
@@ -213,5 +255,5 @@ export const api = {
       user: { id: string; email?: string; name?: string };
       entitlements?: Entitlements;
     }>("/auth/me");
-  }
+  },
 };

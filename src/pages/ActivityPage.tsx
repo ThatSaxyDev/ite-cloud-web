@@ -1,218 +1,123 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { api } from "@/lib/api";
+import { useAccountResource } from "@/lib/use-account-resource";
 
-import { api, type Entitlements } from "@/lib/api";
-
-type UsageState = {
-  usage: {
-    fiveHour: { usedUsdCents: number };
-    sevenDay: { usedUsdCents: number };
-    thirtyDay: { usedUsdCents: number };
-  };
-  quotas: {
-    fiveHour: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
-    sevenDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
-    thirtyDay: { usedUsdCents: number; capUsdCents: number; nextResetAt: string | null; fullWindowClearAt: string | null };
-  };
-  entitlements: Entitlements;
-};
-
-function normalizeMeridiem(value: string) {
-  return value.replace(/\s?(AM|PM)$/i, (match) => match.trim().toLowerCase());
-}
-
-function formatResetLabel(value: string | null, variant: "time" | "dateTime") {
-  if (!value) {
-    return "Available now";
-  }
-
-  const formatted = new Intl.DateTimeFormat(
-    undefined,
-    variant === "time"
-      ? { hour: "numeric", minute: "2-digit" }
-      : { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }
-  ).format(new Date(value));
-
-  return normalizeMeridiem(formatted);
-}
-
-function formatPercentRemaining(used: number, cap: number) {
-  if (cap <= 0) {
-    return "0% remaining";
-  }
-  const remainingPercent = Math.max(0, ((cap - used) / cap) * 100);
-
-  if (used <= 0) {
-    return "100% remaining";
-  }
-
-  if (remainingPercent >= 99.95) {
-    return "99.9% remaining";
-  }
-
-  const rounded = Math.max(0, Math.round(remainingPercent * 10) / 10);
-  return `${rounded.toFixed(1)}% remaining`;
-}
-
-function progressWidth(used: number, cap: number) {
-  if (cap <= 0) {
-    return 0;
-  }
-  return Math.min(100, Math.max(0, (used / cap) * 100));
-}
+const windows = [
+  ["fiveHour", "5 hours", "The short stretch"],
+  ["sevenDay", "7 days", "The week in motion"],
+  ["thirtyDay", "30 days", "The longer run"],
+] as const;
 
 export function ActivityPage() {
-  const [usage, setUsage] = useState<UsageState | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const payload = await api.billingUsage();
-        if (cancelled) {
-          return;
-        }
-        setUsage({
-          usage: payload.usage,
-          quotas: payload.quotas,
-          entitlements: payload.entitlements,
-        });
-        setError(null);
-      } catch (caught) {
-        if (cancelled) {
-          return;
-        }
-        setError(
-          typeof caught === "object" && caught && "error" in caught
-            ? String((caught as { error?: { message?: string } }).error?.message || "Could not load usage windows.")
-            : "Could not load usage windows."
-        );
-      }
-    }
-
-    function handleWindowFocus() {
-      void load();
-    }
-
-    function handleVisibilityChange() {
-      if (document.visibilityState === "visible") {
-        void load();
-      }
-    }
-
-    const intervalId = window.setInterval(() => {
-      if (document.visibilityState === "visible") {
-        void load();
-      }
-    }, 20000);
-
-    void load();
-
-    window.addEventListener("focus", handleWindowFocus);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-      window.removeEventListener("focus", handleWindowFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-
+  const { data, error, loading, refresh } = useAccountResource(
+    api.billingUsage,
+  );
   return (
-    <section className="account-panel">
-      <header className="account-panel-header">
+    <section className="workspace-page">
+      <header className="workspace-pagehead">
         <div>
-          <p className="sessions-kicker">Rolling usage window</p>
-          <h2>Usage</h2>
+          <p className="workspace-kicker">USAGE / CLOUD INFERENCE</p>
+          <h1>
+            Room to
+            <br />
+            <span>keep going.</span>
+          </h1>
+          <p>Your rolling usage windows. Updated from your account.</p>
         </div>
+        <button
+          className="workspace-textlink"
+          disabled={loading}
+          onClick={() => void refresh()}
+        >
+          {loading ? "Checking…" : "Refresh ↻"}
+        </button>
       </header>
-
-      {error ? <p className="error">{error}</p> : null}
-
-      {usage ? (
-        <div className="detail-stack">
-          {usage.entitlements.proAccess ? (
-            <article className="detail-card">
-              <p className="muted">
-                Bundled usage is measured across rolling 5-hour, weekly, and monthly windows.
+      {error && (
+        <p className="workspace-error" role="alert">
+          {error}{" "}
+          <button onClick={() => void refresh()} disabled={loading}>
+            Try again
+          </button>
+        </p>
+      )}
+      {!data && loading && <p role="status">Loading your usage…</p>}
+      {data &&
+        (data.entitlements.proAccess ? (
+          <>
+            <div className="usage-windows">
+              {windows.map(([key, title, caption]) => {
+                const quota = data.quotas[key];
+                const used =
+                  quota.capUsdCents > 0
+                    ? Math.max(
+                        0,
+                        Math.min(
+                          100,
+                          (quota.usedUsdCents / quota.capUsdCents) * 100,
+                        ),
+                      )
+                    : 100;
+                const reset = quota.fullWindowClearAt ?? quota.nextResetAt;
+                return (
+                  <article className="usage-window" key={key}>
+                    <div className="usage-window-label">
+                      <h2>{title}</h2>
+                      <p>{caption}</p>
+                    </div>
+                    <div className="usage-window-number">
+                      <strong>
+                        {Math.max(0, 100 - used).toLocaleString(undefined, {
+                          maximumFractionDigits: 1,
+                        })}
+                        <span>%</span>
+                      </strong>
+                      <p>remaining</p>
+                    </div>
+                    <div
+                      className="usage-meter"
+                      role="progressbar"
+                      aria-label={`${title} usage consumed`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(used)}
+                    >
+                      <span style={{ transform: `scaleX(${used / 100})` }} />
+                    </div>
+                    <p className="usage-reset">
+                      {reset
+                        ? `Window clears ${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(reset))}`
+                        : "No usage waiting to reset"}
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+            <div className="workspace-footnote">
+              <p>
+                These are rolling windows, not calendar resets. Capacity returns
+                as earlier usage leaves each window.
               </p>
-              <div className="usage-limit-list">
-                <div className="usage-limit-row">
-                  <div className="usage-limit-copy">
-                    <strong>5h</strong>
-                    <span>
-                      Resets {formatResetLabel(usage.quotas.fiveHour.fullWindowClearAt ?? usage.quotas.fiveHour.nextResetAt, "time")}
-                    </span>
-                  </div>
-                  <div className="usage-limit-stats">
-                    <strong>{formatPercentRemaining(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}</strong>
-                  </div>
-                  <div className="usage-progress" aria-hidden="true">
-                    <span
-                      className="usage-progress-fill"
-                      style={{ width: `${progressWidth(usage.quotas.fiveHour.usedUsdCents, usage.quotas.fiveHour.capUsdCents)}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="usage-limit-row">
-                  <div className="usage-limit-copy">
-                    <strong>Weekly</strong>
-                    <span>
-                      Resets {formatResetLabel(usage.quotas.sevenDay.fullWindowClearAt ?? usage.quotas.sevenDay.nextResetAt, "dateTime")}
-                    </span>
-                  </div>
-                  <div className="usage-limit-stats">
-                    <strong>{formatPercentRemaining(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}</strong>
-                  </div>
-                  <div className="usage-progress" aria-hidden="true">
-                    <span
-                      className="usage-progress-fill"
-                      style={{ width: `${progressWidth(usage.quotas.sevenDay.usedUsdCents, usage.quotas.sevenDay.capUsdCents)}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="usage-limit-row">
-                  <div className="usage-limit-copy">
-                    <strong>Monthly</strong>
-                    <span>
-                      Resets {formatResetLabel(usage.quotas.thirtyDay.fullWindowClearAt ?? usage.quotas.thirtyDay.nextResetAt, "dateTime")}
-                    </span>
-                  </div>
-                  <div className="usage-limit-stats">
-                    <strong>{formatPercentRemaining(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}</strong>
-                  </div>
-                  <div className="usage-progress" aria-hidden="true">
-                    <span
-                      className="usage-progress-fill"
-                      style={{ width: `${progressWidth(usage.quotas.thirtyDay.usedUsdCents, usage.quotas.thirtyDay.capUsdCents)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </article>
-          ) : (
-            <article className="detail-card detail-card-featured">
-              <div className="detail-card-copy">
-                <strong>Cloud models require iTE Pro</strong>
-                <p className="muted">
-                  Subscribe to iTE Pro to access DeepSeek Flash through iTE Cloud. Usage windows and bundled limits unlock once your subscription is active.
-                </p>
-              </div>
-              <div className="detail-card-actions">
-                <Link className="button" data-magnetic to="/account/billing">
-                  <span className="button-text">Subscribe to Pro</span>
-                  <span className="button-shine" />
-                </Link>
-              </div>
-            </article>
-          )}
-        </div>
-      ) : null}
+              <Link className="workspace-textlink" to="/account/billing">
+                Your plan ↗
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="workspace-empty">
+            <p className="workspace-kicker">YOUR PROVIDER. YOUR PACE.</p>
+            <h2>No bundled cloud usage.</h2>
+            <p>
+              Local models and your own provider run outside these windows. Pro
+              adds bundled cloud inference.
+            </p>
+            <Link className="workspace-action" to="/account/billing">
+              Explore iTE Pro ↗
+            </Link>
+            <Link className="workspace-textlink" to="/docs#configure">
+              Configure your provider ↗
+            </Link>
+          </div>
+        ))}
     </section>
   );
 }
