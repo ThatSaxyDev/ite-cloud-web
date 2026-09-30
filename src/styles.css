@@ -5569,6 +5569,13 @@ code {
 @media (max-width:1180px) and (min-width:761px) { .record-hero { grid-template-columns:minmax(0,1.05fr) minmax(22rem,.95fr); column-gap:clamp(1.5rem,4vw,3.5rem); }.record-hero h1 { font-size:clamp(4.6rem,8.5vw,7.2rem); }.record-hero__copy > p:nth-of-type(2) { max-width:31rem; }.agent-constellation { width:100%; height:clamp(27rem,54vw,36rem); } }
 @media (max-width:760px) { .record-hero { min-height:auto; display:flex; flex-direction:column; gap:2.75rem; padding-bottom:3.5rem; }.record-hero__copy { padding-top:1rem; }.agent-constellation { order:2; align-self:stretch; width:100%; height:min(92vw,31rem); }.record-hero__install { position:static; order:3; width:100%; }}
 @media (prefers-reduced-motion:reduce) { .agent-constellation canvas { cursor:default; } }
+
+.record-close .record-close__logo { width:min(100%,48rem); transform:none; }
+.metal-logo-3d { position:relative; width:100%; aspect-ratio:1.2; cursor:grab; touch-action:pan-y; user-select:none; }
+.metal-logo-3d[data-dragging="true"] { cursor:grabbing; }
+.metal-logo-3d:focus-visible { outline:2px solid var(--blue); outline-offset:6px; }
+.metal-logo-3d canvas { display:block; width:100%; height:100%; }
+.metal-logo-3d img { position:absolute; width:80%; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-5deg); }
 @media (prefers-reduced-motion:reduce) { .film-page *, .film-page *::before, .film-page *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }.motion-field__return { transition:none; } }
 
 .arrival__content > p { position:relative; padding:.65rem 1.25rem .65rem 0; background:linear-gradient(90deg,var(--graphite) 76%,transparent); }
