@@ -52,20 +52,6 @@ function InstallLine() {
   </section>;
 }
 
-function WorkRecord() {
-  const [open, setOpen] = useState(false);
-  return <section className="work-record" aria-labelledby="record-title">
-    <div className="work-record__lead"><p>AN AGENT SHOULD LEAVE THE WORK CLEARER THAN IT FOUND IT.</p><h2 id="record-title">One change.<br />Nothing hidden.</h2></div>
-    <article className="record" data-open={open}>
-      <header><span>iTE / WORKING</span><span>workspace cache</span></header>
-      <div className="record__ask"><span>YOU</span><p>“A renamed workspace sometimes shows stale data. Find the path and fix it.”</p></div>
-      <div className="record__reply"><span>iTE</span><p>I traced the rename handler to the cache key. The key survived the rename, so the old workspace state was still returned.</p></div>
-      {open ? <div className="record__evidence"><p><span>READ</span>src/workspaces/rename.ts</p><p><span>FOLLOWED</span>workspaceCache.invalidate</p><p><span>CHANGED</span>invalidate previous key after rename</p><p><span>CHECKED</span>workspace-cache.test.ts · 8 passed</p></div> : null}
-      <footer><button aria-expanded={open} onClick={() => setOpen((value) => !value)} type="button">{open ? "Close the trace" : "Open the trace"}<span>{open ? "−" : "+"}</span></button><p>{open ? "Change made. Outcome checked." : "The answer is waiting for its evidence."}</p></footer>
-    </article>
-  </section>;
-}
-
 function HomePage() {
   const [accountLabel, setAccountLabel] = useState("Create account");
   const [accountHref, setAccountHref] = useState("/login?mode=sign-up");
@@ -82,10 +68,8 @@ function HomePage() {
   return <main className="record-page">
     <a className="skip-link" href="#main-content">Skip to main content</a>
     <header className="record-nav"><Link aria-label="iTE home" to="/"><GlitchImageLogo /></Link><div><Link to="/docs">Docs</Link><Link className="record-nav__account" to={accountHref}>{accountLabel}<span>→</span></Link></div></header>
-    <section className="record-hero" id="main-content"><div className="record-hero__copy"><p>iTE / CODING AGENT</p><h1>Hand it off.<br /><em>Stay close.</em></h1><p>iTE works through the task in your codebase, then gives you the answer with the work still in view.</p></div><AgentConstellation /><div className="record-hero__install"><p>INSTALL ITE</p><InstallLine /></div></section>
-    <WorkRecord />
-    <section className="proof-record" id="proof"><div><p>THE PRODUCT IS THE PROOF.</p><h2>Watch it work.</h2></div><video autoPlay controls loop muted playsInline preload="metadata" poster="/ite-prev.png" src="/demo.mp4" /><p className="proof-record__note">A session in the terminal. Nothing staged around it.</p></section>
-    <section className="record-close"><div className="record-close__logo"><GlitchImageLogo /></div><div><p>KEEP THE THREAD.</p><h2>Open the terminal.</h2><InstallLine /><div><Link to="/docs">Documentation ↗</Link><Link to={accountHref}>{accountLabel} ↗</Link></div></div></section>
+    <section className="record-hero" id="main-content"><div className="record-hero__copy"><p>iTE /</p><h1>Terminal-native<br /><em>coding agent</em></h1><p>'…if you only had one prompt, what would it be?'</p></div><AgentConstellation /><div className="record-hero__install"><p>INSTALL ITE</p><InstallLine /></div></section>
+    <section className="record-close"><div className="record-close__logo"><GlitchImageLogo /></div><div className="record-close__links"><Link to="/docs">Documentation ↗</Link><Link to={accountHref}>{accountLabel} ↗</Link></div></section>
     <footer className="record-footer"><p>© {new Date().getFullYear()} iTE</p><a href="https://kiishi.space" rel="noreferrer" target="_blank">Kiishi David ↗</a></footer>
   </main>;
 }
