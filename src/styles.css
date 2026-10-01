@@ -6164,12 +6164,66 @@ code {
     opacity: 0.6;
 }
 
-/* Keep the homepage hero overrides last: legacy homepage experiments above share selectors. */
-.record-hero { grid-template-columns:minmax(0,35rem) minmax(28rem,1fr); grid-template-rows:1fr auto; column-gap:clamp(2rem,6vw,7rem); }
-.record-hero__copy { align-self:center; }
-.record-hero__install { grid-column:1; grid-row:2; }
-.agent-constellation { position:relative; grid-column:2; grid-row:1 / span 2; align-self:center; justify-self:end; width:min(100%,43rem); height:clamp(28rem,48vw,42rem); margin:0; overflow:hidden; contain:layout paint; }
-.agent-constellation canvas { width:100%; height:100%; display:block; cursor:crosshair; touch-action:none; }
-@media (max-width:1180px) and (min-width:761px) { .record-hero { grid-template-columns:minmax(0,1.05fr) minmax(22rem,.95fr); column-gap:clamp(1.5rem,4vw,3.5rem); }.record-hero h1 { font-size:clamp(4.6rem,8.5vw,7.2rem); }.record-hero__copy > p:nth-of-type(2) { max-width:31rem; }.agent-constellation { width:100%; height:clamp(27rem,54vw,36rem); } }
-@media (max-width:760px) { .record-hero { min-height:auto; display:flex; flex-direction:column; gap:2.75rem; padding-bottom:3.5rem; }.record-hero__copy { width:100%; padding-top:1rem; }.record-hero h1 { max-width:9ch; }.record-hero__install { position:static; order:2; width:100%; }.agent-constellation { order:3; align-self:stretch; width:100%; height:min(92vw,31rem); }}
-@media (prefers-reduced-motion:reduce) { .agent-constellation canvas { cursor:default; } }
+/* Keep homepage overrides last: legacy homepage experiments above share selectors. */
+.record-reel { padding-bottom: 2rem; }
+.record-close {
+    min-height: auto;
+    padding: 0 0 3rem;
+    gap: 1.5rem;
+}
+.record-close .record-close__logo {
+    width: min(90%, 58rem);
+    transform: none;
+}
+/* Enlarge the canvas, preserving the renderer's rotation-safe sphere fit. */
+.record-close .metal-logo-3d { aspect-ratio: 1; }
+.record-hero {
+    --hero-gutter: max(1.5rem, calc((100vw - 84rem) / 2));
+    grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    column-gap: clamp(2rem, 4vw, 4rem);
+    isolation: isolate;
+}
+.record-hero__copy { align-self: center; }
+.record-hero h1 { font-size: clamp(4rem, 7.4vw, 7.2rem); }
+.record-hero__install { grid-column: 1; grid-row: 2; }
+/* The field breaks out of the text gutter and occupies the whole hero height. */
+.agent-constellation {
+    position: absolute;
+    grid-area: auto;
+    align-self: auto;
+    justify-self: auto;
+    z-index: 0;
+    top: 50%;
+    left: 28%;
+    width: calc(72% + var(--hero-gutter));
+    height: clamp(36rem, 55vw, 60rem);
+    margin: 0;
+    transform: translateY(-50%);
+    overflow: visible;
+    contain: layout;
+}
+.agent-constellation canvas { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
+@media (max-width: 1180px) and (min-width: 761px) {
+    .record-hero { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); column-gap: 2rem; }
+    .record-hero h1 { font-size: clamp(3.6rem, 7.2vw, 5.5rem); }
+    .record-hero__copy > p:nth-of-type(2) { max-width: 25rem; }
+    .agent-constellation { left: 32%; width: calc(68% + var(--hero-gutter)); height: clamp(32rem, 65vw, 48rem); }
+}
+@media (max-width: 760px) {
+    .record-hero { min-height: auto; display: flex; flex-direction: column; gap: 2.75rem; padding-bottom: 3.5rem; }
+    .record-hero__copy { width: 100%; padding-top: 1rem; }
+    .record-hero h1 { max-width: 9ch; font-size: clamp(3.2rem, 16vw, 5.2rem); }
+    .record-hero__install { position: static; order: 2; width: 100%; }
+    .agent-constellation {
+        position: relative;
+        top: auto;
+        left: auto;
+        order: 3;
+        align-self: center;
+        width: 100vw;
+        height: min(105vw, 40rem);
+        transform: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) { .agent-constellation canvas { cursor: default; } }
