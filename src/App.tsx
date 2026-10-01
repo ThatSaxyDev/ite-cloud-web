@@ -7,6 +7,7 @@ import { AccountLayout } from "@/components/AccountLayout";
 import { GlobalInteractionEffects } from "@/components/GlobalInteractionEffects";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 import { MetalLogo3D } from "@/components/MetalLogo3D";
+import { Starfield } from "@/components/Starfield";
 import { StartupPreloader } from "@/components/StartupPreloader";
 import { authClient } from "@/lib/auth-client";
 import { hasKnownUser, markBrowserSeen, markKnownUser } from "@/lib/browser-state";
@@ -67,6 +68,7 @@ function HomePage() {
     void resolve(); return () => { cancelled = true; };
   }, []);
   return <main className="record-page">
+    <Starfield />
     <a className="skip-link" href="#main-content">Skip to main content</a>
     <header className="record-nav"><Link aria-label="iTE home" to="/"><GlitchImageLogo /></Link><div><Link to="/docs">Docs</Link><Link className="record-nav__account" to={accountHref}>{accountLabel}<span>→</span></Link></div></header>
     <section className="record-hero" id="main-content"><div className="record-hero__copy"><p>iTE /</p><h1>Terminal-native<br /><em>coding agent</em></h1><p>'…if you only had one prompt, what would it be?'</p></div><AgentConstellation /><div className="record-hero__install"><p>INSTALL ITE</p><InstallLine /></div></section>

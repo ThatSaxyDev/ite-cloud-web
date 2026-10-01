@@ -6165,6 +6165,27 @@ code {
 }
 
 /* Keep homepage overrides last: legacy homepage experiments above share selectors. */
+.record-page { isolation: isolate; --ink: #030405; }
+.record-page::before {
+    content: none;
+}
+.record-starfield {
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.record-page::after {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    pointer-events: none;
+    background: url("/background-grain.svg") repeat;
+    opacity: .018;
+}
 .record-reel { padding-bottom: 2rem; }
 .record-close {
     min-height: auto;
