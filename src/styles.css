@@ -3223,6 +3223,12 @@ code {
     top: 24px;
     display: grid;
     gap: 18px;
+    max-height: calc(100vh - 48px);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    align-content: start;
+    scrollbar-width: thin;
 }
 
 .docs-sidebar-group {
@@ -3302,6 +3308,7 @@ code {
 
 .docs-article {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 36px;
     min-width: 0;
 }
@@ -3370,8 +3377,14 @@ code {
 
 .docs-section {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
+    min-width: 0;
     scroll-margin-top: 28px;
+}
+
+.docs-section > * {
+    min-width: 0;
 }
 
 .docs-section h2 {

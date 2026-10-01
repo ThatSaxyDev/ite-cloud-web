@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CodeBlock } from "./docs/CodeBlock";
+import {
+  LocalWorkflowSections,
+  LOCAL_DOC_NAV,
+  CommandReference,
+} from "./docs/LocalWorkflowSections";
 import { GlitchImageLogo } from "@/components/GlitchImageLogo";
 
 function MenuIcon({ className }: { className?: string }) {
@@ -77,7 +83,12 @@ const DOC_NAV: readonly DocNavItem[] = [
     label: "Usage",
     description: "Everyday workflows and commands.",
   },
-  { id: "commands", label: "Commands", description: "Full command reference." },
+  ...LOCAL_DOC_NAV,
+  {
+    id: "commands",
+    label: "Commands",
+    description: "Slash commands and terminal CLI reference.",
+  },
   { id: "tools", label: "Tools", description: "Built-in tools reference." },
   {
     id: "agents",
@@ -92,30 +103,6 @@ const DOC_NAV: readonly DocNavItem[] = [
   },
   { id: "mcp", label: "MCP", description: "External tool servers." },
 ] as const;
-
-function CodeBlock({ label, code }: { label: string; code: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="docs-code-block">
-      <div className="docs-code-header">
-        <span className="docs-code-label">{label}</span>
-        <button className="docs-copy-button" onClick={handleCopy} type="button">
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <pre>
-        <code>{code}</code>
-      </pre>
-    </div>
-  );
-}
 
 function SidebarContent({
   query,
@@ -190,7 +177,10 @@ function SidebarContent({
 export function DocsPage() {
   const navigate = useNavigate();
   function goBack() {
-    if (typeof window.history.state?.idx === "number" && window.history.state.idx > 0) {
+    if (
+      typeof window.history.state?.idx === "number" &&
+      window.history.state.idx > 0
+    ) {
       navigate(-1);
     } else {
       navigate("/");
@@ -394,8 +384,11 @@ export function DocsPage() {
               <p>Before you install iTE, make sure you have:</p>
               <div className="docs-checklist">
                 <div className="docs-checklist-item">
-                  <strong>Python 3.11+</strong>
-                  <span>Required runtime for iTE</span>
+                  <strong>Choose an installation method</strong>
+                  <span>
+                    Shell installers include the runtime. Package installs
+                    require Python 3.11+.
+                  </span>
                 </div>
                 <div className="docs-checklist-item">
                   <strong>Terminal emulator</strong>
@@ -405,14 +398,19 @@ export function DocsPage() {
                   </span>
                 </div>
                 <div className="docs-checklist-item">
-                  <strong>API keys</strong>
-                  <span>For LLM providers (unless using iTE Cloud)</span>
+                  <strong>Model access</strong>
+                  <span>
+                    Use bundled account access, your provider credentials, or a
+                    local Ollama model.
+                  </span>
                 </div>
               </div>
               <div className="docs-note">
                 <strong>Supported terminals</strong>
                 <p>
-                  <strong>macOS:</strong> Terminal.app, Warp, iTerm2, Ghostty
+                  <strong>macOS/Linux:</strong> Use a modern terminal; the Unix
+                  installer needs curl, bash, and python3 or jq to read its
+                  release manifest.
                   <br />
                   <strong>Windows:</strong> Windows Terminal, PowerShell, CMD
                 </p>
@@ -424,37 +422,47 @@ export function DocsPage() {
               <h2 data-scramble="true">Install</h2>
               <p>
                 The fastest way to install iTE is with a single command.{" "}
-                <strong>macOS/Linux</strong> users can use <strong>curl</strong>,
-                <strong>Windows</strong> users can use <strong>PowerShell</strong>.{" "}
-                If you prefer package managers, <strong>pipx</strong> and{" "}
-                <strong>uv</strong> are also available.
+                <strong>macOS/Linux</strong> users can use <strong>curl</strong>
+                ,<strong>Windows</strong> users can use{" "}
+                <strong>PowerShell</strong>. If you prefer package managers,{" "}
+                <strong>pipx</strong> and <strong>uv</strong> are also
+                available.
               </p>
 
               <CodeBlock
-                label="macOS"
+                label="macOS / Linux"
                 code="curl -fsSL https://ite.kiishi.space/install.sh | bash"
               />
               <CodeBlock
                 label="Windows"
                 code="irm https://ite.kiishi.space/install.ps1 | iex"
               />
-              <CodeBlock
-                label="pipx"
-                code="pipx install ite-agent"
-              />
+              <CodeBlock label="pipx" code="pipx install ite-agent" />
               <CodeBlock label="uv" code="uv tool install ite-agent" />
 
               <p>Verify the installation:</p>
               <CodeBlock label="Terminal" code="ite --version" />
 
               <p>Upgrade to the latest version:</p>
-              <CodeBlock label="Upgrade" code="pipx upgrade ite-agent" />
+              <CodeBlock label="Terminal" code="ite --upgrade" />
+              <p>
+                iTE detects your installation method. You can also use{" "}
+                <code>pipx upgrade ite-agent</code> or{" "}
+                <code>uv tool upgrade ite-agent</code> for package
+                installations.
+              </p>
 
               <div className="docs-note">
                 <strong>Uninstall</strong>
                 <p>
-                  If you need to remove iTE:{" "}
-                  <code>pipx uninstall ite-agent</code>
+                  For package installs, use{" "}
+                  <code>pipx uninstall ite-agent</code> or{" "}
+                  <code>uv tool uninstall ite-agent</code>. For a shell
+                  installer, remove its app and bin directories from the
+                  installation root and its PATH entry. Default roots are{" "}
+                  <code>~/.ite</code> on macOS/Linux and{" "}
+                  <code>%LOCALAPPDATA%\iTE</code> on Windows. Preserve any files
+                  you want to keep in that root.
                 </p>
               </div>
             </section>
@@ -463,13 +471,20 @@ export function DocsPage() {
             <section className="docs-section" id="configure">
               <h2 data-scramble="true">Configure Your Provider</h2>
               <p>
-                iTE requires an OpenAI-compatible model provider. Run{" "}
-                <code>/setup</code> inside iTE to configure:
+                Use bundled models available to your iTE account, or connect an
+                OpenAI-compatible provider. For your own provider, run{" "}
+                <code>/setup</code> inside iTE and configure:
               </p>
               <div className="docs-ordered-list">
                 <li>Base URL — Your provider endpoint</li>
                 <li>API Key — Your provider key</li>
-                <li>Model — The exact model name</li>
+                <li>
+                  Model — Select an available model or enter a custom model
+                </li>
+                <li>
+                  Context window — Enter the available token limit if it cannot
+                  be discovered
+                </li>
               </div>
 
               <h3>Supported Providers</h3>
@@ -501,7 +516,7 @@ export function DocsPage() {
                       <td>
                         <code>https://openrouter.ai/api/v1</code>
                       </td>
-                      <td>Your OpenRouter key</td>
+                      <td>Browser sign-in or your OpenRouter key</td>
                     </tr>
                     <tr>
                       <td>
@@ -516,22 +531,42 @@ export function DocsPage() {
                 </table>
               </div>
 
-              <p>Start iTE and run the setup command:</p>
-              <CodeBlock
-                label="Terminal"
-                code={`ite
-/setup`}
-              />
+              <p>
+                Start iTE with <code>ite</code> in your terminal, then run:
+              </p>
+              <CodeBlock label="Inside iTE" code="/setup" />
 
               <div className="docs-note docs-note-featured">
                 <strong>iTE Cloud Bundled Access</strong>
                 <p>
-                  Pro accounts can use bundled models through iTE Cloud today.
-                  iTE manages the bundled provider path for you, while Ollama,
-                  OpenRouter BYOK, and other compatible BYOK providers remain
-                  available alongside bundled access.
+                  Bundled models are available according to your account
+                  entitlements. Sign in with <code>/login</code>, then open{" "}
+                  <code>/models</code> to see your available models. Ollama and
+                  providers using your own API key are also supported. See{" "}
+                  <a href="#account">Account &amp; usage</a> for limits and
+                  account controls.
                 </p>
               </div>
+            </section>
+
+            <section className="docs-section" id="provider-details">
+              <h3>Sign in with OpenRouter</h3>
+              <p>
+                In <code>/setup</code>, choose OpenRouter and select{" "}
+                <strong>Sign in with OpenRouter</strong>. Approve the connection
+                in your browser. You can also paste your own OpenRouter key. Use
+                the provider’s sign-out control to disconnect OpenRouter;{" "}
+                <code>/logout</code> signs out of your iTE account.
+              </p>
+              <h3>Configuration files</h3>
+              <p>
+                Workspace overrides live in <code>.ite/config.toml</code>.
+                Global configuration uses your operating system’s user
+                configuration directory for iTE; do not assume it lives under
+                the installer’s <code>~/.ite</code> directory. Model and
+                provider flags passed to <code>ite</code> override the loaded
+                settings. Approval preferences are saved globally.
+              </p>
             </section>
 
             {/* Initialize Section */}
@@ -547,7 +582,7 @@ export function DocsPage() {
                 Use the <code>/init</code> command to analyze your project and
                 create an <code>AGENTS.md</code> file:
               </p>
-              <CodeBlock label="Terminal" code="/init" />
+              <CodeBlock label="Inside iTE" code="/init" />
 
               <p>This detects:</p>
               <div className="docs-ordered-list">
@@ -563,7 +598,7 @@ export function DocsPage() {
                     To regenerate and overwrite an existing{" "}
                     <code>AGENTS.md</code>:
                   </p>
-                  <CodeBlock label="Terminal" code="/init --force" />
+                  <CodeBlock label="Inside iTE" code="/init --force" />
                 </article>
               </div>
 
@@ -649,8 +684,8 @@ Sounds good! Go ahead and make the changes.`}
               <p>If something goes wrong, you can undo:</p>
               <CodeBlock
                 label="Undo / Redo"
-                code={`/undo  # Reverts file changes from the last turn
-/redo  # Reapply reverted changes`}
+                code={`/undo
+/redo`}
               />
 
               <h3>Sessions</h3>
@@ -658,280 +693,8 @@ Sounds good! Go ahead and make the changes.`}
               <CodeBlock label="Sessions" code="/sessions" />
             </section>
 
-            {/* Commands Section */}
-            <section className="docs-section" id="commands">
-              <h2 data-scramble="true">Commands</h2>
-              <p>
-                Type <code>/help</code> in iTE to see available commands.
-              </p>
-
-              <h3>Session Management</h3>
-              <div className="docs-table-wrapper">
-                <table className="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <code>/new</code>
-                      </td>
-                      <td>Start a new conversation thread</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/sessions</code>
-                      </td>
-                      <td>List saved conversations and resume</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/rename &lt;name&gt;</code>
-                      </td>
-                      <td>Rename the current conversation</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/exit</code> or <code>/quit</code>
-                      </td>
-                      <td>Close iTE</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/close</code>
-                      </td>
-                      <td>Close the current thread</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <h3>Configuration</h3>
-              <div className="docs-table-wrapper">
-                <table className="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <code>/setup</code>
-                      </td>
-                      <td>Configure model provider</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/config</code>
-                      </td>
-                      <td>View current configuration</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/model &lt;name&gt;</code>
-                      </td>
-                      <td>Change model</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/approval &lt;mode&gt;</code>
-                      </td>
-                      <td>
-                        Set approval mode: on_request, on_failure, auto,
-                        auto_edit, yolo
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/logout</code>
-                      </td>
-                      <td>Log out of iTE Cloud</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <h3>Workflow</h3>
-              <div className="docs-table-wrapper">
-                <table className="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <code>/plan</code>
-                      </td>
-                      <td>Show plan mode status</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/plan on</code>
-                      </td>
-                      <td>Enable plan mode</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/plan off</code>
-                      </td>
-                      <td>Disable plan mode</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/todos</code>
-                      </td>
-                      <td>Manage task lists</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/attach &lt;path&gt;</code>
-                      </td>
-                      <td>Queue files for next message</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/clear</code>
-                      </td>
-                      <td>Clear conversation history</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <h3>Version Control &amp; History</h3>
-              <div className="docs-table-wrapper">
-                <table className="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <code>/branch</code>
-                      </td>
-                      <td>List or switch git branches</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/branch --create &lt;name&gt;</code>
-                      </td>
-                      <td>Create and switch to new branch</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/undo</code>
-                      </td>
-                      <td>Revert file changes from last turn</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/redo</code>
-                      </td>
-                      <td>Reapply reverted changes</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <h3>Project &amp; Skills</h3>
-              <div className="docs-table-wrapper">
-                <table className="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Command</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <code>/init</code>
-                      </td>
-                      <td>Analyze project and create AGENTS.md</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/skills</code>
-                      </td>
-                      <td>List available skills</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/skills show &lt;name&gt;</code>
-                      </td>
-                      <td>Inspect a skill</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/skills use &lt;name&gt;</code>
-                      </td>
-                      <td>Activate a skill</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>/skills add &lt;path&gt;</code>
-                      </td>
-                      <td>Install a skill pack</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <h3>Approval Modes</h3>
-              <div className="docs-table-wrapper">
-                <table className="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Mode</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <code>on_request</code>
-                      </td>
-                      <td>Ask before every mutating action</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>on_failure</code>
-                      </td>
-                      <td>Auto-approve, ask only on failure</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>auto</code>
-                      </td>
-                      <td>Auto-approve all safe operations</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>auto_edit</code>
-                      </td>
-                      <td>Auto-approve edits, confirm commands</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <code>yolo</code>
-                      </td>
-                      <td>Approve everything — no guardrails</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
+            <LocalWorkflowSections />
+            <CommandReference />
 
             {/* Tools Section */}
             <section className="docs-section" id="tools">
@@ -1185,6 +948,16 @@ Sounds good! Go ahead and make the changes.`}
                 </table>
               </div>
 
+              <h3>Files and documents</h3>
+              <p>
+                Ask iTE to use <code>read_pdf</code> for PDF extraction,{" "}
+                <code>read_image</code> for image inspection and optional OCR,
+                or <code>read_document</code> to convert Office, OpenDocument,
+                RTF, EPUB, CSV, and PDF files to Markdown text. See{" "}
+                <a href="#files">Files &amp; documents</a> for limits and
+                examples.
+              </p>
+
               <h3>Verification Tools</h3>
               <div className="docs-table-wrapper">
                 <table className="docs-table">
@@ -1231,7 +1004,7 @@ Sounds good! Go ahead and make the changes.`}
               <p>
                 Use the <code>/init</code> command:
               </p>
-              <CodeBlock label="Terminal" code="/init" />
+              <CodeBlock label="Inside iTE" code="/init" />
 
               <h3>Scope Hierarchy</h3>
               <p>
@@ -1243,6 +1016,14 @@ Sounds good! Go ahead and make the changes.`}
                 <li>Multiple files can exist in one project</li>
               </div>
 
+              <h3>Refresh instructions</h3>
+              <p>
+                Use <code>/remind</code> to re-inject project instructions into
+                the conversation. This refreshes instructions; it does not
+                schedule a reminder. iTE also recognizes{" "}
+                <code>AGENTS.override.md</code> and fallback instruction files
+                such as <code>CLAUDE.md</code> when applicable.
+              </p>
               <h3>Example</h3>
               <CodeBlock
                 label="AGENTS.md"
@@ -1279,8 +1060,8 @@ Sounds good! Go ahead and make the changes.`}
               </p>
               <div className="docs-ordered-list">
                 <li>
-                  <strong>Global:</strong> Installed in{" "}
-                  <code>~/.config/ite/skills/</code> (always trusted)
+                  <strong>Global:</strong> Installed in your user skill roots,
+                  including <code>~/.agents/skills/</code> (trusted by default)
                 </li>
                 <li>
                   <strong>Project:</strong> Installed in{" "}
@@ -1304,16 +1085,27 @@ Sounds good! Go ahead and make the changes.`}
 /skills show <name>        # Inspect a skill
 /skills use <name>         # Activate a skill
 /skills add <path>         # Install a skill pack
-/skills trust              # Trust project skills`}
+/skills trust              # Trust project skills
+/skills untrust            # Remove trust and active project skills
+/skills drop <name>        # Deactivate one skill
+/skills clear              # Deactivate all skills
+/skills add owner/repo     # Install from GitHub
+/skills add <git-url> --global # Install in ~/.agents/skills
+/skills add <path> --local # Install in .ite/skills`}
               />
 
               <div className="docs-note">
                 <strong>Trust Model</strong>
                 <ul>
-                  <li>Global skills are trusted by default</li>
                   <li>
-                    Project skills require explicit trust with{" "}
-                    <code>/skills trust</code>
+                    Global skills are trusted by default. Review a skill before
+                    installing or activating it.
+                  </li>
+                  <li>
+                    Discovered project skills require <code>/skills trust</code>{" "}
+                    before activation. Installing with <code>/skills add</code>{" "}
+                    into the default project <code>.agents/skills</code>{" "}
+                    directory also trusts that workspace.
                   </li>
                 </ul>
               </div>
@@ -1358,16 +1150,15 @@ Sounds good! Go ahead and make the changes.`}
 
               <h3>Using Subagents</h3>
               <CodeBlock
-                label="Spawn a subagent"
-                code={`spawn_subagent subagent="security_auditor" goal="Audit the authentication module"`}
+                label="Example request"
+                code="Ask the security auditor to review src/auth.ts, and have the code reviewer check the changes."
               />
-              <CodeBlock
-                label="Parallel execution"
-                code={`spawn_subagents requests=[
-  {subagent: "code_reviewer", goal: "Review PR changes"},
-  {subagent: "security_auditor", goal: "Check for SQL injection risks"}
-]`}
-              />
+              <p>
+                iTE calls the subagent tools and collects their results. Use{" "}
+                <code>/subagent list</code> to see available specialists. Tool
+                names such as <code>spawn_subagent</code> are used by the agent,
+                not typed as terminal commands.
+              </p>
 
               <h3>Creating Custom Subagents</h3>
               <p>
@@ -1410,14 +1201,50 @@ command = "npx"
 args = ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/files"]`}
               />
 
+              <h3>URL servers and authentication</h3>
+              <p>
+                URL-based servers support SSE, Streamable HTTP, and WebSocket
+                transports. Browser OAuth and client-credentials authentication
+                are available for compatible URL servers. WebSocket transport
+                does not support configured headers or authentication.
+              </p>
+              <CodeBlock
+                label="Workspace config: browser OAuth"
+                code={
+                  '[mcp_servers.example]\nurl = "https://your-service.example/mcp"\ntransport = "streamable_http"\nauth = "oauth"'
+                }
+              />
+              <p>
+                Replace the example URL with your service’s MCP endpoint. For
+                client credentials, use <code>auth = "client_credentials"</code>{" "}
+                with the service’s token URL, client ID, secret, and optional
+                scope. Keep credentials out of committed config.
+              </p>
               <h3>Commands</h3>
               <CodeBlock
                 label="MCP commands"
                 code={`/mcp                      # Show MCP server status
 /mcp start <server>       # Connect an MCP server
-/mcp stop <server>        # Disconnect an MCP server`}
+/mcp stop <server>        # Disconnect an MCP server
+/mcp doctor <server>      # Diagnose connection/config issues
+/mcp reset <server>       # Clear credentials and OAuth tokens
+/mcp env list [server]    # Inspect configured variables
+/mcp env where <server>   # Locate their storage
+/mcp env import <server> <KEY> # Import a process variable
+/mcp env unset <server> <KEY> # Remove a variable
+/mcp add <server> --scope workspace # Copy an existing definition`}
               />
 
+              <CodeBlock
+                label="Terminal: add a server"
+                code="ite mcp add example --url https://your-service.example/mcp --scope workspace"
+              />
+              <p>
+                <code>ite mcp add</code> creates a persisted server definition
+                from a URL or command. Inside iTE, <code>/mcp add</code> copies
+                an existing definition between scopes. After a reset, use{" "}
+                <code>/mcp start &lt;server&gt;</code> to authenticate again.
+              </p>
               <div className="docs-note">
                 <strong>Security</strong>
                 <p>
