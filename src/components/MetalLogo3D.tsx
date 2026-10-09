@@ -120,10 +120,12 @@ function buildGeometry(image: HTMLImageElement) {
   return { vertices: new Float32Array(vertices), mask, width, height, radius: Math.hypot(halfWidth, halfHeight, depth) };
 }
 
-export function MetalLogo3D() {
+export function MetalLogo3D({ spinSeconds = 14, interactive = true, immediate = false, continuous = false, onReady }: { spinSeconds?: number; interactive?: boolean; immediate?: boolean; continuous?: boolean; onReady?: () => void } = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const motionRef = useRef({ yaw: -.15, pitch: -.1, yawVelocity: 0, pitchVelocity: 0, dragging: false, pointerId: -1, x: 0, y: 0, stamp: 0, lastInput: 0 });
+  const motionRef = useRef({ yaw: -.15, pitch: -.1, yawVelocity: 0, pitchVelocity: 0, dragging: false, pointerId: -1, x: 0, y: 0, stamp: 0, lastInput: immediate ? -1e9 : 0 });
   const wakeRef = useRef<(() => void) | null>(null);
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
   const [ready, setReady] = useState(false);
   const [dragging, setDragging] = useState(false);
 
@@ -142,6 +144,11 @@ export function MetalLogo3D() {
     let modelRadius = 1.4;
     let renderedYaw = -.15; let renderedPitch = -.1;
     let autoBase: number | null = null; let autoStart = 0;
+    // Derive the front-facing pause from the lap duration so faster spins keep their
+    // proportion. Defaults reproduce the landing page's 14s lap / 2s pause exactly.
+    const lapSeconds = Math.max(1.5, spinSeconds);
+    const pauseSeconds = lapSeconds * (2 / 14);
+    const activeSeconds = Math.max(.05, lapSeconds - pauseSeconds);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const draw = (timestamp: number) => {
       frame = null;
@@ -153,24 +160,31 @@ export function MetalLogo3D() {
         idleTime += delta;
         if (motion.dragging || timestamp - motion.lastInput < 1400) autoBase = null;
         if (!motion.dragging) {
-          const friction = Math.exp(-delta * 1.55);
-          motion.yawVelocity *= friction; motion.pitchVelocity *= friction;
-          // A quicker full rotation with a front-facing reading pause each lap.
-          if (timestamp - motion.lastInput > 1400 && (autoBase !== null || Math.abs(motion.yawVelocity) < .35)) {
-            if (autoBase === null) {
-              autoBase = Math.round((motion.yaw + .15) / (Math.PI * 2)) * Math.PI * 2 - .15;
-              autoStart = idleTime;
+          if (continuous) {
+            // Uninterrupted constant-velocity spin: no front-facing rest, no restart ramp.
+            motion.yawVelocity = Math.PI * 2 / lapSeconds;
+            motion.yaw += motion.yawVelocity * delta;
+            motion.pitch = Math.max(-.7, Math.min(.7, motion.pitch + (-.1 - motion.pitch) * (1 - Math.exp(-delta * 5))));
+          } else {
+            const friction = Math.exp(-delta * 1.55);
+            motion.yawVelocity *= friction; motion.pitchVelocity *= friction;
+            // A quicker full rotation with a front-facing reading pause each lap.
+            if (timestamp - motion.lastInput > 1400 && (autoBase !== null || Math.abs(motion.yawVelocity) < .35)) {
+              if (autoBase === null) {
+                autoBase = Math.round((motion.yaw + .15) / (Math.PI * 2)) * Math.PI * 2 - .15;
+                autoStart = idleTime;
+              }
+              const clock = idleTime - autoStart;
+              const lap = Math.floor(clock / lapSeconds);
+              const progress = Math.max(0, Math.min(1, (clock % lapSeconds - pauseSeconds) / activeSeconds));
+              const eased = progress * progress * (3 - 2 * progress);
+              const target = autoBase + (lap + eased) * Math.PI * 2;
+              motion.yawVelocity += ((target - motion.yaw) * 9 - motion.yawVelocity * 3) * delta;
+              motion.pitchVelocity += ((-.1 - motion.pitch) * 5 - motion.pitchVelocity * 2.2) * delta;
             }
-            const clock = idleTime - autoStart;
-            const lap = Math.floor(clock / 14);
-            const progress = Math.max(0, Math.min(1, (clock % 14 - 2) / 12));
-            const eased = progress * progress * (3 - 2 * progress);
-            const target = autoBase + (lap + eased) * Math.PI * 2;
-            motion.yawVelocity += ((target - motion.yaw) * 9 - motion.yawVelocity * 3) * delta;
-            motion.pitchVelocity += ((-.1 - motion.pitch) * 5 - motion.pitchVelocity * 2.2) * delta;
+            motion.yaw += motion.yawVelocity * delta;
+            motion.pitch = Math.max(-.7, Math.min(.7, motion.pitch + motion.pitchVelocity * delta));
           }
-          motion.yaw += motion.yawVelocity * delta;
-          motion.pitch = Math.max(-.7, Math.min(.7, motion.pitch + motion.pitchVelocity * delta));
         }
         const follow = 1 - Math.exp(-delta * 15);
         renderedYaw += (motion.yaw - renderedYaw) * follow;
@@ -247,7 +261,7 @@ export function MetalLogo3D() {
         gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
         gl.disable(gl.BLEND);
         count = geometry.vertices.length / 8;
-        setReady(true); wake();
+        setReady(true); wake(); onReadyRef.current?.();
       } catch { setReady(false); }
     };
     image.src = iteImage;
@@ -272,15 +286,18 @@ export function MetalLogo3D() {
     wakeRef.current?.();
   }
 
-  return <div className="metal-logo-3d" data-dragging={dragging} tabIndex={ready ? 0 : -1} role="group" aria-label="Interactive 3D iTE logo. Drag to rotate, or use the arrow keys. Press Home to reset."
-    onPointerDown={event => {
+  const interactionProps = interactive ? {
+    tabIndex: ready ? 0 : -1,
+    role: "group" as const,
+    "aria-label": "Interactive 3D iTE logo. Drag to rotate, or use the arrow keys. Press Home to reset.",
+    onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => {
       if (!ready || event.button !== 0) return;
       event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId);
       const motion = motionRef.current;
       Object.assign(motion, { dragging: true, pointerId: event.pointerId, x: event.clientX, y: event.clientY, stamp: performance.now(), lastInput: performance.now(), yawVelocity: 0, pitchVelocity: 0 });
       setDragging(true); wakeRef.current?.();
-    }}
-    onPointerMove={event => {
+    },
+    onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => {
       const motion = motionRef.current;
       if (!motion.dragging || event.pointerId !== motion.pointerId) return;
       const bounds = event.currentTarget.getBoundingClientRect();
@@ -292,11 +309,13 @@ export function MetalLogo3D() {
       motion.pitchVelocity = Math.max(-2, Math.min(2, motion.pitchVelocity * .5 + dy / dt * .5));
       Object.assign(motion, { x: event.clientX, y: event.clientY, stamp: now, lastInput: now });
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) wakeRef.current?.();
-    }}
-    onPointerUp={release} onPointerCancel={release} onLostPointerCapture={event => {
+    },
+    onPointerUp: release,
+    onPointerCancel: release,
+    onLostPointerCapture: (event: React.PointerEvent<HTMLDivElement>) => {
       if (motionRef.current.dragging) release(event);
-    }}
-    onKeyDown={event => {
+    },
+    onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home"].includes(event.key)) return;
       event.preventDefault();
       const motion = motionRef.current;
@@ -307,7 +326,10 @@ export function MetalLogo3D() {
       if (event.key === "ArrowDown") motion.pitch = Math.min(.7, motion.pitch + .15);
       motion.yawVelocity = 0; motion.pitchVelocity = 0; motion.lastInput = performance.now();
       wakeRef.current?.();
-    }}>
+    }
+  } : {};
+
+  return <div className="metal-logo-3d" data-dragging={dragging} data-interactive={interactive} {...interactionProps}>
     <canvas aria-label="Solid metallic iTE plates and rails in three dimensions." ref={canvasRef} role="img" style={{ opacity: ready ? 1 : 0 }} />
     {!ready ? <img alt="iTE" src={iteImage} /> : null}
   </div>;

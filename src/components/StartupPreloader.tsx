@@ -1,60 +1,46 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MetalLogo3D } from "@/components/MetalLogo3D";
 
 export function StartupPreloader({
   onComplete
 }: {
   onComplete: () => void;
 }) {
-  const [status, setStatus] = useState("Initializing");
-  const [text, setText] = useState("iTE");
+  const [logoReady, setLogoReady] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const readyRef = useRef(false);
+
+  const handleReady = useCallback(() => {
+    readyRef.current = true;
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const finalText = "iTE";
 
     async function wait(ms: number) {
       await new Promise((resolve) => window.setTimeout(resolve, ms));
     }
 
     async function run() {
-      for (let i = 0; i < 20; i += 1) {
+      // Let "Initializing" hold on its own before anything else.
+      await wait(550);
+      if (cancelled) {
+        return;
+      }
+
+      // Wait for the 3D renderer to actually be available (bounded so a
+      // WebGL-less browser still gets through), then crossfade it in.
+      const startedAt = performance.now();
+      while (!readyRef.current && performance.now() - startedAt < 2500) {
+        await wait(50);
         if (cancelled) {
           return;
         }
-
-        let output = "";
-        for (let j = 0; j < finalText.length; j += 1) {
-          if (i / 20 > j / finalText.length) {
-            output += finalText[j];
-          } else {
-            output += chars[Math.floor(Math.random() * chars.length)];
-          }
-        }
-        setText(output);
-        await wait(50);
       }
 
-      if (cancelled) {
-        return;
-      }
-
-      setText(finalText);
-      setStatus("Loading modules");
-      await wait(800);
-      if (cancelled) {
-        return;
-      }
-
-      setStatus("Initializing");
-      await wait(600);
-      if (cancelled) {
-        return;
-      }
-
-      setStatus("Ready");
-      await wait(350);
+      setLogoReady(true);
+      // Let the logo spin on its own before leaving.
+      await wait(2200);
       if (cancelled) {
         return;
       }
@@ -76,17 +62,14 @@ export function StartupPreloader({
   return (
     <div className={`preloader ${hidden ? "hidden" : ""}`}>
       <div className="preloader-content">
-        <div className="preloader-logo">
-          <span className="bracket">[</span>
-          <span className="text">{text}</span>
-          <span className="bracket">]</span>
-        </div>
-        <div className="preloader-bar">
-          <div className="preloader-progress" />
-        </div>
-        <div className="preloader-status">
-          <span className="status-text">{status}</span>
-          <span className="status-dots">...</span>
+        <div className="preloader-stage">
+          <div className={`preloader-logo ${logoReady ? "is-ready" : ""}`} aria-hidden={!logoReady}>
+            <MetalLogo3D spinSeconds={3.2} interactive={false} immediate continuous onReady={handleReady} />
+          </div>
+          <div className={`preloader-status ${logoReady ? "is-hidden" : ""}`}>
+            <span className="status-text">Initializing</span>
+            <span className="status-dots">...</span>
+          </div>
         </div>
       </div>
     </div>
